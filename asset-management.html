@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+                font-family: "Inter";
+                font-weight: 500;
+                color: #2d3748;
+            }
+
+            body {
+                display: flex;
+                gap: 50px;
+                padding: 40px 30px;
+                height: 100vh;
+                background-color: #f8f9fa;
+            }
+
+            /* SIDEBAR */
+            nav {
+                width: 280px;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .logo {
+                border-bottom: solid 1px #c2c4c7;
+                padding-bottom: 20px;
+            }
+
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                font-size: 14px;
+            }
+
+            .sidebar i {
+                background-color: transparent;
+            }
+
+            .sidebar a {
+                display: flex;
+                align-items: center;
+                border-radius: 15px;
+                gap: 10px;
+                padding: 10px 15px;
+                text-decoration: none;
+                color: #a0aec0;
+                white-space: nowrap;
+            }
+            .sidebar a span {
+                padding: 7px 9px;
+                border-radius: 12px;
+                background-color: white;
+                box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+            }
+            .sidebar a span i {
+                color: #4fd1c5;
+            }
+
+            .sidebar a.active {
+                font-weight: 700;
+                background-color: white;
+                box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+                margin-bottom: 5px;
+                color: #2d3748;
+            }
+            .sidebar a.active span {
+                background-color: #4fd1c5;
+            }
+            .sidebar a.active span i {
+                color: white;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 20px;
+                background-color: white;
+                box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+            }
+
+            .main-cards {
+                display: grid;
+                gap: 20px;
+                grid-template-columns: calc(35% - 10px) calc(65% - 10px);
+                height: 100%;
+            }
+
+            /* ========== Global Theme Variables ========== */
+            :root {
+                --text-color: #1C1C1C;
+                --body-color: #F1F2F6;
+                --container-color: white;
+
+                /* Table Colors */
+                --table-bg: var(--color-gray-50);
+                --table-header-bg: var(--color-gray-100);
+                --table-cell-bg: #ffffff;
+                --table-hover-bg: var(--color-gray-50);
+                --table-border-color: var(--color-gray-200);
+                --table-text-color: var(--color-gray-900);
+                --table-header-text-color: var(--color-gray-600);
+
+                /* Scrollbar */
+                --scrollbar-track: var(--color-gray-50);
+                --scrollbar-thumb: var(--color-gray-300);
+            }
+
+            /* ========== Table Container ========== */
+            .table-container {
+                overflow-x: auto;
+                overflow-y: auto;
+                border-radius: 10px 10px 0 0;
+                border-bottom: 3px solid var(--table-border-color);
+                position: relative;
+            }
+
+            /* Scrollbar Styling */
+            .table-container::-webkit-scrollbar {
+                height: 15px;
+                width: 15px;
+            }
+            .table-container::-webkit-scrollbar-track {
+                background: var(--scrollbar-track);
+                border-radius: 5px;
+            }
+            .table-container::-webkit-scrollbar-thumb {
+                background: var(--scrollbar-thumb);
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            /* ========== Table Styles ========== */
+            .table-container table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+                background: var(--table-bg);
+            }
+
+            /* Table Header */
+            .table-container table th {
+                text-align: start;
+                padding: 15px 0;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--table-header-text-color);
+                white-space: nowrap;
+                position: sticky;
+                top: 0;
+                background: var(--table-header-bg);
+                z-index: 2;
+                border-bottom: solid 2px #F1F2F6;
+            }
+
+            /* Sticky Columns */
+            thead th:first-child,
+            tbody td:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 3;
+                background: var(--table-cell-bg);
+            }
+
+            thead th:last-child,
+            tbody td:last-child {
+                position: sticky;
+                right: 0;
+                z-index: 3;
+                background: var(--table-cell-bg);
+            }
+
+            /* Table Body */
+            .table-container table td {
+                white-space: nowrap;
+                padding: 15px 0;
+                border-top: 2px solid var(--table-border-color);
+                color: var(--table-text-color);
+                background: var(--table-cell-bg);
+                border-bottom: solid 2px #F1F2F6;
+                font-weight: 700;
+                font-size: 15px;
+            }
+
+            /* Hover Effect */
+            .table-container table tr:hover td {
+                background: var(--table-hover-bg);
+            }
+
+            /* ========== Extras ========== */
+            .table-actions {
+                gap: 10px;
+            }
+
+            .table-actions button {
+                padding: 7px 10px;
+                border-radius: 7px;
+                cursor: pointer;
+                margin: 0 5px;
+                transition: transform 0.2s;
+            }
+            .table-actions button:hover {
+                transform: scale(1.1);
+            }
+
+            .table-actions i {
+                font-size: 20px;
+                cursor: pointer;
+                margin: 0 5px;
+                transition: transform 0.2s;
+            }
+            .table-actions i:hover {
+                transform: scale(1.1);
+            }
+        </style>
+    </head>
+    <body>
+        <nav>
+            <div class="logo">FIXED ASSET</div>
+
+            <aside class="sidebar">
+                <a href="" 
+                    ><span><i class="fa-solid fa-house-chimney"></i></span> Dashboard</a
+                >
+                <a href="" class="active"
+                    ><span><i class="fa-solid fa-boxes-stacked"></i></span> Asset Management</a
+                >
+                <a href=""
+                    ><span><i class="fa-solid fa-users"></i></span> Employees</a
+                >
+                <a href=""
+                    ><span><i class="fa-solid fa-file"></i></span> Reports & Logs</a
+                >
+                <a href=""
+                    ><span><i class="fa-solid fa-user-gear"></i></span> Settings</a
+                >
+            </aside>
+        </nav>
+        <!-- Subject to tailwind -->
+        <main class="size-full flex flex-col">
+            <header class="flex justify-between">
+                <div>
+                    <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
+                    <div class="font-bold">Asset Management</div>
+                </div>
+
+                <div>Hi, <span class="font-semibold">Iverson</span></div>
+            </header>
+
+            <br />
+
+            <div class="card content flex-1 flex flex-col">
+                <div class="table-header flex justify-between items-center">
+                    <h1 class="text-xl font-bold">All Assets</h1>
+                    <div class="flex items-center gap-3">
+                        <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-sm">ADD NEW ASSET</button>
+                        <i class="fa-solid fa-arrow-down-wide-short cursor-pointer"></i>
+                        <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
+                    </div>
+                    
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>REFERENCE ID</th>
+                                <th>CATEGORY TYPE</th>
+                                <th>CATEGORY</th>
+                                <th>BRAND</th>
+                                <th>MODEL</th>
+                                <th>STATUS</th>
+                                <th>CONDITION</th>
+                                <th>ASSIGNED TO</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>FA-000123</td>
+                                <td>
+                                    <p class="flex items-center gap-2"><img src="/desktop.png" style="width: 25px;" alt=""> <span class="font-bold">IT Equipment</span></p>
+                                </td>
+                                <td>Desktop</td>
+                                <td>Lenove</td>
+                                <td>450 G9</td>
+                                <td>
+                                    <div class="px-4 py-1 bg-[#48BB78] text-white w-fit rounded-lg">
+                                        Available
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-green-500 font-bold">GOOD</div>
+                                </td>
+                                <td>John Reyes</td>
+                                <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
+                            </tr>
+
+                            <tr>
+                                <td>FA-000123</td>
+                                <td>
+                                    <p class="flex items-center gap-2"><img src="/furniture.png" style="width: 25px;" alt=""> <span class="font-bold">Office Furniture</span></p>
+                                </td>
+                                <td>Office table</td>
+                                <td>Mandaue</td>
+                                <td>450 G9</td>
+                                <td>
+                                    <div class="px-4 py-1 bg-[#ECC94B] text-white w-fit rounded-lg">
+                                        Issued
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-sky-500 font-bold">REPAIR</div>
+                                </td>
+                                <td>John Reyes</td>
+                                <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
+                            </tr>
+
+                            <tr>
+                                <td>FA-000123</td>
+                                <td>
+                                    <p class="flex items-center gap-2"><img src="/appliances.png" style="width: 25px;" alt=""> <span class="font-bold">Appliances</span></p>
+                                </td>
+                                <td>Oven</td>
+                                <td>Misyubibi</td>
+                                <td>450 G9</td>
+                                <td>
+                                    <div class="px-4 py-1 bg-[#4299E1] text-white w-fit rounded-lg">
+                                        Transferred
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-sky-500 font-bold">REPAIR</div>
+                                </td>
+                                <td>John Reyes</td>
+                                <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
+                            </tr>
+
+                            <tr>
+                                <td>FA-000123</td>
+                                <td>
+                                    <p class="flex items-center gap-2"><img src="/speaker.png" style="width: 25px;" alt=""> <span class="font-bold">Audio Equipment</span></p>
+                                </td>
+                                <td>Speaker</td>
+                                <td>Edifier</td>
+                                <td>450 G9</td>
+                                <td>
+                                    <div class="px-4 py-1 bg-[#ED8936] text-white w-fit rounded-lg">
+                                        For Disposal
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-amber-500 font-bold">Defective</div>
+                                </td>
+                                <td>John Reyes</td>
+                                <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
+                            </tr>
+
+                            <tr>
+                                <td>FA-000123</td>
+                                <td>
+                                    <p class="flex items-center gap-2"><img src="/tools.png" style="width: 25px;" alt=""> <span class="font-bold">Tools & Misc</span></p>
+                                </td>
+                                <td>Tool Kit</td>
+                                <td>Mikasa</td>
+                                <td>450 G9</td>
+                                <td>
+                                    <div class="px-4 py-1 bg-[#2D3748] text-white w-fit rounded-lg">
+                                        Disposed
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-red-500 font-bold">REPLACE</div>
+                                </td>
+                                <td>John Reyes</td>
+                                <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
+                            </tr>
+
+                            <tr>
+                                <td>FA-000123</td>
+                                <td>
+                                    <p class="flex items-center gap-2"><img src="/kitchen.png" style="width: 25px;" alt=""> <span class="font-bold">Kitchen Equipment</span></p>
+                                </td>
+                                <td>Frying Pan</td>
+                                <td>Aginamotor</td>
+                                <td>450 G9</td>
+                                <td>
+                                    <div class="px-4 py-1 bg-[#F56565] text-white w-fit rounded-lg">
+                                        Lost
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-red-500 font-bold">REPLACE</div>
+                                </td>
+                                <td>John Reyes</td>
+                                <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container flex items-center justify-end gap-3 mt-auto">
+                    <div class="text-sm text-gray-600">
+                        Showing 1 to 10 of 50 results
+                    </div>
+
+                    <!-- Previous Button -->
+                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100">
+                        <i class="fa-solid fa-caret-left text-teal-500"></i>
+                    </button>
+
+                    <!-- Page Numbers -->
+                    <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer">1</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">2</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">3</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">4</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">5</button>
+
+                    <!-- Next Button -->
+                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 ">
+                        <i class="fa-solid fa-caret-right text-teal-500"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
