@@ -11,112 +11,24 @@
      <link rel="preconnect" href="https://fonts.googleapis.com">
      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
      <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-     <style>
-          * {  
-               padding: 0;
-               margin: 0;
-               box-sizing: border-box;
-               font-family: "Inter";
-               font-weight: 500;
-               color: #2D3748;
-          }
-
-          body{
-               display: flex;
-               gap: 50px;
-               padding: 40px 30px;
-               height: 100vh;
-               background-color: #F8F9FA;
-          }
-
-          /* SIDEBAR */
-          nav{
-               width: 280px;
-               display: flex;
-               flex-direction: column;
-               gap: 20px;
-          }
-
-          .logo{
-               border-bottom: solid 1px #c2c4c7; 
-               padding-bottom: 20px;
-          }
-
-          .sidebar{
-               display: flex;
-               flex-direction: column;
-               font-size: 14px;
-          }
-
-          .sidebar i{
-               background-color: transparent;
-          }
-
-          .sidebar a{
-               display: flex;
-               align-items: center;
-               border-radius: 15px;
-               gap: 10px;
-               padding: 10px 15px;
-               text-decoration: none;
-               color: #A0AEC0;
-               white-space: nowrap;
-          }
-          .sidebar a span{
-               padding: 7px 9px;
-               border-radius: 12px;
-               background-color: white;
-               box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-          }  
-          .sidebar a span i{
-               color: #4FD1C5;
-          }        
-
-          .sidebar a.active{
-               font-weight: 700;
-               background-color: white;
-               box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-               margin-bottom: 5px;
-               color: #2D3748;
-          }
-          .sidebar a.active span{
-               background-color: #4FD1C5;
-          }
-          .sidebar a.active span i{
-               color: white;
-          }        
-
-          .card{
-               padding: 20px;
-               border-radius: 20px;
-               background-color: white;
-               box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-          }
-
-          .main-cards{
-               display: grid;
-               gap: 30px;
-               grid-template-columns: calc(35% - 10px) calc(65% - 10px);
-               height: 100%;
-          }
-          
-     </style>
+     <link rel="stylesheet" href="global.css">
 </head>
 <body>
      <nav>
           <div class="logo">
-               FIXED ASSET
+               <p>FIXED ASSET</p>
+               <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
           </div>
 
           <aside class="sidebar">
-               <a href="" class="active"><span><i class="fa-solid fa-house-chimney"></i></span> Dashboard</a>
-               <a href=""><span><i class="fa-solid fa-boxes-stacked"></i></span> Asset Management</a>
-               <a href=""><span><i class="fa-solid fa-users"></i></span> Employees</a>
-               <a href=""><span><i class="fa-solid fa-file"></i></span> Reports & Logs</a>
-               <a href=""><span><i class="fa-solid fa-user-gear"></i></span> Settings</a>
+               <a href="" class="active"><span><i class="fa-solid fa-house-chimney"></i></span> <p>Dashboard</p></a>
+               <a href=""><span><i class="fa-solid fa-boxes-stacked"></i></span> <p>Asset Management</p></a>
+               <a href=""><span><i class="fa-solid fa-users"></i></span> <p>Employees</p></a>
+               <a href=""><span><i class="fa-solid fa-file"></i></span> <p>System Records</p></a>
+               <a href=""><span><i class="fa-solid fa-user-gear"></i></span> <p>Settings</p></a>
           </aside>
      </nav>
+
      <!-- Subject to tailwind -->
      <main class="size-full flex flex-col">
           <header class="flex justify-between">
@@ -138,8 +50,8 @@
           
           <div class="content flex-1 flex flex-col">
                <!-- Summary Cards -->
-               <div class="grid grid-cols-4 gap-7">
-                    <div class="card flex justify-between items-center">
+               <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+                    <div class="px-6 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
                          <div class="card-label">
                               <p class="text-sm text-gray-400">Total Assets</p>
                               <h1 class="text-lg font-bold">11,256</h1>
@@ -148,7 +60,7 @@
                               <i class="fa-solid fa-boxes-stacked text-white"></i>
                          </div>
                     </div>
-                    <div class="card flex justify-between items-center">
+                    <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
                          <div class="card-label">
                               <p class="text-sm text-gray-400">Assigned Assets</p>
                               <h1 class="text-lg font-bold">11,256</h1>
@@ -157,7 +69,7 @@
                               <i class="fa-solid fa-box text-white"></i>
                          </div>
                     </div>
-                    <div class="card flex justify-between items-center">
+                    <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
                          <div class="card-label">
                               <p class="text-sm text-gray-400">Total Employees</p>
                               <h1 class="text-lg font-bold">11,256</h1>
@@ -166,7 +78,7 @@
                               <i class="fa-solid fa-users text-white"></i>
                          </div>
                     </div>
-                    <div class="card flex justify-between items-center">
+                    <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
                          <div class="card-label">
                               <p class="text-sm text-gray-400">Pending Clearances</p>
                               <h1 class="text-lg font-bold">11,256</h1>
@@ -180,7 +92,7 @@
                <br>
 
                <!-- Main Cards -->
-               <div class="main-cards">
+               <div class="main-cards h-full grid-cols-1 lg:grid-cols-[calc(35%-10px)_calc(65%-10px)]">
                     <div class="card flex flex-col gap-5">
                          <div class="graph">
                               <div class="flex items-end bg-gradient-to-br from-[#0a0f2c] to-[#111c3d]  rounded-xl p-[40px] pb-[65px] font-sans h-72 w-full">
@@ -309,102 +221,110 @@
                               <div class="divide-y divide-gray-200">
                                    <div class="grid grid-cols-[1fr_2fr_0.5fr] items-center py-4">
                                         <span class="text-gray-700 text-sm font-bold">BROOKSIDE FARMS</span>
-                                        <div class="flex flex-col mr-7">
+                                        <div class="flex flex-col mr-7 hover:scale-105">
                                              <span class="text-teal-400 font-semibold text-sm">1,126 (10%)</span>
                                              <div class="w-full h-1 bg-gray-200 rounded mt-1">
                                                   <div class="h-1 bg-teal-400 rounded" style="width: 10%"></div>
                                              </div>
                                         </div>
-                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:opacity-80">VIEW</button>
+                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500">VIEW</button>
                                    </div>
 
                                    <div class="grid grid-cols-[1fr_2fr_0.5fr] items-center py-4">
                                         <span class="text-gray-700 text-sm font-bold">BROOKDALE FARMS</span>
-                                        <div class="flex flex-col mr-7">
+                                        <div class="flex flex-col mr-7 hover:scale-105">
                                              <span class="text-teal-400 font-semibold text-sm">2,476 (22%)</span>
                                              <div class="w-full h-1 bg-gray-200 rounded mt-1">
                                                   <div class="h-1 bg-teal-400 rounded" style="width: 22%"></div>
                                              </div>
                                         </div>
-                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:opacity-80">VIEW</button>
+                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500">VIEW</button>
                                    </div>
 
                                    <div class="grid grid-cols-[1fr_2fr_0.5fr] items-center py-4">
                                         <span class="text-gray-700 text-sm font-bold">POULTRYPURE FARMS</span>
-                                        <div class="flex flex-col mr-7">
+                                        <div class="flex flex-col mr-7 hover:scale-105">
                                              <span class="text-teal-400 font-semibold text-sm">563 (5%)</span>
                                              <div class="w-full h-1 bg-gray-200 rounded mt-1">
                                                   <div class="h-1 bg-teal-400 rounded" style="width: 5%"></div>
                                              </div>
                                         </div>
-                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:opacity-80">VIEW</button>
+                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500">VIEW</button>
                                    </div>
 
                                    <div class="grid grid-cols-[1fr_2fr_0.5fr] items-center py-4">
                                         <span class="text-gray-700 text-sm font-bold">RH FARMS</span>
-                                        <div class="flex flex-col mr-7">
+                                        <div class="flex flex-col mr-7 hover:scale-105">
                                              <span class="text-teal-400 font-semibold text-sm">2,026 (18%)</span>
                                              <div class="w-full h-1 bg-gray-200 rounded mt-1">
                                                   <div class="h-1 bg-teal-400 rounded" style="width: 18%"></div>
                                              </div>
                                         </div>
-                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:opacity-80">VIEW</button>
+                                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500">VIEW</button>
                                    </div>
                               </div>
                          </div>
 
-                         <div class="alert-action flex-1 grid grid-cols-2 gap-7">
-                              <div class="card overflow-hidden">
+                         <div class="alert-action flex-1 flex flex-col md:flex-row gap-7">
+                              <div class="card flex-1">
                                    <h1 class="text-lg font-bold mb-5">Alerts</h1>
                                    <div class="pl-5 flex flex-col gap-5">
                                         <!-- Alert 1 -->
                                         <div class="relative flex flex-col gap-2">
                                              <!-- icon and line -->
                                              <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
-                                                  <i class="fa-solid fa-bell text-teal-500 text-md"></i>
+                                                  <i class="fa-solid fa-bell text-teal-400 text-md"></i>
                                                   <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
                                              </div>
 
                                              <!-- text content -->
                                              <p class="text-sm text-gray-800 font-bold ml-2">5 assets are marked Lost</p>
-                                             <p class="text-xs text-gray-500 ml-2">22 DEC 7:20 PM</p>
+                                             <p class="text-xs text-gray-500 font-semibold ml-2">22 DEC 7:20 PM</p>
                                         </div>
 
                                         <!-- Alert 2 -->
                                         <div class="relative flex flex-col gap-2">
                                              <!-- icon and line -->
                                              <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
-                                                  <i class="fa-solid fa-bell text-teal-500 text-md"></i>
+                                                  <i class="fa-solid fa-bell text-teal-400 text-md"></i>
                                                   <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
                                              </div>
 
                                              <!-- text content -->
                                              <p class="text-sm text-gray-800 font-bold ml-2">12 assets are Under Repair for more than 30 days</p>
-                                             <p class="text-xs text-gray-500 ml-2">21 DEC 11:21 PM</p>
+                                             <p class="text-xs text-gray-500 font-semibold ml-2">21 DEC 11:21 PM</p>
                                         </div>
 
                                         <!-- Alert 3 -->
                                         <div class="relative flex flex-col gap-2">
                                              <!-- icon and line -->
                                              <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
-                                                  <i class="fa-solid fa-bell text-teal-500 text-md"></i>
+                                                  <i class="fa-solid fa-bell text-teal-400 text-md"></i>
                                                   <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
                                              </div>
 
                                              <!-- text content -->
                                              <p class="text-sm text-gray-800 font-bold ml-2">3 employees have unreturned items</p>
-                                             <p class="text-xs text-gray-500 ml-2">21 DEC 9:28 PM</p>
+                                             <p class="text-xs text-gray-500 font-semibold ml-2">21 DEC 9:28 PM</p>
                                         </div>
                                    </div>
                               </div>
-                              <div class="card bg-[#4FD1C5]">
+                              <div class="card bg-[#4FD1C5] flex-1 flex flex-col gap-5">
                                    <h1 class="text-lg text-white font-bold">Quick Actions</h1>
+
+                                   <div class="grid grid-cols-2 gap-4">
+                                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"> <i class="fa-solid fa-plus text-teal-400"></i> Add New Asset</button>
+                                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"> <i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee</button>
+                                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"> <i class="fa-solid fa-file-lines text-teal-400"></i> Generate Report</button>
+                                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"> <i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button>
+                                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"> <i class="fa-solid fa-file-export text-teal-400"></i> Export Assets</button>
+                                   </div>
                               </div>
                          </div>
                     </div>
                </div>
           </div>
      </main>
-
+     <script src="global.js" defer></script>
 </body>
 </html>
