@@ -12,23 +12,38 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-        <link rel="stylesheet" href="global.css">
+        <link rel="stylesheet" href="global.css" />
     </head>
     <body>
-     <nav>
-          <div class="logo">
-               <p>FIXED ASSET</p>
-               <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
-          </div>
+        <nav>
+            <div class="logo">
+                <p>FIXED ASSET</p>
+                <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
+            </div>
 
-          <aside class="sidebar">
-               <a href="" class="active"><span><i class="fa-solid fa-house-chimney"></i></span> <p>Dashboard</p></a>
-               <a href=""><span><i class="fa-solid fa-boxes-stacked"></i></span> <p>Asset Management</p></a>
-               <a href=""><span><i class="fa-solid fa-users"></i></span> <p>Employees</p></a>
-               <a href=""><span><i class="fa-solid fa-file"></i></span> <p>System Records</p></a>
-               <a href=""><span><i class="fa-solid fa-user-gear"></i></span> <p>Settings</p></a>
-          </aside>
-     </nav>
+            <aside class="sidebar">
+                <a href="/dashboard.html"
+                    ><span><i class="fa-solid fa-house-chimney"></i></span>
+                    <p>Dashboard</p></a
+                >
+                <a href="/asset-management.html" class="active"
+                    ><span><i class="fa-solid fa-boxes-stacked"></i></span>
+                    <p>Asset Management</p></a
+                >
+                <a href="/employees.html"
+                    ><span><i class="fa-solid fa-users"></i></span>
+                    <p>Employees</p></a
+                >
+                <a href="/system-records.html"
+                    ><span><i class="fa-solid fa-file"></i></span>
+                    <p>System Records</p></a
+                >
+                <a href="settings.html"
+                    ><span><i class="fa-solid fa-user-gear"></i></span>
+                    <p>Settings</p></a
+                >
+            </aside>
+        </nav>
         <!-- Subject to tailwind -->
         <main class="size-full flex flex-col">
             <header class="flex justify-between">
@@ -44,15 +59,14 @@
 
             <div class="card content flex-1 flex flex-col">
                 <div class="table-header flex justify-between items-center">
-                    <h1 class="text-xl font-bold">All Assets</h1>
+                    <h1 class="text-lg font-bold">All Assets</h1>
                     <div class="flex items-center gap-3">
-                        <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-sm hover:bg-teal-500">ADD NEW ASSET</button>
+                        <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500">ADD NEW ASSET</button>
                         <i class="fa-solid fa-arrow-down-wide-short cursor-pointer"></i>
                         <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
                     </div>
-                    
                 </div>
-                
+
                 <div class="table-container">
                     <table>
                         <thead>
@@ -72,53 +86,35 @@
                             <tr>
                                 <td>FA-000123</td>
                                 <td>
-                                    <p class="flex items-center gap-2"><img src="/desktop.png" style="width: 25px;" alt=""> <span class="font-bold">IT Equipment</span></p>
+                                    <p class="flex items-center gap-2"><img src="/desktop.png" style="width: 25px" alt="" /> <span class="font-bold">IT Equipment</span></p>
                                 </td>
                                 <td>Desktop</td>
                                 <td>Lenove</td>
                                 <td>450 G9</td>
                                 <td>
-                                    <div class="px-4 py-1 bg-[#48BB78] text-white w-fit rounded-lg">
-                                        Available
-                                    </div>
+                                    <div class="px-4 py-1 bg-[#48BB78] text-white w-fit rounded-lg">Available</div>
                                 </td>
                                 <td>
                                     <div class="text-green-500 font-bold">GOOD</div>
                                 </td>
                                 <td>John Reyes</td>
                                 <td x-data="{ open: false }" class="relative">
-                                    <i 
-                                        class="fa-solid fa-ellipsis-vertical cursor-pointer"
-                                        @click="open = !open"
-                                    ></i>
+                                    <i class="fa-solid fa-ellipsis-vertical cursor-pointer" @click="open = !open"></i>
 
                                     <!-- Dropdown -->
-                                    <div 
-                                        x-show="open"
-                                        @click.away="open = false"
-                                        x-transition
-                                        class="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-md z-40"
-                                    >
+                                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-md z-40">
                                         <ul class="text-sm text-gray-700">
                                             <li>
-                                                <button class="w-full text-left px-4 py-2 hover:bg-gray-100">
-                                                    Clone 
-                                                </button>
+                                                <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Clone</button>
                                             </li>
                                             <li>
-                                                <button class="w-full text-left px-4 py-2 hover:bg-gray-100">
-                                                    View
-                                                </button>
+                                                <button class="w-full text-left px-4 py-2 hover:bg-gray-100">View</button>
                                             </li>
                                             <li>
-                                                <button class="w-full text-left px-4 py-2 hover:bg-gray-100">
-                                                    Edit
-                                                </button>
+                                                <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Edit</button>
                                             </li>
                                             <li>
-                                                <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                                                    Delete
-                                                </button>
+                                                <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">Delete</button>
                                             </li>
                                         </ul>
                                     </div>
@@ -128,15 +124,13 @@
                             <tr>
                                 <td>FA-000123</td>
                                 <td>
-                                    <p class="flex items-center gap-2"><img src="/furniture.png" style="width: 25px;" alt=""> <span class="font-bold">Office Furniture</span></p>
+                                    <p class="flex items-center gap-2"><img src="/furniture.png" style="width: 25px" alt="" /> <span class="font-bold">Office Furniture</span></p>
                                 </td>
                                 <td>Office table</td>
                                 <td>Mandaue</td>
                                 <td>450 G9</td>
                                 <td>
-                                    <div class="px-4 py-1 bg-[#ECC94B] text-white w-fit rounded-lg">
-                                        Issued
-                                    </div>
+                                    <div class="px-4 py-1 bg-[#ECC94B] text-white w-fit rounded-lg">Issued</div>
                                 </td>
                                 <td>
                                     <div class="text-sky-500 font-bold">REPAIR</div>
@@ -148,15 +142,13 @@
                             <tr>
                                 <td>FA-000123</td>
                                 <td>
-                                    <p class="flex items-center gap-2"><img src="/appliances.png" style="width: 25px;" alt=""> <span class="font-bold">Appliances</span></p>
+                                    <p class="flex items-center gap-2"><img src="/appliances.png" style="width: 25px" alt="" /> <span class="font-bold">Appliances</span></p>
                                 </td>
                                 <td>Oven</td>
                                 <td>Misyubibi</td>
                                 <td>450 G9</td>
                                 <td>
-                                    <div class="px-4 py-1 bg-[#4299E1] text-white w-fit rounded-lg">
-                                        Transferred
-                                    </div>
+                                    <div class="px-4 py-1 bg-[#4299E1] text-white w-fit rounded-lg">Transferred</div>
                                 </td>
                                 <td>
                                     <div class="text-sky-500 font-bold">REPAIR</div>
@@ -168,18 +160,16 @@
                             <tr>
                                 <td>FA-000123</td>
                                 <td>
-                                    <p class="flex items-center gap-2"><img src="/speaker.png" style="width: 25px;" alt=""> <span class="font-bold">Audio Equipment</span></p>
+                                    <p class="flex items-center gap-2"><img src="/speaker.png" style="width: 25px" alt="" /> <span class="font-bold">Audio Equipment</span></p>
                                 </td>
                                 <td>Speaker</td>
                                 <td>Edifier</td>
                                 <td>450 G9</td>
                                 <td>
-                                    <div class="px-4 py-1 bg-[#ED8936] text-white w-fit rounded-lg">
-                                        For Disposal
-                                    </div>
+                                    <div class="px-4 py-1 bg-[#ED8936] text-white w-fit rounded-lg">For Disposal</div>
                                 </td>
                                 <td>
-                                    <div class="text-amber-500 font-bold">Defective</div>
+                                    <div class="text-amber-500 font-bold">DEFECTIVE</div>
                                 </td>
                                 <td>John Reyes</td>
                                 <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
@@ -188,15 +178,13 @@
                             <tr>
                                 <td>FA-000123</td>
                                 <td>
-                                    <p class="flex items-center gap-2"><img src="/tools.png" style="width: 25px;" alt=""> <span class="font-bold">Tools & Misc</span></p>
+                                    <p class="flex items-center gap-2"><img src="/tools.png" style="width: 25px" alt="" /> <span class="font-bold">Tools & Misc</span></p>
                                 </td>
                                 <td>Tool Kit</td>
                                 <td>Mikasa</td>
                                 <td>450 G9</td>
                                 <td>
-                                    <div class="px-4 py-1 bg-[#2D3748] text-white w-fit rounded-lg">
-                                        Disposed
-                                    </div>
+                                    <div class="px-4 py-1 bg-[#2D3748] text-white w-fit rounded-lg">Disposed</div>
                                 </td>
                                 <td>
                                     <div class="text-red-500 font-bold">REPLACE</div>
@@ -208,15 +196,13 @@
                             <tr>
                                 <td>FA-000123</td>
                                 <td>
-                                    <p class="flex items-center gap-2"><img src="/kitchen.png" style="width: 25px;" alt=""> <span class="font-bold">Kitchen Equipment</span></p>
+                                    <p class="flex items-center gap-2"><img src="/kitchen.png" style="width: 25px" alt="" /> <span class="font-bold">Kitchen Equipment</span></p>
                                 </td>
                                 <td>Frying Pan</td>
                                 <td>Aginamotor</td>
                                 <td>450 G9</td>
                                 <td>
-                                    <div class="px-4 py-1 bg-[#F56565] text-white w-fit rounded-lg">
-                                        Lost
-                                    </div>
+                                    <div class="px-4 py-1 bg-[#F56565] text-white w-fit rounded-lg">Lost</div>
                                 </td>
                                 <td>
                                     <div class="text-red-500 font-bold">REPLACE</div>
@@ -224,30 +210,27 @@
                                 <td>John Reyes</td>
                                 <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
                             </tr>
-                            
                         </tbody>
                     </table>
                 </div>
 
                 <div class="pagination-container flex items-center justify-end gap-3 mt-auto">
-                    <div class="text-sm text-gray-600">
-                        Showing 1 to 10 of 50 results
-                    </div>
+                    <div class="text-xs text-gray-400">Showing 1 to 10 of 50 results</div>
 
                     <!-- Previous Button -->
-                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100">
+                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
                         <i class="fa-solid fa-caret-left text-teal-500"></i>
                     </button>
 
                     <!-- Page Numbers -->
-                    <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer">1</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">2</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">3</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">4</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">5</button>
+                    <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">1</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">2</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">3</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">4</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">5</button>
 
                     <!-- Next Button -->
-                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 ">
+                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
                         <i class="fa-solid fa-caret-right text-teal-500"></i>
                     </button>
                 </div>
@@ -255,5 +238,5 @@
         </main>
     </body>
     <script src="global.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </html>

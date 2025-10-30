@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Document</title>
+     <script src="https://cdn.tailwindcss.com"></script>
+     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+     <!-- Confirmation Modal (Pre-configured Type) -->
+<div 
+    x-data="{
+        showModal: false,
+        modalTarget: '',
+        modalConfig: {
+            submit: {
+                header: 'Submit Request',
+                message: 'Are you sure you want to submit this request for processing?',
+            },
+            resubmit: {
+                header: 'Resubmit Request',
+                message: 'Are you sure you want to resubmit this request after making the necessary corrections?',
+            },
+            delete: {
+                header: 'Delete Item',
+                message: 'Are you sure you want to delete this item? This action cannot be undone.',
+            },
+        },
+
+        openModal(type) {
+            this.modalTarget = type
+            this.showModal = true
+        },
+
+        closeModal() {
+            this.showModal = false
+        },
+    }"
+    class="relative"
+>
+    <!-- Example Triggers -->
+    <div class="flex gap-3">
+        <button @click="openModal('submit')" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">
+            Submit Request
+        </button>
+        <button @click="openModal('resubmit')" class="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800">
+            Resubmit Request
+        </button>
+        <button @click="openModal('delete')" class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">
+            Delete
+        </button>
+    </div>
+
+    <!-- Backdrop -->
+    <div 
+        x-show="showModal"
+        x-transition.opacity
+        class="fixed inset-0 bg-black/30 z-40"
+    ></div>
+
+    <!-- Modal -->
+    <div 
+        x-show="showModal"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+        class="fixed inset-0 flex items-center justify-center z-50"
+    >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-[22rem]">
+            <!-- Header -->
+            <h2 class="text-lg font-semibold mb-3" 
+                x-text="modalConfig[modalTarget]?.header">
+            </h2>
+
+            <!-- Message -->
+            <p class="text-gray-600 mb-6" 
+                x-text="modalConfig[modalTarget]?.message">
+            </p>
+            
+            <!-- Actions -->
+            <div class="flex justify-end gap-3">
+                <button 
+                    @click="closeModal()" 
+                    class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+                >
+                    Cancel
+                </button>
+                <button 
+                    @click="closeModal()" 
+                    class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800"
+                >
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

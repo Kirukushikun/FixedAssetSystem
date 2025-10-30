@@ -12,243 +12,21 @@
      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
      <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-          <style>
-               * {
-                    padding: 0;
-                    margin: 0;
-                    box-sizing: border-box;
-                    font-family: "Inter";
-                    font-weight: 500;
-                    color: #2d3748;
-               }
-
-               body {
-                    display: flex;
-                    gap: 50px;
-                    padding: 40px 30px;
-                    height: 100vh;
-                    background-color: #f8f9fa;
-               }
-
-               /* SIDEBAR */
-               nav {
-                    width: 280px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 20px;
-               }
-
-               .logo {
-                    border-bottom: solid 1px #c2c4c7;
-                    padding-bottom: 20px;
-               }
-
-               .sidebar {
-                    display: flex;
-                    flex-direction: column;
-                    font-size: 14px;
-               }
-
-               .sidebar i {
-                    background-color: transparent;
-               }
-
-               .sidebar a {
-                    display: flex;
-                    align-items: center;
-                    border-radius: 15px;
-                    gap: 10px;
-                    padding: 10px 15px;
-                    text-decoration: none;
-                    color: #a0aec0;
-                    white-space: nowrap;
-               }
-               .sidebar a span {
-                    padding: 7px 9px;
-                    border-radius: 12px;
-                    background-color: white;
-                    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-               }
-               .sidebar a span i {
-                    color: #4fd1c5;
-               }
-
-               .sidebar a.active {
-                    font-weight: 700;
-                    background-color: white;
-                    box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-                    margin-bottom: 5px;
-                    color: #2d3748;
-               }
-               .sidebar a.active span {
-                    background-color: #4fd1c5;
-               }
-               .sidebar a.active span i {
-                    color: white;
-               }
-
-               .card {
-                    padding: 20px;
-                    border-radius: 20px;
-                    background-color: white;
-                    box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-               }
-
-               .main-cards {
-                    display: grid;
-                    gap: 20px;
-                    grid-template-columns: calc(35% - 10px) calc(65% - 10px);
-                    height: 100%;
-               }
-
-               /* ========== Global Theme Variables ========== */
-               :root {
-                    --text-color: #1c1c1c;
-                    --body-color: #f1f2f6;
-                    --container-color: white;
-
-                    /* Table Colors */
-                    --table-bg: var(--color-gray-50);
-                    --table-header-bg: var(--color-gray-100);
-                    --table-cell-bg: #ffffff;
-                    --table-hover-bg: var(--color-gray-50);
-                    --table-border-color: var(--color-gray-200);
-                    --table-text-color: var(--color-gray-900);
-                    --table-header-text-color: var(--color-gray-600);
-
-                    /* Scrollbar */
-                    --scrollbar-track: var(--color-gray-50);
-                    --scrollbar-thumb: var(--color-gray-300);
-               }
-
-               /* ========== Table Container ========== */
-               .table-container {
-                    overflow-x: auto;
-                    overflow-y: auto;
-                    border-radius: 10px 10px 0 0;
-                    border-bottom: 3px solid var(--table-border-color);
-                    position: relative;
-               }
-
-               /* Scrollbar Styling */
-               .table-container::-webkit-scrollbar {
-                    height: 15px;
-                    width: 15px;
-               }
-               .table-container::-webkit-scrollbar-track {
-                    background: var(--scrollbar-track);
-                    border-radius: 5px;
-               }
-               .table-container::-webkit-scrollbar-thumb {
-                    background: var(--scrollbar-thumb);
-                    border-radius: 5px;
-                    cursor: pointer;
-               }
-
-               /* ========== Table Styles ========== */
-               .table-container table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    text-align: left;
-                    background: var(--table-bg);
-               }
-
-               /* Table Header */
-               .table-container table th {
-                    text-align: start;
-                    padding: 15px 0;
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: var(--table-header-text-color);
-                    white-space: nowrap;
-                    position: sticky;
-                    top: 0;
-                    background: var(--table-header-bg);
-                    z-index: 2;
-                    border-bottom: solid 2px #f1f2f6;
-               }
-
-               /* Sticky Columns */
-               thead th:first-child,
-               tbody td:first-child {
-                    position: sticky;
-                    left: 0;
-                    z-index: 3;
-                    background: var(--table-cell-bg);
-               }
-
-               thead th:last-child,
-               tbody td:last-child {
-                    position: sticky;
-                    right: 0;
-                    z-index: 3;
-                    background: var(--table-cell-bg);
-               }
-
-               /* Table Body */
-               .table-container table td {
-                    white-space: nowrap;
-                    padding: 15px 0;
-                    border-top: 2px solid var(--table-border-color);
-                    color: var(--table-text-color);
-                    background: var(--table-cell-bg);
-                    border-bottom: solid 2px #f1f2f6;
-                    font-weight: 700;
-                    font-size: 15px;
-               }
-
-               /* Hover Effect */
-               .table-container table tr:hover td {
-                    background: var(--table-hover-bg);
-               }
-
-               /* ========== Extras ========== */
-               .table-actions {
-                    gap: 10px;
-               }
-
-               .table-actions button {
-                    padding: 7px 10px;
-                    border-radius: 7px;
-                    cursor: pointer;
-                    margin: 0 5px;
-                    transition: transform 0.2s;
-               }
-               .table-actions button:hover {
-                    transform: scale(1.1);
-               }
-
-               .table-actions i {
-                    font-size: 20px;
-                    cursor: pointer;
-                    margin: 0 5px;
-                    transition: transform 0.2s;
-               }
-               .table-actions i:hover {
-                    transform: scale(1.1);
-               }
-          </style>
+     <link rel="stylesheet" href="global.css">
 </head>
 <body>
      <nav>
-          <div class="logo">FIXED ASSET</div>
+          <div class="logo">
+               <p>FIXED ASSET</p>
+               <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
+          </div>
 
           <aside class="sidebar">
-               <a href=""
-                    ><span><i class="fa-solid fa-house-chimney"></i></span> Dashboard</a
-               >
-               <a href=""
-                    ><span><i class="fa-solid fa-boxes-stacked"></i></span> Asset Management</a
-               >
-               <a href="" 
-                    ><span><i class="fa-solid fa-users"></i></span> Employees</a
-               >
-               <a href="" 
-                    ><span><i class="fa-solid fa-file"></i></span> System Records</a
-               >
-               <a href="" class="active"
-                    ><span><i class="fa-solid fa-user-gear"></i></span> Settings</a
-               >
+               <a href="/dashboard.html"><span><i class="fa-solid fa-house-chimney"></i></span> <p>Dashboard</p></a>
+               <a href="/asset-management.html"><span><i class="fa-solid fa-boxes-stacked"></i></span> <p>Asset Management</p></a>
+               <a href="/employees.html"><span><i class="fa-solid fa-users"></i></span> <p>Employees</p></a>
+               <a href="/system-records.html"><span><i class="fa-solid fa-file"></i></span> <p>System Records</p></a>
+               <a href="settings.html" class="active"><span><i class="fa-solid fa-user-gear"></i></span> <p>Settings</p></a>
           </aside>
      </nav>
      <!-- Subject to tailwind -->
@@ -266,8 +44,8 @@
                <div class="flex items-center justify-between mb-2">
                     <h1 class="text-lg font-bold">Profile Information</h1>
                     <div class="flex gap-3">
-                         <button class="px-4 py-2 border border-2 border-gray-400 rounded-lg text-gray-500 font-semibold">Change Password</button>
-                         <button class="px-4 py-2 border border-2 border-gray-400 rounded-lg text-gray-500 font-semibold">Edit</button>
+                         <button class="px-5 py-2 bg-red-500 rounded-lg font-bold text-white text-xs hover:bg-red-600">DELETE</button>
+                         <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600">EDIT</button>
                     </div>
                </div>
                
@@ -281,66 +59,101 @@
 
           <div class="grid grid-cols-3 gap-5">
                <div class="card flex flex-col gap-4">
-                    <h1 class="text-lg font-bold">Farms</h1>
+                    <h1 class="text-lg font-bold flex justify-between">Farms <i class="fa-solid fa-plus text-teal-400 cursor-pointer hover:scale-125"></i></h1>
                     <div class="flex items-center justify-between">
                          <p>BFC</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>BFC</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>BFC</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>BFC</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
-                    <button class="bg-[#4fd1c5] rounded-lg p-1 text-white text-lg">+</button>
                </div>
                <div class="card flex flex-col gap-4">
-                    <h1 class="text-lg font-bold">Division/Department</h1>
+                    <h1 class="text-lg font-bold flex justify-between">Division/Department <i class="fa-solid fa-plus text-teal-400 cursor-pointer hover:scale-125"></i></h1>
                     <div class="flex items-center justify-between">
                          <p>IT & Security</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>Purchasing</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>Human Resources</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>Sales & Marketing</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
-                    <button class="bg-[#4fd1c5] rounded-lg p-1 text-white text-lg">+</button>
                </div>
                <div class="card flex flex-col gap-4">
-                    <h1 class="text-lg font-bold">Cetegory</h1>
+                    <h1 class="text-lg font-bold flex justify-between">Category <i class="fa-solid fa-plus text-teal-400 cursor-pointer hover:scale-125"></i></h1>
                     <div class="flex items-center justify-between">
                          <p>Desktop</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>Laptop</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>Chairs</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                          <p>Table</p>
-                         <button class="text-[#4299E1]">Delete</button>
+                         <div class="flex gap-3">
+                              <button class="text-red-500 hover:scale-105">Delete</button>
+                              <button class="text-blue-500 hover:scale-105">Edit</button>
+                         </div>
                     </div>
-                    <button class="bg-[#4fd1c5] rounded-lg p-1 text-white text-lg">+</button>
                </div>
           </div>
      </main>
+     <script src="global.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

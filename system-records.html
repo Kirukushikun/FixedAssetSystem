@@ -1,276 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-     <meta charset="UTF-8" />
-     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-     <title>Document</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
 
-     <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
 
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-     <link rel="preconnect" href="https://fonts.googleapis.com" />
-     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-          <style>
-               * {
-                    padding: 0;
-                    margin: 0;
-                    box-sizing: border-box;
-                    font-family: "Inter";
-                    font-weight: 500;
-                    color: #2d3748;
-               }
+        <link rel="stylesheet" href="global.css" />
+    </head>
+    <body>
+        <nav>
+            <div class="logo">
+                <p>FIXED ASSET</p>
+                <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
+            </div>
 
-               body {
-                    display: flex;
-                    gap: 50px;
-                    padding: 40px 30px;
-                    height: 100vh;
-                    background-color: #f8f9fa;
-               }
-
-               /* SIDEBAR */
-               nav {
-                    width: 280px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 20px;
-               }
-
-               .logo {
-                    border-bottom: solid 1px #c2c4c7;
-                    padding-bottom: 20px;
-               }
-
-               .sidebar {
-                    display: flex;
-                    flex-direction: column;
-                    font-size: 14px;
-               }
-
-               .sidebar i {
-                    background-color: transparent;
-               }
-
-               .sidebar a {
-                    display: flex;
-                    align-items: center;
-                    border-radius: 15px;
-                    gap: 10px;
-                    padding: 10px 15px;
-                    text-decoration: none;
-                    color: #a0aec0;
-                    white-space: nowrap;
-               }
-               .sidebar a span {
-                    padding: 7px 9px;
-                    border-radius: 12px;
-                    background-color: white;
-                    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-               }
-               .sidebar a span i {
-                    color: #4fd1c5;
-               }
-
-               .sidebar a.active {
-                    font-weight: 700;
-                    background-color: white;
-                    box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-                    margin-bottom: 5px;
-                    color: #2d3748;
-               }
-               .sidebar a.active span {
-                    background-color: #4fd1c5;
-               }
-               .sidebar a.active span i {
-                    color: white;
-               }
-
-               .card {
-                    padding: 20px;
-                    border-radius: 20px;
-                    background-color: white;
-                    box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-               }
-
-               .main-cards {
-                    display: grid;
-                    gap: 20px;
-                    grid-template-columns: calc(35% - 10px) calc(65% - 10px);
-                    height: 100%;
-               }
-
-               /* ========== Global Theme Variables ========== */
-               :root {
-                    --text-color: #1c1c1c;
-                    --body-color: #f1f2f6;
-                    --container-color: white;
-
-                    /* Table Colors */
-                    --table-bg: var(--color-gray-50);
-                    --table-header-bg: var(--color-gray-100);
-                    --table-cell-bg: #ffffff;
-                    --table-hover-bg: var(--color-gray-50);
-                    --table-border-color: var(--color-gray-200);
-                    --table-text-color: var(--color-gray-900);
-                    --table-header-text-color: var(--color-gray-600);
-
-                    /* Scrollbar */
-                    --scrollbar-track: var(--color-gray-50);
-                    --scrollbar-thumb: var(--color-gray-300);
-               }
-
-               /* ========== Table Container ========== */
-               .table-container {
-                    overflow-x: auto;
-                    overflow-y: auto;
-                    border-radius: 10px 10px 0 0;
-                    border-bottom: 3px solid var(--table-border-color);
-                    position: relative;
-               }
-
-               /* Scrollbar Styling */
-               .table-container::-webkit-scrollbar {
-                    height: 15px;
-                    width: 15px;
-               }
-               .table-container::-webkit-scrollbar-track {
-                    background: var(--scrollbar-track);
-                    border-radius: 5px;
-               }
-               .table-container::-webkit-scrollbar-thumb {
-                    background: var(--scrollbar-thumb);
-                    border-radius: 5px;
-                    cursor: pointer;
-               }
-
-               /* ========== Table Styles ========== */
-               .table-container table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    text-align: left;
-                    background: var(--table-bg);
-               }
-
-               /* Table Header */
-               .table-container table th {
-                    text-align: start;
-                    padding: 15px 0;
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: var(--table-header-text-color);
-                    white-space: nowrap;
-                    position: sticky;
-                    top: 0;
-                    background: var(--table-header-bg);
-                    z-index: 2;
-                    border-bottom: solid 2px #f1f2f6;
-               }
-
-               /* Sticky Columns */
-               thead th:first-child,
-               tbody td:first-child {
-                    position: sticky;
-                    left: 0;
-                    z-index: 3;
-                    background: var(--table-cell-bg);
-               }
-
-               thead th:last-child,
-               tbody td:last-child {
-                    position: sticky;
-                    right: 0;
-                    z-index: 3;
-                    background: var(--table-cell-bg);
-               }
-
-               /* Table Body */
-               .table-container table td {
-                    white-space: nowrap;
-                    padding: 15px 0;
-                    border-top: 2px solid var(--table-border-color);
-                    color: var(--table-text-color);
-                    background: var(--table-cell-bg);
-                    border-bottom: solid 2px #f1f2f6;
-                    font-weight: 700;
-                    font-size: 15px;
-               }
-
-               /* Hover Effect */
-               .table-container table tr:hover td {
-                    background: var(--table-hover-bg);
-               }
-
-               /* ========== Extras ========== */
-               .table-actions {
-                    gap: 10px;
-               }
-
-               .table-actions button {
-                    padding: 7px 10px;
-                    border-radius: 7px;
-                    cursor: pointer;
-                    margin: 0 5px;
-                    transition: transform 0.2s;
-               }
-               .table-actions button:hover {
-                    transform: scale(1.1);
-               }
-
-               .table-actions i {
-                    font-size: 20px;
-                    cursor: pointer;
-                    margin: 0 5px;
-                    transition: transform 0.2s;
-               }
-               .table-actions i:hover {
-                    transform: scale(1.1);
-               }
-          </style>
-</head>
-<body>
-     <nav>
-          <div class="logo">
-               <p>FIXED ASSET</p>
-               <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
-          </div>
-
-          <aside class="sidebar">
-               <a href="" class="active"><span><i class="fa-solid fa-house-chimney"></i></span> <p>Dashboard</p></a>
-               <a href=""><span><i class="fa-solid fa-boxes-stacked"></i></span> <p>Asset Management</p></a>
-               <a href=""><span><i class="fa-solid fa-users"></i></span> <p>Employees</p></a>
-               <a href=""><span><i class="fa-solid fa-file"></i></span> <p>System Records</p></a>
-               <a href=""><span><i class="fa-solid fa-user-gear"></i></span> <p>Settings</p></a>
-          </aside>
-     </nav>
-     <!-- Subject to tailwind -->
-     <main class="size-full flex flex-col">
-          <header class="flex justify-between">
-               <div>
+            <aside class="sidebar">
+                <a href="/dashboard.html"
+                    ><span><i class="fa-solid fa-house-chimney"></i></span>
+                    <p>Dashboard</p></a
+                >
+                <a href="/asset-management.html"
+                    ><span><i class="fa-solid fa-boxes-stacked"></i></span>
+                    <p>Asset Management</p></a
+                >
+                <a href="/employees.html"
+                    ><span><i class="fa-solid fa-users"></i></span>
+                    <p>Employees</p></a
+                >
+                <a href="/system-records.html" class="active"
+                    ><span><i class="fa-solid fa-file"></i></span>
+                    <p>System Records</p></a
+                >
+                <a href="settings.html"
+                    ><span><i class="fa-solid fa-user-gear"></i></span>
+                    <p>Settings</p></a
+                >
+            </aside>
+        </nav>
+        <!-- Subject to tailwind -->
+        <main class="size-full flex flex-col">
+            <header class="flex justify-between">
+                <div>
                     <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
                     <div class="font-bold">System Records</div>
-               </div>
+                </div>
 
-               <div>Hi, <span class="font-semibold">Iverson</span></div>
-          </header>
+                <div>Hi, <span class="font-semibold">Iverson</span></div>
+            </header>
 
-          <br />
+            <br />
 
-          <div class="flex space-x-1 rounded-t-lg overflow-hidden">
-               <button class="px-5 py-2 bg-white text-gray-800 font-medium rounded-t-lg border border-b-0 border-gray-200">
-                    Audit Trail
-               </button>
-               <button class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium border border-transparent rounded-t-lg">
-                    User Logs
-               </button>
-               <button class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium border border-transparent rounded-t-lg">
-                    Trash
-               </button>
-          </div>
+            <div class="flex space-x-1 rounded-t-lg overflow-hidden" id="tabs">
+                <button data-tab="audit" class="tab-btn active px-5 py-2 bg-white text-gray-800 font-medium rounded-t-lg border border-b-0 border-gray-200">Audit Trail</button>
+                <button data-tab="logs" class="tab-btn px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium border border-transparent rounded-t-lg">User Logs</button>
+                <button data-tab="trash" class="tab-btn px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium border border-transparent rounded-t-lg">Trash</button>
+            </div>
 
-          <div class="card content flex-1 flex flex-col !rounded-tl-none">
-               <!-- <div class="table-header flex justify-between items-center">
+            <div class="p-7 bg-white content flex-1 flex flex-col rounded-lg !rounded-tl-none">
+                <!-- <div class="table-header flex justify-between items-center">
                     <h1 class="text-xl font-bold">System Records</h1>
                     <div class="flex items-center gap-3">
                          <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-sm">ADD NEW EMPLOYEE</button>
@@ -279,50 +73,66 @@
                     </div>
                </div> -->
 
-               <div class="table-container">
-                    <table>
-                         <thead>
-                              <tr>
-                                   <th>USER ID</th>
-                                   <th>USER NAME</th>
-                                   <th>ACTION</th>
-                                   <th>DATE</th>
-                                   <th>TIME</th>
-                              </tr>
-                         </thead>
-                         <tbody>
-                              <tr>
-                                   <td>#1553 <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
-                                   <td>Chris Bacon</td>
-                                   <td>Asset Created</td>
-                                   <td>Oct 31, 2025</td>
-                                   <td>12:00 NN</td>
-                              </tr>
-                         </tbody>
-                    </table>
-               </div>
+                <!-- TAB CONTENTS -->
+                <div class="bg-white content flex-1 flex flex-col rounded-lg !rounded-tl-none">
+                    <!-- AUDIT TRAIL -->
+                    <div class="table-container tab-content" id="audit">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>USER ID</th>
+                                    <th>USER NAME</th>
+                                    <th>ACTION</th>
+                                    <th>DATE</th>
+                                    <th>TIME</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#1553 <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
+                                    <td>Chris Bacon</td>
+                                    <td>Asset Created</td>
+                                    <td>Oct 31, 2025</td>
+                                    <td>12:00 NN</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-               <div class="pagination-container flex items-center justify-end gap-3 mt-auto">
-                    <div class="text-sm text-gray-600">Showing 1 to 10 of 50 results</div>
+                    <!-- USER LOGS -->
+                    <div class="tab-content hidden" id="logs">
+                        <p class="text-gray-500">This is the <b>User Logs</b> section.</p>
+                    </div>
+
+                    <!-- TRASH -->
+                    <div class="tab-content hidden" id="trash">
+                        <p class="text-gray-500">This is the <b>Trash</b> section.</p>
+                    </div>
+                </div>
+
+                <div class="pagination-container flex items-center justify-end gap-3 mt-auto">
+                    <div class="text-xs text-gray-400">Showing 1 to 10 of 50 results</div>
 
                     <!-- Previous Button -->
-                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100">
-                         <i class="fa-solid fa-caret-left text-teal-500"></i>
+                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
+                        <i class="fa-solid fa-caret-left text-teal-500"></i>
                     </button>
 
                     <!-- Page Numbers -->
-                    <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer">1</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">2</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">3</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">4</button>
-                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer">5</button>
+                    <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">1</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">2</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">3</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">4</button>
+                    <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">5</button>
 
                     <!-- Next Button -->
-                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100">
-                         <i class="fa-solid fa-caret-right text-teal-500"></i>
+                    <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
+                        <i class="fa-solid fa-caret-right text-teal-500"></i>
                     </button>
-               </div>
-          </div>
-     </main>
-</body>
+                </div>
+            </div>
+        </main>
+        <script src="global.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </body>
 </html>
