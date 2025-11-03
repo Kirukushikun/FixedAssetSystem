@@ -11,7 +11,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
+        
         <link rel="stylesheet" href="global.css" />
     </head>
     <body>
@@ -57,11 +57,14 @@
 
             <br />
 
-            <div class="card content flex-1 flex flex-col">
+            <div class="card content flex-1 flex flex-col" x-data="{
+                addAsset: false,
+                openCategory: 'it'
+            }">
                 <div class="table-header flex justify-between items-center">
                     <h1 class="text-lg font-bold">All Assets</h1>
                     <div class="flex items-center gap-3">
-                        <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500">ADD NEW ASSET</button>
+                        <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="addAsset = true">ADD NEW ASSET</button>
                         <i class="fa-solid fa-arrow-down-wide-short cursor-pointer"></i>
                         <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
                     </div>
@@ -234,9 +237,229 @@
                         <i class="fa-solid fa-caret-right text-teal-500"></i>
                     </button>
                 </div>
+
+                <!-- Backdrop -->
+                <div 
+                    x-show="addAsset"
+                    x-transition.opacity
+                    class="fixed inset-0 bg-black/30 z-40"
+                ></div>
+
+                <!-- Modal -->
+                <div 
+                    x-show="addAsset"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-90"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-90"
+                    class="fixed inset-0 flex items-center justify-center z-50"
+                >
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-[22rem]">
+                        <!-- Header -->
+                        <h2 class="text-center font-semibold text-lg mb-1">Select</h2>
+                        <h3 class="text-center font-bold text-xl mb-6">Category Type</h3>
+
+                        <!-- Category List -->
+                        <div class="space-y-3">
+                            <!-- IT Equipment -->
+                            <div>
+                                <button 
+                                    class="flex items-center justify-between w-full font-semibold"
+                                    @click="openCategory === 'it' ? openCategory = '' : openCategory = 'it'"
+                                >
+                                    <span><i class="fa-solid fa-computer mr-2"></i>IT Equipment</span>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-200"
+                                    :class="openCategory === 'it' ? 'rotate-180' : ''"></i>
+                                </button>
+
+                                <div x-show="openCategory === 'it'" x-transition class="ml-6 mt-2 space-y-1 text-sm text-gray-600">
+                                    <template x-for="item in ['Desktop','Laptop','Printer','Router','Photocopy Machine','Digital Camera']">
+                                        <div class="flex justify-between items-center cursor-pointer hover:text-gray-800">
+                                            <span x-text="item"></span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Office Furniture -->
+                            <div>
+                                <button 
+                                    class="flex items-center justify-between w-full font-semibold"
+                                    @click="openCategory === 'office' ? openCategory = '' : openCategory = 'office'"
+                                >
+                                    <span><i class="fa-solid fa-chair-office mr-2"></i>Office Furniture</span>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-200"
+                                    :class="openCategory === 'office' ? 'rotate-180' : ''"></i>
+                                </button>
+                            </div>
+
+                            <!-- Appliances -->
+                            <div>
+                                <button 
+                                    class="flex items-center justify-between w-full font-semibold"
+                                    @click="openCategory === 'appliances' ? openCategory = '' : openCategory = 'appliances'"
+                                >
+                                    <span><i class="fa-solid fa-tv mr-2"></i>Appliances</span>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-200"
+                                    :class="openCategory === 'appliances' ? 'rotate-180' : ''"></i>
+                                </button>
+                            </div>
+
+                            <!-- Audio Equipment -->
+                            <div>
+                                <button 
+                                    class="flex items-center justify-between w-full font-semibold"
+                                    @click="openCategory === 'audio' ? openCategory = '' : openCategory = 'audio'"
+                                >
+                                    <span><i class="fa-solid fa-headphones mr-2"></i>Audio Equipment</span>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-200"
+                                    :class="openCategory === 'audio' ? 'rotate-180' : ''"></i>
+                                </button>
+                            </div>
+
+                            <!-- Tools & Misc -->
+                            <div>
+                                <button 
+                                    class="flex items-center justify-between w-full font-semibold"
+                                    @click="openCategory === 'tools' ? openCategory = '' : openCategory = 'tools'"
+                                >
+                                    <span><i class="fa-solid fa-screwdriver-wrench mr-2"></i>Tools & Misc</span>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-200"
+                                    :class="openCategory === 'tools' ? 'rotate-180' : ''"></i>
+                                </button>
+                            </div>
+
+                            <!-- Kitchen Equipment -->
+                            <div>
+                                <button 
+                                    class="flex items-center justify-between w-full font-semibold"
+                                    @click="openCategory === 'kitchen' ? openCategory = '' : openCategory = 'kitchen'"
+                                >
+                                    <span><i class="fa-solid fa-utensils mr-2"></i>Kitchen Equipment</span>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-200"
+                                    :class="openCategory === 'kitchen' ? 'rotate-180' : ''"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
+        
     </body>
     <script src="global.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+//         <!-- Modal Background -->
+// <div 
+//     x-data="{ showModal: true, openCategory: 'it' }" 
+//     x-show="showModal"
+//     class="fixed inset-0 flex items-center justify-center bg-gray-800/50"
+// >
+//     <!-- Modal Card -->
+//     <div 
+//         class="bg-white rounded-2xl shadow-xl w-96 p-6"
+//         @click.away="showModal = false"
+//         x-transition
+//     >
+//         <!-- Header -->
+//         <h2 class="text-center font-semibold text-lg mb-1">Select</h2>
+//         <h3 class="text-center font-bold text-xl mb-6">Category Type</h3>
+
+//         <!-- Category List -->
+//         <div class="space-y-3">
+//             <!-- IT Equipment -->
+//             <div>
+//                 <button 
+//                     class="flex items-center justify-between w-full font-semibold"
+//                     @click="openCategory === 'it' ? openCategory = '' : openCategory = 'it'"
+//                 >
+//                     <span><i class="fa-solid fa-computer mr-2"></i>IT Equipment</span>
+//                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
+//                        :class="openCategory === 'it' ? 'rotate-180' : ''"></i>
+//                 </button>
+
+//                 <div x-show="openCategory === 'it'" x-transition class="ml-6 mt-2 space-y-1 text-sm text-gray-600">
+//                     <template x-for="item in ['Desktop','Laptop','Printer','Router','Photocopy Machine','Digital Camera']">
+//                         <div class="flex justify-between items-center cursor-pointer hover:text-gray-800">
+//                             <span x-text="item"></span>
+//                             <i class="fa-solid fa-arrow-right"></i>
+//                         </div>
+//                     </template>
+//                 </div>
+//             </div>
+
+//             <!-- Office Furniture -->
+//             <div>
+//                 <button 
+//                     class="flex items-center justify-between w-full font-semibold"
+//                     @click="openCategory === 'office' ? openCategory = '' : openCategory = 'office'"
+//                 >
+//                     <span><i class="fa-solid fa-chair-office mr-2"></i>Office Furniture</span>
+//                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
+//                        :class="openCategory === 'office' ? 'rotate-180' : ''"></i>
+//                 </button>
+//             </div>
+
+//             <!-- Appliances -->
+//             <div>
+//                 <button 
+//                     class="flex items-center justify-between w-full font-semibold"
+//                     @click="openCategory === 'appliances' ? openCategory = '' : openCategory = 'appliances'"
+//                 >
+//                     <span><i class="fa-solid fa-tv mr-2"></i>Appliances</span>
+//                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
+//                        :class="openCategory === 'appliances' ? 'rotate-180' : ''"></i>
+//                 </button>
+//             </div>
+
+//             <!-- Audio Equipment -->
+//             <div>
+//                 <button 
+//                     class="flex items-center justify-between w-full font-semibold"
+//                     @click="openCategory === 'audio' ? openCategory = '' : openCategory = 'audio'"
+//                 >
+//                     <span><i class="fa-solid fa-headphones mr-2"></i>Audio Equipment</span>
+//                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
+//                        :class="openCategory === 'audio' ? 'rotate-180' : ''"></i>
+//                 </button>
+//             </div>
+
+//             <!-- Tools & Misc -->
+//             <div>
+//                 <button 
+//                     class="flex items-center justify-between w-full font-semibold"
+//                     @click="openCategory === 'tools' ? openCategory = '' : openCategory = 'tools'"
+//                 >
+//                     <span><i class="fa-solid fa-screwdriver-wrench mr-2"></i>Tools & Misc</span>
+//                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
+//                        :class="openCategory === 'tools' ? 'rotate-180' : ''"></i>
+//                 </button>
+//             </div>
+
+//             <!-- Kitchen Equipment -->
+//             <div>
+//                 <button 
+//                     class="flex items-center justify-between w-full font-semibold"
+//                     @click="openCategory === 'kitchen' ? openCategory = '' : openCategory = 'kitchen'"
+//                 >
+//                     <span><i class="fa-solid fa-utensils mr-2"></i>Kitchen Equipment</span>
+//                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
+//                        :class="openCategory === 'kitchen' ? 'rotate-180' : ''"></i>
+//                 </button>
+//             </div>
+//         </div>
+//     </div>
+// </div>
+
+// <!-- Font Awesome -->
+// <script src="https://kit.fontawesome.com/a2e0b6a06b.js" crossorigin="anonymous"></script>
+
+    </script>
 </html>
+
+
