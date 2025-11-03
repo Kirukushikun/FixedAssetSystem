@@ -4,7 +4,7 @@
     box-sizing: border-box;
     font-family: "Inter";
     font-weight: 500;
-    color: #2d3748;
+    /* color: #2d3748; */
     transition: 0.3s ease;
 }
 
@@ -126,6 +126,7 @@ nav.collapsed .logo button {
 }
 
 .card {
+    color: #2d3748;
     padding: 25px;
     border-radius: 20px;
     background-color: white;

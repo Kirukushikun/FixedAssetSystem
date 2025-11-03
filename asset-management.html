@@ -256,9 +256,11 @@
                     x-transition:leave-end="opacity-0 scale-90"
                     class="fixed inset-0 flex items-center justify-center z-50"
                 >
-                    <div class="bg-white p-6 rounded-lg shadow-lg w-[22rem]">
+                    <div class="relative bg-white p-10 rounded-lg shadow-lg w-[23rem]">
+                        <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="addAsset = false"><i class="fa-solid fa-xmark"></i></div>
+
                         <!-- Header -->
-                        <h2 class="text-center font-semibold text-lg mb-1">Select</h2>
+                        <h2 class="text-center font-bold text-lg mb-1">Select</h2>
                         <h3 class="text-center font-bold text-xl mb-6">Category Type</h3>
 
                         <!-- Category List -->
@@ -269,14 +271,14 @@
                                     class="flex items-center justify-between w-full font-semibold"
                                     @click="openCategory === 'it' ? openCategory = '' : openCategory = 'it'"
                                 >
-                                    <span><i class="fa-solid fa-computer mr-2"></i>IT Equipment</span>
+                                    <span class="flex items-center gap-2 font-bold"><img src="desktop.png" style="width: 23px;" alt="">IT Equipment</span>
                                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
                                     :class="openCategory === 'it' ? 'rotate-180' : ''"></i>
                                 </button>
 
-                                <div x-show="openCategory === 'it'" x-transition class="ml-6 mt-2 space-y-1 text-sm text-gray-600">
+                                <div x-show="openCategory === 'it'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                                     <template x-for="item in ['Desktop','Laptop','Printer','Router','Photocopy Machine','Digital Camera']">
-                                        <div class="flex justify-between items-center cursor-pointer hover:text-gray-800">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
                                             <span x-text="item"></span>
                                             <i class="fa-solid fa-arrow-right"></i>
                                         </div>
@@ -290,10 +292,19 @@
                                     class="flex items-center justify-between w-full font-semibold"
                                     @click="openCategory === 'office' ? openCategory = '' : openCategory = 'office'"
                                 >
-                                    <span><i class="fa-solid fa-chair-office mr-2"></i>Office Furniture</span>
+                                    <span class="flex items-center gap-2 font-bold"><img src="furniture.png" style="width: 23px;" alt="">Office Furniture</span>
                                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
                                     :class="openCategory === 'office' ? 'rotate-180' : ''"></i>
                                 </button>
+
+                                <div x-show="openCategory === 'office'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                    <template x-for="item in ['Table','Office Chair','Office Table','Conference Table','Monoblock Chair']">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
+                                            <span x-text="item"></span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
 
                             <!-- Appliances -->
@@ -302,10 +313,19 @@
                                     class="flex items-center justify-between w-full font-semibold"
                                     @click="openCategory === 'appliances' ? openCategory = '' : openCategory = 'appliances'"
                                 >
-                                    <span><i class="fa-solid fa-tv mr-2"></i>Appliances</span>
+                                    <span class="flex items-center gap-2 font-bold"><img src="appliances.png" style="width: 23px;" alt="">Appliances</span>
                                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
                                     :class="openCategory === 'appliances' ? 'rotate-180' : ''"></i>
                                 </button>
+
+                                <div x-show="openCategory === 'appliances'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                    <template x-for="item in ['Aircon','Refrigerator','Water Dispenser','Waching Machine','Wall Fan']">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
+                                            <span x-text="item"></span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
 
                             <!-- Audio Equipment -->
@@ -314,10 +334,19 @@
                                     class="flex items-center justify-between w-full font-semibold"
                                     @click="openCategory === 'audio' ? openCategory = '' : openCategory = 'audio'"
                                 >
-                                    <span><i class="fa-solid fa-headphones mr-2"></i>Audio Equipment</span>
+                                    <span class="flex items-center gap-2 font-bold"><img src="speaker.png" style="width: 23px;" alt="">Audio Equipment</span>
                                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
                                     :class="openCategory === 'audio' ? 'rotate-180' : ''"></i>
                                 </button>
+
+                                <div x-show="openCategory === 'audio'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                    <template x-for="item in ['Amplifier','Mixer','Speaker']">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
+                                            <span x-text="item"></span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
 
                             <!-- Tools & Misc -->
@@ -326,10 +355,19 @@
                                     class="flex items-center justify-between w-full font-semibold"
                                     @click="openCategory === 'tools' ? openCategory = '' : openCategory = 'tools'"
                                 >
-                                    <span><i class="fa-solid fa-screwdriver-wrench mr-2"></i>Tools & Misc</span>
+                                    <span class="flex items-center gap-2 font-bold"><img src="tools.png" style="width: 23px;" alt="">Tools & Misc</span>
                                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
                                     :class="openCategory === 'tools' ? 'rotate-180' : ''"></i>
                                 </button>
+
+                                <div x-show="openCategory === 'tools'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                    <template x-for="item in ['Helmet','Radio','Thermistor Temperature','Pipe Wrench','Pliers','Machine']">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
+                                            <span x-text="item"></span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
 
                             <!-- Kitchen Equipment -->
@@ -338,10 +376,19 @@
                                     class="flex items-center justify-between w-full font-semibold"
                                     @click="openCategory === 'kitchen' ? openCategory = '' : openCategory = 'kitchen'"
                                 >
-                                    <span><i class="fa-solid fa-utensils mr-2"></i>Kitchen Equipment</span>
+                                    <span class="flex items-center gap-2 font-bold"><img src="kitchen.png" style="width: 23px;" alt="">Kitchen Equipment</span>
                                     <i class="fa-solid fa-chevron-down transition-transform duration-200"
                                     :class="openCategory === 'kitchen' ? 'rotate-180' : ''"></i>
                                 </button>
+
+                                <div x-show="openCategory === 'kitchen'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                    <template x-for="item in ['Cooking Pot','Repair Chiller']">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
+                                            <span x-text="item"></span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </div>
