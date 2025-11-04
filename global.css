@@ -268,3 +268,32 @@ tbody td:last-child {
 .table-actions i:hover {
     transform: scale(1.1);
 }
+
+
+/* ========== Input Styles ========== */
+.input-group{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.input-group label{
+    font-size: 15px;
+    font-weight: 600;
+}
+.input-group input{
+    background-color: #f8f9fa;
+    border: solid 1px #c2c4c7;
+    border-radius: 5px;
+    padding: 5px 10px;
+    outline: none;
+}
+
+.input-group textarea{
+    background-color: #f8f9fa;
+    border: solid 1px #c2c4c7;
+    border-radius: 5px;
+    padding: 5px 10px;
+    outline: none;
+    resize: none;
+    height: 130px;
+}

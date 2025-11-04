@@ -278,7 +278,7 @@
 
                                 <div x-show="openCategory === 'it'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                                     <template x-for="item in ['Desktop','Laptop','Printer','Router','Photocopy Machine','Digital Camera']">
-                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1">
+                                        <div class="flex justify-between items-center cursor-pointer text-gray-500 hover:text-gray-800 hover:translate-x-1" onclick="window.location.href='asset-creation.html'">
                                             <span x-text="item"></span>
                                             <i class="fa-solid fa-arrow-right"></i>
                                         </div>
