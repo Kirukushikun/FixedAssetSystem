@@ -272,8 +272,18 @@ tbody td:last-child {
     gap: 5px;
 }
 .input-group label{
+    position: relative;
     font-size: 15px;
     font-weight: 600;
+}
+.input-group label span{
+    left: 5px;
+    bottom: -16px;
+    background: white;
+    padding: 0 5px;
+    font-size: smaller;
+    position: absolute;
+    color: var(--color-red-400);
 }
 .input-group input, .input-group select{
     background-color: #f8f9fa;

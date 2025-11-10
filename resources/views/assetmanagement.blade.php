@@ -207,8 +207,7 @@
                <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="addAsset = false"><i class="fa-solid fa-xmark"></i></div>
 
                <!-- Header -->
-               <h2 class="text-center font-bold text-lg mb-1">Select</h2>
-               <h3 class="text-center font-bold text-xl mb-6">Category Type</h3>
+               <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
 
                <!-- Category List -->
                <div class="space-y-3">
@@ -225,7 +224,7 @@
 
                          <div x-show="openCategory === 'it'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                               <template x-for="item in ['Desktop','Laptop','Printer','Router','Photocopy Machine','Digital Camera']">
-                              <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=it&category=${item}`">
+                              <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=IT&category=it&sub_category=${item}`">
                                    <span x-text="item"></span>
                                    <i class="fa-solid fa-arrow-right"></i>
                               </a>

@@ -6,6 +6,7 @@
      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
      <title>Document</title>
 
+     @livewireStyles
      @vite(['resources/css/app.css'])
      <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
      
@@ -69,6 +70,7 @@
           @yield('content')
 
      </main>
-     <script src="global.js" defer></script>
+     <script src="{{ asset('js/global.js') }}" defer></script>
+     @livewireScripts
 </body>
 </html>

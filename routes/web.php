@@ -14,5 +14,6 @@ Route::get('/assetmanagement', function () {
 Route::get('/assetmanagement/create', function (Request $request) {
     $category_type = $request->category_type;
     $category = $request->category;
-    return view('assetmanagement-create', compact('category_type', 'category'));
+    $sub_category = $request->sub_category;
+    return view('assetmanagement-create', compact('category_type', 'category', 'sub_category'));
 });
