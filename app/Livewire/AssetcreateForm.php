@@ -62,6 +62,8 @@ class AssetcreateForm extends Component
     }
     
     public function submit(){
+        $this->validate();
+
         $technicaldata = [
             'processor'   => $this->processor,
             'ram'         => $this->ram,
@@ -71,8 +73,26 @@ class AssetcreateForm extends Component
             'vpn_address' => $this->vpn_address,
             'wol_enabled' => $this->wol_enabled,
         ];
-        Log::info($technicaldata);
-        $this->validate();
+        
+        Asset::create([
+            'ref_id' => $this->ref_id,
+            'category_type' => $this->category_type,
+            'category' => $this->category,
+            'sub_category' => $this->sub_category,
+
+            'brand' => $this->brand,
+            'model' => $this->model,
+            'status' => $this->status,
+            'condition' => $this->condition,
+
+            'acquisition_date' => $this->acquisition_date,
+            'item_cost' => $this->item_cost,
+            'depreciated_value' => $this->depreciated_value,
+            'usable_life' => $this->usable_life,
+
+            'technical_data' => json_encode($technicaldata)
+        ]);
+
 
         $this->redirect('/assetmanagement');
     }

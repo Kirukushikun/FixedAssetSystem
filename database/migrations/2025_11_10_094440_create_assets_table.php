@@ -13,9 +13,26 @@ return new class extends Migration
     {
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('ref_id');
+            $table->boolean('is_deleted')->default(false);
+            $table->boolean('is_archived')->default(false);
+
+            $table->string('ref_id');
             $table->string('category_type');
             $table->string('category');
+            $table->string('sub_category');
+
+            $table->string('brand');
+            $table->string('model');
+            $table->string('status');
+            $table->string('condition');
+
+            $table->date('acquisition_date');
+            $table->string('item_cost')->nullable();
+            $table->string('depreciated_value')->nullable();
+            $table->string('usable_life')->nullable();
+
+            $table->json('technical_data')->nullable();
+
             $table->timestamps();
         });
     }
