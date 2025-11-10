@@ -18,16 +18,16 @@
 <body>
      <nav>
           <div class="logo">
-               <p>FIXED ASSET</p>
+               <p class="font-bold">FIXED ASSET</p>
                <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
           </div>
 
           <aside class="sidebar">
-               <a href="/dashboard.html" class="active"
+               <a href="/dashboard" class="{{ request()->is('dashboard*') ? 'active' : '' }}"
                     ><span><i class="fa-solid fa-house-chimney"></i></span>
                     <p>Dashboard</p></a
                >
-               <a href="/asset-management.html"
+               <a href="/assetmanagement" class="{{ request()->is('assetmanagement*') ? 'active' : '' }}"
                     ><span><i class="fa-solid fa-boxes-stacked"></i></span>
                     <p>Asset Management</p></a
                >
@@ -51,7 +51,14 @@
           <header class="flex justify-between">
                <div>
                     <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
-                    <div class="font-bold">Dashboard</div>
+                    
+                    <div class="font-bold">
+                         @if(request()->is('dashboard*'))
+                              Dashboard
+                         @elseif(request()->is('assetmanagement*'))
+                              Asset Management
+                         @endif
+                    </div>
                </div>
 
                <div>Hi, <span class="font-semibold">Iverson</span></div>

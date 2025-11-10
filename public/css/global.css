@@ -152,7 +152,7 @@ nav.collapsed .logo button {
     --table-hover-bg: var(--color-gray-50);
     --table-border-color: var(--color-gray-200);
     --table-text-color: var(--color-gray-900);
-    --table-header-text-color: var(--color-gray-600);
+    --table-header-text-color: var(--color-gray-500);
 
     /* Scrollbar */
     --scrollbar-track: var(--color-gray-50);
@@ -188,7 +188,6 @@ nav.collapsed .logo button {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    background: var(--table-bg);
 }
 
 /* Table Header */
@@ -196,12 +195,11 @@ nav.collapsed .logo button {
     text-align: start;
     padding: 15px 0;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 800;
     color: var(--table-header-text-color);
     white-space: nowrap;
     position: sticky;
     top: 0;
-    background: var(--table-header-bg);
     z-index: 2;
     border-bottom: solid 2px #f1f2f6;
 }
@@ -277,7 +275,7 @@ tbody td:last-child {
     font-size: 15px;
     font-weight: 600;
 }
-.input-group input{
+.input-group input, .input-group select{
     background-color: #f8f9fa;
     border: solid 1px #c2c4c7;
     border-radius: 5px;
