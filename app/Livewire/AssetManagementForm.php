@@ -6,8 +6,9 @@ use Livewire\Component;
 use App\Models\Asset;
 use Illuminate\Support\Facades\Log;
 
-class AssetcreateForm extends Component
+class AssetManagementForm extends Component
 {   
+    public $showConfirmModal = false;
 
     // GENERAL INFORMATION
     public 
@@ -54,11 +55,25 @@ class AssetcreateForm extends Component
         'usable_life' => 'nullable'
     ];
 
-    public function mount($category_type, $category, $sub_category){
-        $this->ref_id = 'FA-' . now()->year . '-' . rand(100, 999);
-        $this->category_type = $category_type;
-        $this->category = $category;
-        $this->sub_category = $sub_category;
+    public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null){
+        if($mode == 'create'){
+            $this->ref_id = 'FA-' . now()->year . '-' . rand(100, 999);
+            $this->category_type = $category_type;
+            $this->category = $category;
+            $this->sub_category = $sub_category;            
+        }else{
+            $targetAsset = Asset::findOrFail($targetID);
+            $this->ref_id = $targetAsset->ref_id;
+            $this->category_type = $targetAsset->category_type;
+            $this->category = $targetAsset->category;
+            $this->sub_category = $targetAsset->sub_category;       
+        }
+    }
+
+    public function trySubmit()
+    {
+        $this->validate();
+        $this->showConfirmModal = true; // show modal only when valid
     }
     
     public function submit(){
@@ -99,6 +114,6 @@ class AssetcreateForm extends Component
     
     public function render()
     {
-        return view('livewire.assetcreate-form');
+        return view('livewire.assetmanagement-form');
     }
 }

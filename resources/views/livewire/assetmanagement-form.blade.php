@@ -1,4 +1,9 @@
-<div class="relative overflow-y-auto flex flex-col gap-7">
+<div class="relative overflow-y-auto flex flex-col gap-7"
+    x-data="{
+        showModal: @entangle('showConfirmModal'),
+        modalTemplate: '',
+    }"    
+>
     <div class="card self-center">
         <i class="fa-solid fa-arrow-left absolute top-8 left-[190px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
         <h1 class="text-lg font-bold">General Information</h1>
@@ -77,59 +82,59 @@
         </div>
         
         @if($category_type == 'IT')
-        <hr class="mt-7 mb-7">
+            <hr class="mt-7 mb-7">
 
-        <h1 class="text-lg font-bold">Technical Details</h1>
-        <p class="text-gray-400 text-sm mb-5">Additional specifications used for IT-related assets. These details are helpful for troubleshooting, configuration, and inventory auditing.</p>
-        <div class="grid grid-cols-4 gap-5">
-            <div class="input-group">
-                <label for="processor">Processor:</label>
-                <input type="text" id="processor" wire:model="processor">
+            <h1 class="text-lg font-bold">Technical Details</h1>
+            <p class="text-gray-400 text-sm mb-5">Additional specifications used for IT-related assets. These details are helpful for troubleshooting, configuration, and inventory auditing.</p>
+            <div class="grid grid-cols-4 gap-5">
+                <div class="input-group">
+                    <label for="processor">Processor:</label>
+                    <input type="text" id="processor" wire:model="processor">
+                </div>
+                <div class="input-group">
+                    <label for="ram">RAM:</label>
+                    <select id="ram" wire:model="ram">
+                        <option value=""></option>
+                        <option value="4GB">4GB</option>
+                        <option value="8GB">8GB</option>
+                        <option value="16GB">16GB</option>
+                        <option value="32GB">32GB</option>
+                        <option value="64GB">64GB</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="storage">Storage:</label>
+                    <select id="storage" wire:model="storage">
+                        <option value=""></option>
+                        <option value="32GB">32GB</option>
+                        <option value="64GB">64GB</option>
+                        <option value="128GB">128GB</option>
+                        <option value="256GB">256GB</option>
+                        <option value="512GB">512GB</option>
+                        <option value="1TB">1TB</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="ip_address">IP Address:</label>
+                    <input type="text" id="ip_address" wire:model="ip_address">
+                </div>
+                <div class="input-group">
+                    <label for="mac_address">MAC Address:</label>
+                    <input type="text" id="mac_address" wire:model="mac_address">
+                </div>
+                <div class="input-group">
+                    <label for="vpn_address">VPN Address:</label>
+                    <input type="text" id="vpn_address" wire:model="vpn_address">
+                </div>
+                <div class="input-group">
+                    <label for="wol_enabled">WOL Enabled:</label>
+                    <select id="wol_enabled" wire:model="wol_enabled">
+                        <option value=""></option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>                    
+                    </select>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="ram">RAM:</label>
-                <select id="ram" wire:model="ram">
-                    <option value=""></option>
-                    <option value="4GB">4GB</option>
-                    <option value="8GB">8GB</option>
-                    <option value="16GB">16GB</option>
-                    <option value="32GB">32GB</option>
-                    <option value="64GB">64GB</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="storage">Storage:</label>
-                <select id="storage" wire:model="storage">
-                    <option value=""></option>
-                    <option value="32GB">32GB</option>
-                    <option value="64GB">64GB</option>
-                    <option value="128GB">128GB</option>
-                    <option value="256GB">256GB</option>
-                    <option value="512GB">512GB</option>
-                    <option value="1TB">1TB</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="ip_address">IP Address:</label>
-                <input type="text" id="ip_address" wire:model="ip_address">
-            </div>
-            <div class="input-group">
-                <label for="mac_address">MAC Address:</label>
-                <input type="text" id="mac_address" wire:model="mac_address">
-            </div>
-            <div class="input-group">
-                <label for="vpn_address">VPN Address:</label>
-                <input type="text" id="vpn_address" wire:model="vpn_address">
-            </div>
-            <div class="input-group">
-                <label for="wol_enabled">WOL Enabled:</label>
-                <select id="wol_enabled" wire:model="wol_enabled">
-                    <option value=""></option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>                    
-                </select>
-            </div>
-        </div>
         @endif
         <hr class="mt-7 mb-7">
 
@@ -172,11 +177,46 @@
             </div>
             
             <div class="self-end flex gap-3">
-                <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button>
-                <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="submit">SAVE</button> 
+                <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
+                <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit" @click="modalTemplate = 'submit'">SAVE</button> 
             </div>
-            
         </div>
 
-    </div>        
+    </div>    
+    
+    <!-- Backdrop -->
+    <div 
+        x-show="showModal"
+        x-transition.opacity
+        class="fixed inset-0 bg-black/30 z-40"
+    ></div>
+
+    <!-- Modal -->
+    <div 
+        x-show="showModal"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+        class="fixed inset-0 flex items-center justify-center z-50"
+    >
+        <div class="relative bg-white p-10 rounded-lg shadow-lg">
+            <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="showModal = false"><i class="fa-solid fa-xmark"></i></div>
+            
+            <!-- SUBMIT MODAL -->
+            <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'submit'">
+                <h2 class="text-xl font-semibold -mb-2">Submit Modal</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, incidunt! asdadasd</p>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="showModal = false;" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer">Cancel</button>
+                    <button type="button"  wire:click="submit" @click="showModal = false;" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 </div>

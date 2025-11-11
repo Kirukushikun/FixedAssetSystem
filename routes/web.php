@@ -9,15 +9,26 @@ Route::get('/dashboard', function () {
 });
 
 Route::get('/assetmanagement', function () {
-    $assets = Asset::where('is_deleted', false)
-        ->orWhere('is_archived', false)
-        ->get();
-    return view('assetmanagement', compact('assets'));
+    return view('assetmanagement');
 });
 
-Route::get('/assetmanagement/create', function (Request $request) {
-    $category_type = $request->category_type;
-    $category = $request->category;
-    $sub_category = $request->sub_category;
-    return view('assetmanagement-create', compact('category_type', 'category', 'sub_category'));
+Route::get('/assetmanagement/{mode}', function (Request $request, $mode) {
+    $targetID = null;
+    $category_type = null;
+    $category = null;
+    $sub_category = null;
+
+    if ($mode == 'create') {
+        $category_type = $request->category_type;
+        $category = $request->category;
+        $sub_category = $request->sub_category;        
+    } else {
+        $targetID = $request->targetID;
+    }
+
+    return view('assetmanagement-view', compact('mode', 'targetID', 'category_type', 'category', 'sub_category'));
+});
+
+Route::get('/employees', function () {
+    return view('employees');
 });
