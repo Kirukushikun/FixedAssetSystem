@@ -15,7 +15,8 @@
             <div class="input-group">
                 @php
                     $categoryValue = [
-                        'it' => 'IT Equipment'    
+                        'it' => 'IT Equipment',
+                        'office' => 'Office Furniture'    
                     ]
                 @endphp
                 <label for="category">Category:</label>
@@ -74,7 +75,8 @@
                 <input type="text" id="usable_life" wire:model="usable_life">
             </div>
         </div>
-
+        
+        @if($category_type == 'IT')
         <hr class="mt-7 mb-7">
 
         <h1 class="text-lg font-bold">Technical Details</h1>
@@ -128,7 +130,7 @@
                 </select>
             </div>
         </div>
-
+        @endif
         <hr class="mt-7 mb-7">
 
         <h1 class="text-lg font-bold">Assignment Details</h1>

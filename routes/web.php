@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -8,7 +9,10 @@ Route::get('/dashboard', function () {
 });
 
 Route::get('/assetmanagement', function () {
-    return view('assetmanagement');
+    $assets = Asset::where('is_deleted', false)
+        ->orWhere('is_archived', false)
+        ->get();
+    return view('assetmanagement', compact('assets'));
 });
 
 Route::get('/assetmanagement/create', function (Request $request) {

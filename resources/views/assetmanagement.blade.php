@@ -13,6 +13,8 @@
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                </div>
                <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="addAsset = true">ADD NEW ASSET</button>
+               <i class="fa-solid fa-file-import cursor-pointer"></i>
+               <i class="fa-solid fa-file-export cursor-pointer"></i>
                <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
           </div>
      </div>
@@ -22,8 +24,8 @@
                <thead>
                     <tr>
                          <th>REFERENCE ID</th>
-                         <th>CATEGORY TYPE</th>
                          <th>CATEGORY</th>
+                         <th>SUB-CATEGORY</th>
                          <th>BRAND</th>
                          <th>MODEL</th>
                          <th>STATUS</th>
@@ -33,19 +35,48 @@
                     </tr>
                </thead>
                <tbody>
+                    @foreach($assets as $asset)
                     <tr>
-                         <td>FA-000123</td>
+                         <td>{{$asset->ref_id}}</td>
                          <td>
-                              <p class="flex items-center gap-2"><img src="{{asset('img/desktop.png')}}" style="width: 25px" alt="" /> <span class="font-bold">IT Equipment</span></p>
+                              @php
+                                   $categoryImg = [
+                                        'it' => 'desktop',
+                                        'office' => 'furniture'     
+                                   ];
+                                   $categoryValue = [
+                                        'it' => 'IT Equipment',
+                                        'office' => 'Office Furniture'    
+                                   ];
+                              @endphp
+                              <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryImg[$asset->category] . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryValue[$asset->category]}}</span></p>
                          </td>
-                         <td>Desktop</td>
-                         <td>Lenove</td>
-                         <td>450 G9</td>
+                         <td>{{$asset->sub_category}}</td>
+                         <td>{{$asset->brand}}</td>
+                         <td>{{$asset->model}}</td>
                          <td>
-                              <div class="px-4 py-1 bg-[#48BB78] text-white w-fit rounded-lg">Available</div>
+                              @php 
+                                   $statusColor = [
+                                        'Available' => 'bg-[#48BB78]',
+                                        'Issued' => 'bg-[#ECC94B]',
+                                        'Transferred' => 'bg-[#4299E1]',
+                                        'For Disposal' => 'bg-[#ED8936]',
+                                        'Disposed' => 'bg-[#2D3748]',
+                                        'Lost' => 'bg-[#F56565]'
+                                   ]
+                              @endphp 
+                              <div class="px-4 py-1 {{$statusColor[$asset->status]}} text-white w-fit rounded-lg">{{$asset->status}}</div>
                          </td>
-                         <td>
-                              <div class="text-green-500 font-bold">GOOD</div>
+                         <td> 
+                              @php 
+                                   $conditionColor = [
+                                        'Good' => 'green',
+                                        'Defective' => 'amber',
+                                        'Repair' => 'sky',
+                                        'Replace' => 'red'
+                                   ]
+                              @endphp 
+                              <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
                          </td>
                          <td>John Reyes</td>
                          <td x-data="{ open: false }" class="relative">
@@ -70,96 +101,7 @@
                               </div>
                          </td>
                     </tr>
-
-                    <tr>
-                         <td>FA-000123</td>
-                         <td>
-                              <p class="flex items-center gap-2"><img src="{{asset('img/furniture.png')}}" style="width: 25px" alt="" /> <span class="font-bold">Office Furniture</span></p>
-                         </td>
-                         <td>Office table</td>
-                         <td>Mandaue</td>
-                         <td>450 G9</td>
-                         <td>
-                              <div class="px-4 py-1 bg-[#ECC94B] text-white w-fit rounded-lg">Issued</div>
-                         </td>
-                         <td>
-                              <div class="text-sky-500 font-bold">REPAIR</div>
-                         </td>
-                         <td>John Reyes</td>
-                         <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
-                    </tr>
-
-                    <tr>
-                         <td>FA-000123</td>
-                         <td>
-                              <p class="flex items-center gap-2"><img src="{{asset('img/appliances.png')}}" style="width: 25px" alt="" /> <span class="font-bold">Appliances</span></p>
-                         </td>
-                         <td>Oven</td>
-                         <td>Misyubibi</td>
-                         <td>450 G9</td>
-                         <td>
-                              <div class="px-4 py-1 bg-[#4299E1] text-white w-fit rounded-lg">Transferred</div>
-                         </td>
-                         <td>
-                              <div class="text-sky-500 font-bold">REPAIR</div>
-                         </td>
-                         <td>John Reyes</td>
-                         <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
-                    </tr>
-
-                    <tr>
-                         <td>FA-000123</td>
-                         <td>
-                              <p class="flex items-center gap-2"><img src="{{asset('img/speaker.png')}}" style="width: 25px" alt="" /> <span class="font-bold">Audio Equipment</span></p>
-                         </td>
-                         <td>Speaker</td>
-                         <td>Edifier</td>
-                         <td>450 G9</td>
-                         <td>
-                              <div class="px-4 py-1 bg-[#ED8936] text-white w-fit rounded-lg">For Disposal</div>
-                         </td>
-                         <td>
-                              <div class="text-amber-500 font-bold">DEFECTIVE</div>
-                         </td>
-                         <td>John Reyes</td>
-                         <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
-                    </tr>
-
-                    <tr>
-                         <td>FA-000123</td>
-                         <td>
-                              <p class="flex items-center gap-2"><img src="{{asset('img/tools.png')}}" style="width: 25px" alt="" /> <span class="font-bold">Tools & Misc</span></p>
-                         </td>
-                         <td>Tool Kit</td>
-                         <td>Mikasa</td>
-                         <td>450 G9</td>
-                         <td>
-                              <div class="px-4 py-1 bg-[#2D3748] text-white w-fit rounded-lg">Disposed</div>
-                         </td>
-                         <td>
-                              <div class="text-red-500 font-bold">REPLACE</div>
-                         </td>
-                         <td>John Reyes</td>
-                         <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
-                    </tr>
-
-                    <tr>
-                         <td>FA-000123</td>
-                         <td>
-                              <p class="flex items-center gap-2"><img src="{{asset('img/kitchen.png')}}" style="width: 25px" alt="" /> <span class="font-bold">Kitchen Equipment</span></p>
-                         </td>
-                         <td>Frying Pan</td>
-                         <td>Aginamotor</td>
-                         <td>450 G9</td>
-                         <td>
-                              <div class="px-4 py-1 bg-[#F56565] text-white w-fit rounded-lg">Lost</div>
-                         </td>
-                         <td>
-                              <div class="text-red-500 font-bold">REPLACE</div>
-                         </td>
-                         <td>John Reyes</td>
-                         <td><i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i></td>
-                    </tr>
+                    @endforeach
                </tbody>
           </table>
      </div>
@@ -245,10 +187,10 @@
 
                          <div x-show="openCategory === 'office'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                               <template x-for="item in ['Table','Office Chair','Office Table','Conference Table','Monoblock Chair']">
-                              <div class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1">
+                              <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=office&sub_category=${item}`">
                                    <span x-text="item"></span>
                                    <i class="fa-solid fa-arrow-right"></i>
-                              </div>
+                              </a>
                               </template>
                          </div>
                     </div>
