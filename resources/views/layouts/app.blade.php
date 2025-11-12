@@ -35,11 +35,11 @@
                     ><span><i class="fa-solid fa-users"></i></span>
                     <p>Employees</p></a
                >
-               <a href="/system-records.html"
+               <a href="/systemrecords" class="{{ request()->is('systemrecords*') ? 'active' : '' }}"
                     ><span><i class="fa-solid fa-file"></i></span>
                     <p>System Records</p></a
                >
-               <a href="settings.html"
+               <a href="/settings" class="{{ request()->is('settings*') ? 'active' : '' }}"
                     ><span><i class="fa-solid fa-user-gear"></i></span>
                     <p>Settings</p></a
                >
@@ -47,7 +47,7 @@
      </nav>
 
      <!-- Subject to tailwind -->
-     <main class="size-full flex flex-col">
+     <main class="size-full flex flex-col gap-5">
           <header class="flex justify-between">
                <div>
                     <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
@@ -66,7 +66,6 @@
                <div>Hi, <span class="font-semibold">Iverson</span></div>
           </header>
 
-          <br />
 
           @yield('content')
 

@@ -32,3 +32,15 @@ Route::get('/assetmanagement/{mode}', function (Request $request, $mode) {
 Route::get('/employees', function () {
     return view('employees');
 });
+
+Route::get('/employees/view', function () {
+    return view('employees-view');
+});
+
+Route::get('/systemrecords', function () {
+    return view('systemrecords');
+});
+
+Route::get('/settings', function () {
+    return view('settings');
+});
