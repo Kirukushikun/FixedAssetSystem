@@ -34,15 +34,15 @@
 
             <div class="input-group">
                 <label for="brand">Brand: @error('brand')<span>This field is required</span>@enderror</label>
-                <input type="text" id="brand" class="{{ $errors->has('brand') ? '!border-red-400' : '' }}" wire:model="brand">
+                <input type="text" id="brand" class="{{ $errors->has('brand') ? '!border-red-400' : '' }}" wire:model="brand" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
             <div class="input-group">
                 <label for="model">Model: @error('model')<span>This field is required</span>@enderror</label>
-                <input type="text" id="model" class="{{ $errors->has('model') ? '!border-red-400' : '' }}" wire:model="model">
+                <input type="text" id="model" class="{{ $errors->has('model') ? '!border-red-400' : '' }}" wire:model="model" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
             <div class="input-group">
                 <label for="status">Status: @error('status')<span>This field is required</span>@enderror</label>
-                <select id="status" class="{{ $errors->has('status') ? '!border-red-400' : '' }}" wire:model="status">
+                <select id="status" class="{{ $errors->has('status') ? '!border-red-400' : '' }}" wire:model="status" {{$mode == 'view' ? 'disabled' : ''}}>
                     <option value=""></option>
                     <option value="Available">Available</option>
                     <option value="Issued">Issued</option>
@@ -54,7 +54,7 @@
             </div>
             <div class="input-group">
                 <label for="condition">Condition: @error('condition')<span>This field is required</span>@enderror</label>
-                <select id="condition" class="{{ $errors->has('condition') ? '!border-red-400' : '' }}" wire:model="condition">
+                <select id="condition" class="{{ $errors->has('condition') ? '!border-red-400' : '' }}" wire:model="condition" {{$mode == 'view' ? 'disabled' : ''}}>
                     <option value=""></option>
                     <option value="Good">Good</option>
                     <option value="Repair">Repair</option>
@@ -65,19 +65,19 @@
 
             <div class="input-group">
                 <label for="acquisition_date">Acquisition Date: @error('acquisition_date')<span>This field is required</span>@enderror</label>
-                <input type="date" id="acquisition_date" class="{{ $errors->has('acquisition_date') ? '!border-red-400' : '' }}" wire:model="acquisition_date">
+                <input type="date" id="acquisition_date" class="{{ $errors->has('acquisition_date') ? '!border-red-400' : '' }}" wire:model="acquisition_date" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
             <div class="input-group">
                 <label for="item_cost">Item Cost:</label>
-                <input type="text" id="item_cost" wire:model="item_cost">
+                <input type="text" id="item_cost" wire:model="item_cost" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
             <div class="input-group">
                 <label for="depreciated_value">Depreciated Value:</label>
-                <input type="text" id="depreciated_value" wire:model="depreciated_value">
+                <input type="text" id="depreciated_value" wire:model="depreciated_value" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
             <div class="input-group">
                 <label for="usable_life">Usable Life:</label>
-                <input type="text" id="usable_life" wire:model="usable_life">
+                <input type="text" id="usable_life" wire:model="usable_life" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
         </div>
         
@@ -89,11 +89,11 @@
             <div class="grid grid-cols-4 gap-5">
                 <div class="input-group">
                     <label for="processor">Processor:</label>
-                    <input type="text" id="processor" wire:model="processor">
+                    <input type="text" id="processor" wire:model="technicaldata.processor" {{$mode == 'view' ? 'readonly' : ''}}>
                 </div>
                 <div class="input-group">
                     <label for="ram">RAM:</label>
-                    <select id="ram" wire:model="ram">
+                    <select id="ram" wire:model="technicaldata.ram" {{$mode == 'view' ? 'disabled' : ''}}>
                         <option value=""></option>
                         <option value="4GB">4GB</option>
                         <option value="8GB">8GB</option>
@@ -104,7 +104,7 @@
                 </div>
                 <div class="input-group">
                     <label for="storage">Storage:</label>
-                    <select id="storage" wire:model="storage">
+                    <select id="storage" wire:model="technicaldata.storage" {{$mode == 'view' ? 'disabled' : ''}}>
                         <option value=""></option>
                         <option value="32GB">32GB</option>
                         <option value="64GB">64GB</option>
@@ -116,19 +116,19 @@
                 </div>
                 <div class="input-group">
                     <label for="ip_address">IP Address:</label>
-                    <input type="text" id="ip_address" wire:model="ip_address">
+                    <input type="text" id="ip_address" wire:model="technicaldata.ip_address" {{$mode == 'view' ? 'readonly' : ''}}>
                 </div>
                 <div class="input-group">
                     <label for="mac_address">MAC Address:</label>
-                    <input type="text" id="mac_address" wire:model="mac_address">
+                    <input type="text" id="mac_address" wire:model="technicaldata.mac_address" {{$mode == 'view' ? 'readonly' : ''}}>
                 </div>
                 <div class="input-group">
                     <label for="vpn_address">VPN Address:</label>
-                    <input type="text" id="vpn_address" wire:model="vpn_address">
+                    <input type="text" id="vpn_address" wire:model="technicaldata.vpn_address" {{$mode == 'view' ? 'readonly' : ''}}>
                 </div>
                 <div class="input-group">
                     <label for="wol_enabled">WOL Enabled:</label>
-                    <select id="wol_enabled" wire:model="wol_enabled">
+                    <select id="wol_enabled" wire:model="technicaldata.wol_enabled" {{$mode == 'view' ? 'disabled' : ''}}>
                         <option value=""></option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>                    
@@ -143,7 +143,7 @@
         <div class="grid grid-cols-3 gap-5">
             <div class="input-group">
                 <label for="">Assigned To:</label>
-                <select id="">
+                <select id="" {{$mode == 'view' ? 'disabled' : ''}}>
                     <option value=""></option>
                     <option value="">Chris Bacon</option>                    
                 </select>
@@ -175,11 +175,12 @@
                 <label for="">Remarks:</label>
                 <textarea name="" id=""></textarea>
             </div>
-            
-            <div class="self-end flex gap-3">
-                <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
-                <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit" @click="modalTemplate = 'submit'">SAVE</button> 
-            </div>
+            @if($mode != 'view')
+                <div class="self-end flex gap-3">
+                    <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
+                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit" @click="modalTemplate = 'submit'">SAVE</button> 
+                </div>
+            @endif
         </div>
 
     </div>    
@@ -212,7 +213,11 @@
 
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="showModal = false;" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer">Cancel</button>
-                    <button type="button"  wire:click="submit" @click="showModal = false;" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                    @if($mode == 'create')
+                        <button type="button" @click="showModal = false; $wire.submit()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                    @else 
+                        <button type="button" @click="showModal = false; $wire.update()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                    @endif
                 </div>
             </div>
 
