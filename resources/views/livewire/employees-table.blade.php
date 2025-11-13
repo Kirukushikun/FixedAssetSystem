@@ -54,7 +54,7 @@
                         <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-md z-40">
                         <ul class="text-sm text-gray-700">
                             <li>
-                                    <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/employees/view'">View</button>
+                                    <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/employees/view?targetID={{$employee->id}}'">View</button>
                             </li>
                             <li>
                                     <button class="w-full text-left px-4 py-2 hover:bg-gray-100" @click="modalTemplate='edit'; showModal=true; $wire.targetID({{$employee->id}})">Edit</button>

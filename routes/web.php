@@ -33,8 +33,9 @@ Route::get('/employees', function () {
     return view('employees');
 });
 
-Route::get('/employees/view', function () {
-    return view('employees-view');
+Route::get('/employees/view', function (Request $request) {
+    $targetID = $request->targetID;
+    return view('employees-view', compact('targetID'));
 });
 
 Route::get('/systemrecords', function () {
