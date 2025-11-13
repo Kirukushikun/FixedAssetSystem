@@ -27,7 +27,12 @@ class Asset extends Model
         'depreciated_value',
         'usable_life',
 
-        'technical_data'
+        'technical_data',
+
+        'assigned_name',
+        'assigned_id',
+        'farm',
+        'department',
     ];
 
     protected $cast = [

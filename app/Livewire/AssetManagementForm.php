@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Asset;
+use App\Models\Employee;
 use Illuminate\Support\Facades\Log;
 
 class AssetManagementForm extends Component
@@ -39,6 +40,14 @@ class AssetManagementForm extends Component
         'vpn_address' => '',
         'wol_enabled' => '',
     ];
+
+    // ASSIGNMENT DETAILS
+    public $employees = [];
+    public $selectedEmployee = '';
+    public $selectedEmployeeName = '';
+    public $farm = '';
+    public $department = '';
+    public $history = '';
 
     // RULES FOR VALIDATIOn
     protected $rules = [
@@ -85,16 +94,44 @@ class AssetManagementForm extends Component
                 'acquisition_date' => $this->targetAsset->acquisition_date,
                 'item_cost' => $this->targetAsset->item_cost,
                 'depreciated_value' => $this->targetAsset->depreciated_value,
-                'usable_life' => $this->targetAsset->usable_life
+                'usable_life' => $this->targetAsset->usable_life,
+
+                'selectedEmployee' => $this->targetAsset->assigned_id,  
+                'farm' => $this->targetAsset->farm,
+                'department' => $this->targetAsset->department
             ]); 
 
             //Prefill technical data
             if($this->targetAsset->category_type == 'IT'){
                 $this->technicaldata = json_decode($this->targetAsset->technical_data) ?? $this->technicaldata;
             }
+
+            // History
+            $this->history = Asset::where('ref_id', $this->targetAsset->ref_id)->latest()->get();
             
         }
+
+        // Temporary static list. Replace with DB later.
+        // $this->employees = [
+        //     ['id' => 1, 'employee_name' => 'Chris Bacon', 'farm' => 'BFC', 'department' => 'IT & Security'],
+        //     ['id' => 2, 'employee_name' => 'Juan Dela Cruz', 'farm' => 'BDL', 'department' => 'Production'],
+        // ];
+
+        $this->employees = Employee::select('id','employee_name','farm','department')->get()->toArray();
+
     }
+
+    public function updatedSelectedEmployee($value)
+    {
+        $data = collect($this->employees)->firstWhere('id', $value);
+
+        if ($data) {
+            $this->selectedEmployeeName = $data['employee_name'];
+            $this->farm = $data['farm'];
+            $this->department = $data['department'];
+        }
+    }
+
 
     // This function will validate before showing modal
     public function trySubmit()
@@ -125,7 +162,12 @@ class AssetManagementForm extends Component
             'depreciated_value' => $this->depreciated_value,
             'usable_life' => $this->usable_life,
 
-            'technical_data' => json_encode($this->technicaldata)
+            'technical_data' => json_encode($this->technicaldata),
+
+            'assigned_name' => $this->selectedEmployeeName ?? null,
+            'assigned_id' => $this->selectedEmployee ?? null,
+            'farm' => $this->farm ?? null,
+            'department' => $this->department ?? null,
         ]);
 
 

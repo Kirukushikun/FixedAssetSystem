@@ -33,6 +33,11 @@ return new class extends Migration
 
             $table->json('technical_data')->nullable();
 
+            $table->string('assigned_name')->nullable();
+            $table->string('assigned_id')->nullable();
+            $table->string('farm')->nullable();
+            $table->string('department')->nullable();
+
             $table->timestamps();
         });
     }

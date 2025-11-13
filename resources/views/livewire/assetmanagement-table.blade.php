@@ -77,7 +77,7 @@
                               @endphp 
                               <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
                          </td>
-                         <td>John Reyes</td>
+                         <td>{{$asset->assigned_name ?? '--'}}</td>
                          <td x-data="{ open: false }" class="relative">
                               <i class="fa-solid fa-ellipsis-vertical cursor-pointer" @click="open = !open"></i>
 

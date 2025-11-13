@@ -4,10 +4,13 @@
         modalTemplate: '',
     }"    
 >
-    <div class="card self-center">
-        <i class="fa-solid fa-arrow-left absolute top-8 left-[190px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
+    <div class="card self-center relative">
+        <i class="fa-solid fa-arrow-left absolute top-8 -left-[50px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
         <h1 class="text-lg font-bold">General Information</h1>
-        <p class="text-gray-400 text-sm mb-5">Basic details that describe and identify this asset. These values help classify and track the item within the system.</p>
+        <p class="text-gray-400 text-sm mb-10">Basic details that describe and identify this asset. These values help classify and track the item within the system.</p>
+
+        <img class="absolute top-[10px] right-[10px]" src="{{asset('img/QR-Code.png')}}" width="120" alt="">
+
         <div class="grid grid-cols-4 gap-5">
             <div class="input-group">
                 <label for="ref_id">Reference ID: </label>
@@ -79,6 +82,7 @@
                 <label for="usable_life">Usable Life:</label>
                 <input type="text" id="usable_life" wire:model="usable_life" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
+
         </div>
         
         @if($category_type == 'IT')
@@ -141,23 +145,31 @@
         <h1 class="text-lg font-bold">Assignment Details</h1>
         <p class="text-gray-400 text-sm mb-5">Information on where this asset is currently assigned, including the responsible employee and location.</p>
         <div class="grid grid-cols-3 gap-5">
+            <!-- EMPLOYEE SELECT -->
             <div class="input-group">
-                <label for="">Assigned To:</label>
-                <select id="" {{$mode == 'view' ? 'disabled' : ''}}>
-                    <option value=""></option>
-                    <option value="">Chris Bacon</option>                    
-                </select>
+                <label>Assigned To:</label>
+                <select wire:model.live="selectedEmployee" {{ $mode == 'view' ? 'disabled' : '' }}>
+                    <option value="">Select</option>
 
+                    @foreach ($employees as $emp)
+                        <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
+                    @endforeach
+                </select>
             </div>
+
+            <!-- FARM -->
             <div class="input-group">
-                <label for="">Farm:</label>
-                <input type="text" readonly>
+                <label>Farm:</label>
+                <input type="text" wire:model="farm" readonly>
             </div>
+
+            <!-- DEPARTMENT -->
             <div class="input-group">
-                <label for="">Department/Division:</label>
-                <input type="text" readonly>
+                <label>Department/Division:</label>
+                <input type="text" wire:model="department" readonly>
             </div>
         </div>
+
         <div class="flex flex-col gap-5 mt-5"> 
             <div class="file-group flex flex-col gap-2">
                 <label for="" class="text-[15px] font-semibold">Attachment(s):</label>
@@ -175,7 +187,43 @@
                 <label for="">Remarks:</label>
                 <textarea name="" id=""></textarea>
             </div>
-            @if($mode != 'view')
+            
+            @if($mode == 'view')
+                <div class="input-group">
+                    <label class="block mb-2 font-medium">Assignment History:</label>
+                    <table class="w-full border border-gray-300 border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500">
+                                <th class="border border-gray-300 text-left px-2 py-1">Condition</th>
+                                <th class="border border-gray-300 text-left px-2 py-1">Status</th>
+                                <th class="border border-gray-300 text-left px-2 py-1">Assignee</th>
+                                <th class="border border-gray-300 text-left px-2 py-1">Farm</th>
+                                <th class="border border-gray-300 text-left px-2 py-1">Department</th>
+                                <th class="border border-gray-300 text-left px-2 py-1">Date Issued</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($history as $asset)
+                                <tr>
+                                    <td class="border border-gray-300 px-2 py-1">{{$asset->condition}}</td>
+                                    <td class="border border-gray-300 px-2 py-1">{{$asset->status}}</td>
+                                    <td class="border border-gray-300 px-2 py-1">(#{{$asset->assigned_id ?? '—'}}) {{$asset->assigned_name ?? '—'}}</td>
+                                    <td class="border border-gray-300 px-2 py-1">{{$asset->farm ?? '—'}}</td>
+                                    <td class="border border-gray-300 px-2 py-1">{{$asset->department ?? '—'}}</td>
+                                    <td class="border border-gray-300 px-2 py-1">{{$asset->updated_at->format('m/d/Y')}}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            @if($mode == 'view')
+                <div class="self-end flex gap-3">
+                    <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
+                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500">PRINT ACCOUNTABILITY FORM</button> 
+                </div>
+            @else
                 <div class="self-end flex gap-3">
                     <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
                     <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit" @click="modalTemplate = 'submit'">SAVE</button> 
@@ -184,6 +232,7 @@
         </div>
 
     </div>    
+
     
     <!-- Backdrop -->
     <div 

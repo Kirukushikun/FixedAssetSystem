@@ -17,6 +17,7 @@ class AssetManagementTable extends Component
     {   
         $assets = Asset::where('is_deleted', false)
             ->where('is_archived', false)
+            ->latest()
             ->get();
         return view('livewire.assetmanagement-table', compact('assets'));
     }
