@@ -38,7 +38,7 @@
                     <td>{{$employee->position}}</td>
                     <td>{{$employee->farm}}</td>
                     <td>{{$employee->department}}</td>
-                    <td>{{$employee->assigned_assets}}</td>
+                    <td>{{ $employee->assets_count }}</td>
                     <td>
                         <div class="flex gap-2 items-center">
                             <i class="fa-solid fa-flag text-[#4299E1]"></i>

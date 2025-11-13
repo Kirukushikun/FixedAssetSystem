@@ -73,11 +73,14 @@ class EmployeesTable extends Component
         $this->reset(['target', 'employee_id', 'employee_name', 'position', 'farm', 'department']);
     }
 
+
     public function render()
     {   
         $employees = Employee::where('is_deleted', false)
+            ->selectRaw('employees.*, (SELECT COUNT(*) FROM assets WHERE assets.assigned_id = employees.id) as assets_count')
             ->latest()
             ->get();
+            
         return view('livewire.employees-table', compact('employees'));
     }
 }
