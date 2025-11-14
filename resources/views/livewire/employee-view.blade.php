@@ -21,13 +21,25 @@
         </div>
 
         <div class="grid grid-cols-3 gap-3 text-sm">
-            <p><i class="fa-solid fa-flag text-[#4299E1]"></i> Under Investigation - Laptop HP ProBook (FA-00045)</p>
-            <p><i class="fa-solid fa-flag text-[#C075F9]"></i> Pending Clearances - Router TP-Link (FA-00032)</p>
-            <p><i class="fa-solid fa-flag text-[#F56565]"></i> Lost Asset - Printer Canon G3010 (FA-00025)</p>
-            <p><i class="fa-solid fa-flag text-[#ED8936]"></i> Unreturned Asset - Edifier 400</p>
-            <p><i class="fa-solid fa-flag text-[#ECC94B]"></i> Damaged Asset - N-VISIOn 23.8 Inch Gaming Monitor</p>
+            @php
+                $flagColor = [
+                    'Under Investigation' => '#4299E1',
+                    'Pending Clearances' => '#C075F9',
+                    'Lost Asset' => '#F56565',
+                    'Unreturned Asset' => '#ED8936',
+                    'Damaged Asset' => '#ECC94B',
+                ]
+            @endphp
+            @foreach($flags as $flag)
+                <p><i class="fa-solid fa-flag text-[{{$flagColor[$flag->flag_type]}}]"></i> {{$flag->flag_type}} - {{$flag->asset}}</p>
+            @endforeach
+
         </div>
-        <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit" @click="showModal = true; modalTemplate = 'flag'">ADD NEW FLAG</button>
+        <div class="flex gap-3">
+            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit" @click="showModal = true; modalTemplate = 'flag'">ADD NEW FLAG</button>
+            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit" @click="showModal = true; modalTemplate = 'flag'">MARK ALL AS RESOLVED</button>
+        </div>
+        
     </div>
 
     <div class="card content flex-1 flex flex-col">
@@ -173,7 +185,7 @@
 
                 <div class="input-group">
                     <label>Type of Flag:</label>
-                    <select name="" id="">
+                    <select name="" id="" wire:model="flag_type">
                         <option value="">Select type:</option>
                         <option value="Under Investigation">Under Investigation</option>
                         <option value="Unreturned Asset">Pending Clearances</option>
@@ -185,7 +197,7 @@
 
                 <div class="input-group">
                     <label>Asset</label>
-                    <select name="" id="">
+                    <select name="" id="" wire:model="asset">
                         <option value="">Select Asset:</option>
                         @foreach($assets as $asset)
                             <option value="{{$asset->brand}} {{$asset->model}}">{{$asset->brand}} {{$asset->model}}</option>
@@ -195,7 +207,7 @@
 
                 <div class="flex justify-end gap-3">
                     <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button @click="showModal = false" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">Confirm</button>
+                    <button @click="showModal = false" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800" wire:click="submitFlag()">Confirm</button>
                 </div>
             </div>
 

@@ -1,5 +1,5 @@
 @extends('layouts.app')
 
 @section('content')
-<livewire:assetmanagement-table />
+     <livewire:asset-management-table />
 @endsection

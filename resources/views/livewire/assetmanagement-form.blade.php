@@ -148,7 +148,7 @@
             <!-- EMPLOYEE SELECT -->
             <div class="input-group">
                 <label>Assigned To:</label>
-                <select wire:model.live="selectedEmployee" {{ $mode == 'view' ? 'disabled' : '' }}>
+                <select wire:model.live="selectedEmployee" {{ $mode == 'view' || $mode == 'edit' ? 'disabled' : '' }}>
                     <option value="">Select</option>
 
                     @foreach ($employees as $emp)
@@ -194,23 +194,23 @@
                     <table class="w-full border border-gray-300 border-collapse text-sm">
                         <thead>
                             <tr class="bg-gray-50 text-gray-500">
-                                <th class="border border-gray-300 text-left px-2 py-1">Condition</th>
-                                <th class="border border-gray-300 text-left px-2 py-1">Status</th>
-                                <th class="border border-gray-300 text-left px-2 py-1">Assignee</th>
-                                <th class="border border-gray-300 text-left px-2 py-1">Farm</th>
-                                <th class="border border-gray-300 text-left px-2 py-1">Department</th>
-                                <th class="border border-gray-300 text-left px-2 py-1">Date Issued</th>
+                                <th class="border border-gray-300 text-left px-2 py-2">Assignee</th>
+                                <th class="border border-gray-300 text-left px-2 py-2">Status</th>
+                                <th class="border border-gray-300 text-left px-2 py-2">Condition</th>
+                                <th class="border border-gray-300 text-left px-2 py-2">Farm</th>
+                                <th class="border border-gray-300 text-left px-2 py-2">Department</th>
+                                <th class="border border-gray-300 text-left px-2 py-2">Date Issued</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($history as $asset)
                                 <tr>
-                                    <td class="border border-gray-300 px-2 py-1">{{$asset->condition}}</td>
-                                    <td class="border border-gray-300 px-2 py-1">{{$asset->status}}</td>
-                                    <td class="border border-gray-300 px-2 py-1">(#{{$asset->assigned_id ?? '—'}}) {{$asset->assigned_name ?? '—'}}</td>
-                                    <td class="border border-gray-300 px-2 py-1">{{$asset->farm ?? '—'}}</td>
-                                    <td class="border border-gray-300 px-2 py-1">{{$asset->department ?? '—'}}</td>
-                                    <td class="border border-gray-300 px-2 py-1">{{$asset->updated_at->format('m/d/Y')}}</td>
+                                    <td class="border border-gray-300 px-2 py-2">(#{{$asset->assigned_id ?? '—'}}) {{$asset->assigned_name ?? '—'}}</td>
+                                    <td class="border border-gray-300 px-2 py-2">{{$asset->status}}</td>
+                                    <td class="border border-gray-300 px-2 py-2">{{$asset->condition}}</td>
+                                    <td class="border border-gray-300 px-2 py-2">{{$asset->farm ?? '—'}}</td>
+                                    <td class="border border-gray-300 px-2 py-2">{{$asset->department ?? '—'}}</td>
+                                    <td class="border border-gray-300 px-2 py-2">{{$asset->updated_at->format('m/d/Y')}}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -218,17 +218,18 @@
                 </div>
             @endif
 
-            @if($mode == 'view')
-                <div class="self-end flex gap-3">
+            <div class="self-end flex gap-3">
+                @if($mode != 'create')
+                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button> 
+                @endif 
+                @if($mode == 'view')
                     <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
                     <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500">PRINT ACCOUNTABILITY FORM</button> 
-                </div>
-            @else
-                <div class="self-end flex gap-3">
+                @else
                     <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
-                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit" @click="modalTemplate = 'submit'">SAVE</button> 
-                </div>
-            @endif
+                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit()" @click="modalTemplate = 'submit'">SAVE</button> 
+                @endif
+            </div>
         </div>
 
     </div>    
@@ -270,6 +271,31 @@
                 </div>
             </div>
 
+            <!-- SUBMIT MODAL -->
+            <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'transfer'">
+                <h2 class="text-xl font-semibold -mb-2">Transfer Asset</h2>
+                <p>Update the current holder of this asset. This action will create a transfer record and move the accountability to the selected employee.</p>
+
+                <div class="input-group">
+                    <label for="">Current Holder: </label>
+                    <input type="text" value="{{$targetAsset->assigned_name}}" readonly>
+                </div>
+
+                <div class="input-group">
+                    <label for="">New Holder: </label>
+                    <select name="" id="">
+                        <option value=""></option>
+                        @foreach ($employees as $emp)
+                            @if($emp['id'] !=  $targetAsset->assigned_id)
+                                <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
+                            @endif
+                            
+                        @endforeach
+                    </select>
+                </div>
+
+                <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+            </div>
         </div>
 
     </div>
