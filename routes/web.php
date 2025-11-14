@@ -4,6 +4,12 @@ use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\LoginController;
+
+Route::get('/login', fn() => view('auth.login'))->name('login');
+
+Route::post('/login', [LoginController::class, 'postLogin'])->name('login.post');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 });
@@ -45,3 +51,4 @@ Route::get('/systemrecords', function () {
 Route::get('/settings', function () {
     return view('settings');
 });
+
