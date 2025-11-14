@@ -19,6 +19,6 @@ class AssetManagementTable extends Component
             ->where('is_archived', false)
             ->latest()
             ->get();
-        return view('livewire.assetmanagement-table', compact('assets'));
+        return view('livewire.asset-management-table', compact('assets'));
     }
 }
