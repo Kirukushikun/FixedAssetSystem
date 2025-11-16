@@ -34,6 +34,7 @@ class Asset extends Model
         'farm',
         'department',
 
+        'qr_code',
         'attachment',
         'attachment_name',
 

@@ -141,7 +141,7 @@
                         <label>Farm:</label>
                         <select wire:model="farm">
                             <option value=""></option>
-                            <option value="BGC">BGC</option>
+                            <option value="BFC">BFC</option>
                             <option value="BDL">BDL</option>
                             <option value="BFC">BFC</option>
                             <option value="RH">RH</option>

@@ -52,3 +52,7 @@ Route::get('/settings', function () {
     return view('settings');
 });
 
+Route::get('/accountability-form', function () {
+    return view('accountability-form');
+});
+
