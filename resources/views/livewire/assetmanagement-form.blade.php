@@ -171,21 +171,67 @@
         </div>
 
         <div class="flex flex-col gap-5 mt-5"> 
-            <div class="file-group flex flex-col gap-2">
-                <label for="" class="text-[15px] font-semibold">Attachment(s):</label>
-                <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
-                    <div target="_blank" type="button" class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500" disabled>
-                        Upload File
+            @if($mode == 'create')
+                <div class="file-group flex flex-col gap-2">
+                    <label for="attachment" class="text-[15px] font-semibold relative">
+                        Attachment(s):
+                        @error('attachment')
+                            <span class="absolute bg-white text-red-600 right-0 bottom-[-20px] text-xs p-1">
+                                {{ $message }}
+                            </span>
+                        @enderror
+                    </label>
+
+                    <!-- Same layout container -->
+                    <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm relative">
+
+                        <!-- Clickable Upload Button -->
+                        <div 
+                            class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
+                            @click="$refs.attachment.click()"
+                        >
+                            Upload File
+                        </div>
+
+                        <!-- Filename or placeholder -->
+                        <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                            {{ $attachment ? $attachment->getClientOriginalName() : 'No file attached' }}
+                        </div>
+
+                        <!-- Hidden Real Input -->
+                        <input 
+                            x-ref="attachment"
+                            type="file"
+                            class="hidden"
+                            wire:model="attachment"
+                            accept="application/pdf"
+                        >
                     </div>
-                    <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
-                        No file attached
-                    </div> 
                 </div>
-            </div>
+            @else 
+                <div class="file-group flex flex-col gap-2">
+                    <label class="text-[15px] font-semibold">Attachment(s):</label>
+
+                    <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
+
+                            <a href="{{ Storage::url($attachment) }}" 
+                            target="_blank" 
+                            class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
+                            >
+                                View File
+                            </a>
+
+                            <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                                {{ $attachment_name }}
+                            </div>
+
+                    </div>
+                </div>
+            @endif
 
             <div class="input-group">
                 <label for="">Remarks:</label>
-                <textarea name="" id=""></textarea>
+                <textarea name="" id="" wire:model="remarks"></textarea>
             </div>
             
             @if($mode == 'view')
@@ -270,7 +316,8 @@
                     @endif
                 </div>
             </div>
-
+            
+            @if($targetAsset)
             <!-- SUBMIT MODAL -->
             <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'transfer'">
                 <h2 class="text-xl font-semibold -mb-2">Transfer Asset</h2>
@@ -278,13 +325,14 @@
 
                 <div class="input-group">
                     <label for="">Current Holder: </label>
-                    <input type="text" value="{{$targetAsset->assigned_name}}" readonly>
+                    <input type="text" value="{{$targetAsset->assigned_name ?? 'No current holder'}}" readonly>
                 </div>
 
                 <div class="input-group">
                     <label for="">New Holder: </label>
                     <select name="" id="">
                         <option value=""></option>
+                        
                         @foreach ($employees as $emp)
                             @if($emp['id'] !=  $targetAsset->assigned_id)
                                 <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
@@ -296,6 +344,7 @@
 
                 <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
             </div>
+            @endif
         </div>
 
     </div>

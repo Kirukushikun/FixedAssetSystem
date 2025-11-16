@@ -33,6 +33,11 @@ class Asset extends Model
         'assigned_id',
         'farm',
         'department',
+
+        'attachment',
+        'attachment_name',
+
+        'remarks'
     ];
 
     protected $cast = [

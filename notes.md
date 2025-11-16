@@ -249,3 +249,131 @@ class EmployeeCrud extends Component
 - **render()** - Fetches all employees (newest first) and passes them to the view for display
 - **Alpine.js in view** handles modal visibility and switching between create/edit/delete templates
 - **$wire** magic property allows Alpine to call Livewire methods directly from the frontend
+
+
+
+
+# Upload File
+```
+Static:
+
+<div class="file-group flex flex-col gap-2">
+    <label for="" class="text-[15px] font-semibold relative">Attachment(s):</label>
+    <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
+        <div target="_blank" type="button" class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500" disabled>
+            Upload File
+        </div>
+        <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+            No file attached
+        </div> 
+    </div>
+</div>
+```
+```
+    <!-- Create -->
+    <div class="file-group flex flex-col gap-2">
+        <label for="attachment" class="text-[15px] font-semibold relative">
+            Attachment(s):
+            @error('attachment')
+                <span class="absolute bg-white text-red-600 right-0 bottom-[-20px] text-xs p-1">
+                    {{ $message }}
+                </span>
+            @enderror
+        </label>
+
+        <!-- Same layout container -->
+        <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm relative">
+
+            <!-- Clickable Upload Button -->
+            <div 
+                class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
+                @click="$refs.attachment.click()"
+            >
+                Upload File
+            </div>
+
+            <!-- Filename or placeholder -->
+            <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                {{ $attachment_name ?? 'No file attached' }}
+            </div>
+
+            <!-- Hidden Real Input -->
+            <input 
+                x-ref="attachment"
+                type="file"
+                class="hidden"
+                wire:model="attachment"
+                accept="application/pdf"
+            >
+        </div>
+    </div>
+```
+
+``` 
+<!-- Viewing -->
+    <div class="file-group flex flex-col gap-2">
+        <label class="text-[15px] font-semibold">Attachment(s):</label>
+
+        <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
+
+            @if($dataEntry->attachment)
+                <a href="{{ Storage::url($dataEntry->attachment) }}" 
+                target="_blank" 
+                class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
+                >
+                    View File
+                </a>
+
+                <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                    {{ $dataEntry->attachment_name }}
+                </div>
+
+            @else
+                <div class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500" disabled>
+                    View File
+                </div>
+                
+                <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                    No file attached
+                </div>
+            @endif
+
+        </div>
+    </div>
+```
+
+
+```
+    public $attachment;
+
+    protected $rules = [
+        'supporting_file' => 'nullable|file|mimes:pdf|max:5120'
+    ];
+
+    if($this->attachment){
+        // store on the "public" disk in storage/app/public/pdfs
+        $path = $this->attachment->store('attachment', 'public');
+        $originalName = $this->attachment->getClientOriginalName();            
+    }
+
+    saving:
+    $dataEntry->attachment = $path ?? null;
+    $dataEntry->attachment_name = $originalName ?? null;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

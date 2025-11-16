@@ -3,12 +3,18 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+
 use App\Models\Asset;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Log;
 
+
 class AssetManagementForm extends Component
 {   
+    use WithFileUploads;
+
     public $mode;
     public $showConfirmModal = false;
     public $targetAsset;
@@ -43,11 +49,15 @@ class AssetManagementForm extends Component
 
     // ASSIGNMENT DETAILS
     public $employees = [];
-    public $selectedEmployee = '';
-    public $selectedEmployeeName = '';
-    public $farm = '';
-    public $department = '';
-    public $history = '';
+    public $selectedEmployee;
+    public $selectedEmployeeName;
+    public $farm;
+    public $department;
+    public $history;
+
+    public $attachment;
+    public $attachment_name;
+    public $remarks;
 
     // RULES FOR VALIDATIOn
     protected $rules = [
@@ -64,7 +74,9 @@ class AssetManagementForm extends Component
         'acquisition_date' => 'required',
         'item_cost' => 'nullable',
         'depreciated_value' => 'nullable',
-        'usable_life' => 'nullable'
+        'usable_life' => 'nullable',
+
+        'attachment' => 'nullable|file|mimes:pdf|max:5120'
     ];
 
     public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null){
@@ -98,8 +110,13 @@ class AssetManagementForm extends Component
 
                 'selectedEmployee' => $this->targetAsset->assigned_id,  
                 'farm' => $this->targetAsset->farm,
-                'department' => $this->targetAsset->department
+                'department' => $this->targetAsset->department,
+
+                'remarks' => $this->remarks
             ]); 
+
+            $this->attachment = $this->targetAsset->attachment;
+            $this->attachment_name = $this->targetAsset->attachment_name;
 
             //Prefill technical data
             if($this->targetAsset->category_type == 'IT'){
@@ -144,7 +161,10 @@ class AssetManagementForm extends Component
         // Final validation upon submit
         $this->validate();
 
-
+        if ($this->attachment) {
+            $path = $this->attachment->store('attachment', 'public');
+            $originalName = $this->attachment->getClientOriginalName();
+        }
         
         Asset::create([
             'ref_id' => $this->ref_id,
@@ -168,6 +188,9 @@ class AssetManagementForm extends Component
             'assigned_id' => $this->selectedEmployee ?? null,
             'farm' => $this->farm ?? null,
             'department' => $this->department ?? null,
+
+            'attachment' => $path ?? null,
+            'attachment_name' => $originalName ?? null
         ]);
 
 
