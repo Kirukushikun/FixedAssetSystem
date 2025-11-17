@@ -38,6 +38,12 @@ return new class extends Migration
             $table->string('farm')->nullable();
             $table->string('department')->nullable();
 
+            $table->text('qr_code')->nullable();
+            $table->string('attachment')->nullable();
+            $table->text('attachment_name')->nullable();
+
+            $table->text('remarks')->nullable();
+
             $table->timestamps();
         });
     }

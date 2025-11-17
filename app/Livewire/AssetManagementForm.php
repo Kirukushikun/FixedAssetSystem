@@ -3,12 +3,22 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
+
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 use App\Models\Asset;
 use App\Models\Employee;
-use Illuminate\Support\Facades\Log;
+use App\Models\History;
+
 
 class AssetManagementForm extends Component
 {   
+    use WithFileUploads;
+
     public $mode;
     public $showConfirmModal = false;
     public $targetAsset;
@@ -43,11 +53,19 @@ class AssetManagementForm extends Component
 
     // ASSIGNMENT DETAILS
     public $employees = [];
-    public $selectedEmployee = '';
-    public $selectedEmployeeName = '';
-    public $farm = '';
-    public $department = '';
-    public $history = '';
+    public $selectedEmployee;
+    public $selectedEmployeeName;
+    public $farm;
+    public $department;
+    public $history;
+
+    public $qr_code;
+    public $attachment;
+    public $attachment_name;
+    public $remarks;
+
+    public $newHolder;
+    public $newCondition;
 
     // RULES FOR VALIDATIOn
     protected $rules = [
@@ -64,7 +82,9 @@ class AssetManagementForm extends Component
         'acquisition_date' => 'required',
         'item_cost' => 'nullable',
         'depreciated_value' => 'nullable',
-        'usable_life' => 'nullable'
+        'usable_life' => 'nullable',
+
+        'attachment' => 'nullable|file|mimes:pdf|max:5120'
     ];
 
     public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null){
@@ -98,8 +118,14 @@ class AssetManagementForm extends Component
 
                 'selectedEmployee' => $this->targetAsset->assigned_id,  
                 'farm' => $this->targetAsset->farm,
-                'department' => $this->targetAsset->department
+                'department' => $this->targetAsset->department,
+
+                'remarks' => $this->remarks
             ]); 
+
+            $this->qr_code = $this->targetAsset->qr_code;
+            $this->attachment = $this->targetAsset->attachment;
+            $this->attachment_name = $this->targetAsset->attachment_name;
 
             //Prefill technical data
             if($this->targetAsset->category_type == 'IT'){
@@ -107,7 +133,7 @@ class AssetManagementForm extends Component
             }
 
             // History
-            $this->history = Asset::where('ref_id', $this->targetAsset->ref_id)->latest()->get();
+            $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
             
         }
 
@@ -144,9 +170,12 @@ class AssetManagementForm extends Component
         // Final validation upon submit
         $this->validate();
 
-
+        if ($this->attachment) {
+            $path = $this->attachment->store('attachment', 'public');
+            $originalName = $this->attachment->getClientOriginalName();
+        }
         
-        Asset::create([
+        $asset = Asset::create([
             'ref_id' => $this->ref_id,
             'category_type' => $this->category_type,
             'category' => $this->category,
@@ -168,8 +197,24 @@ class AssetManagementForm extends Component
             'assigned_id' => $this->selectedEmployee ?? null,
             'farm' => $this->farm ?? null,
             'department' => $this->department ?? null,
+
+            'attachment' => $path ?? null,
+            'attachment_name' => $originalName ?? null
         ]);
 
+        // -------- SAVE QR CODE FILE ----------
+        $url = url('/assetmanagement/view?targetID=' . $asset->id);
+
+        $qrFileName = 'qr_' . $asset->id . '.svg';
+
+        QrCode::format('svg')
+            ->size(300)
+            ->generate($url, storage_path('app/public/qrcodes/' . $qrFileName));
+
+        $asset->update([
+            'qr_code' => 'qrcodes/' . $qrFileName
+        ]);
+        // -------------------------------------
 
         $this->redirect('/assetmanagement');
     }
@@ -201,9 +246,64 @@ class AssetManagementForm extends Component
 
         $this->redirect('/assetmanagement');
     }
+
+    // --- TRANSFER ASSET ---
+    public function transferAsset()
+    {   
+        $assignee = Employee::find($this->newHolder);
+
+        // 1. Save history (old data first)
+        History::create([
+            'asset_id'      => $this->targetAsset->id,
+            'assignee_id'   => $this->targetAsset->assigned_id,
+            'assignee_name' => $this->targetAsset->assigned_name,
+            'status'        => $this->targetAsset->status,
+            'condition'     => $this->newCondition,
+            'farm'          => $this->targetAsset->farm,
+            'department'    => $this->targetAsset->department,
+            'action'        => 'Transfer',
+        ]);
+
+        // 2. Update asset (new holder + new condition)
+        $this->targetAsset->update([
+            'assigned_id'   => $assignee->id,
+            'assigned_name' => $assignee->employee_name,
+            'farm' => $assignee->farm,
+            'department' => $assignee->department,
+            'condition' => $this->newCondition,
+        ]);
+    }
+
+    // --- ASSIGN ASSET ---
+    public function assignAsset()
+    {   
+        $assignee = Employee::find($this->newHolder);
+
+        // 1. Save history
+        History::create([
+            'asset_id'      => $this->targetAsset->id,
+            'assignee_id'   => $assignee->id,
+            'assignee_name' => $assignee->employee_name,
+            'status'        => $this->targetAsset->status,
+            'condition'     => $this->targetAsset->condition,
+            'farm'          => $assignee->farm,
+            'department'    => $assignee->department,
+            'action'        => 'Assign',
+        ]);
+
+        // 2. Update asset (assign new holder)
+        $this->targetAsset->update([
+            'assigned_id'   => $assignee->id,
+            'assigned_name' => $assignee->employee_name,
+            'farm' => $assignee->farm,
+            'department' => $assignee->department,
+            'condition' => $this->targetAsset->condition,
+        ]);
+
+    }
     
     public function render()
-    {
+    {   
         return view('livewire.assetmanagement-form');
     }
 }

@@ -8,7 +8,7 @@
 
      @livewireStyles
      @vite(['resources/css/app.css'])
-     
+     <link rel="shortcut icon" href="{{asset('img/Fixed.ico')}}" type="image/x-icon">
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
      <link rel="preconnect" href="https://fonts.googleapis.com" />
      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +18,7 @@
 <body>
      <nav>
           <div class="logo">
-               <p class="font-bold">FIXED ASSET</p>
+               <p class="font-bold flex gap-1 items-center"><img src="{{asset('img/Fixed.png')}}" width="25" alt=""> <span>FIXED ASSET</span></p>
                <button id="toggle-btn" class="text-lg hover:scale-125"><i class="fa-solid fa-bars"></i></button>
           </div>
 
