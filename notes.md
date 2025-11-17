@@ -1,379 +1,165 @@
-# 🧩 Starter Kit – Modal Confirmation with Livewire Basic CRUD
-
-
-## Overview
-This modal system combines Alpine.js flexibility and Livewire backend interaction.
-It allows you to handle multiple modal types — Create, Edit, and Delete — in a single reusable container, making it ideal for CRUD operations.
-
-## 1. Static Multi-Purpose Modal (No Livewire)
-A front-end–only version to visualize how the modal system works before backend integration.
-
-```html
-<!-- Static Multi-Purpose Modal -->
-<div x-data="{ showModal: false, modalTemplate: '' }" class="relative">
-
-    <!-- Example Buttons -->
-    <div class="flex gap-3">
-        <button @click="showModal = true; modalTemplate = 'create'" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">Create</button>
-        <button @click="showModal = true; modalTemplate = 'delete'" class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">Delete</button>
-    </div>
-
-    <!-- Backdrop -->
-    <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40"></div>
-
-    <!-- Modal Container -->
-    <div
-        x-show="showModal"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-90"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-90"
-        class="fixed inset-0 flex items-center justify-center z-50"
-    >
-        <div class="relative bg-white p-8 rounded-lg shadow-lg w-[26rem]">
-            <button class="absolute right-7 top-7 text-gray-400 hover:text-gray-800" @click="showModal = false">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <!-- Create Modal -->
-            <div class="flex flex-col gap-5" x-show="modalTemplate === 'create'">
-                <h2 class="text-xl font-semibold -mb-2">Create Modal</h2>
-
-                <div>
-                    <label>Input Field 1</label>
-                    <input type="text" class="border rounded w-full p-1" />
-                </div>
-
-                <div>
-                    <label>Input Field 2</label>
-                    <input type="text" class="border rounded w-full p-1" />
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button @click="showModal = false" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">Confirm</button>
-                </div>
-            </div>
-
-            <!-- Delete Confirmation -->
-            <div class="flex flex-col gap-5" x-show="modalTemplate === 'delete'">
-                <h2 class="text-xl font-semibold -mb-2">Delete Modal</h2>
-                <p>Are you sure you want to delete this item?</p>
-
-                <div class="flex justify-end gap-3">
-                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button @click="showModal = false" class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+```
+composer require maatwebsite/excel
 ```
 
-### 💡 How It Works
-- modalTemplate switches content dynamically between modal types.
-- Single modal container keeps your markup minimal.
-- Great for scaling toward more complex actions (e.g. Livewire calls).
+```
+php artisan make:export EmployeesExport --model=Employee
 
-## 2. Livewire CRUD Integration
-Here’s the real-world version with Livewire handling **Create**, **Edit**, and **Delete** actions.
-We’ll keep the fields minimal: firstname, lastname, and age.
+php artisan make:import EmployeesImport --model=Employee
+```
 
-### 🔹 Livewire Component
-```php
+```
 <?php
 
-namespace App\Livewire;
+namespace App\Exports;
 
-use Livewire\Component;
 use App\Models\Employee;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class EmployeeCrud extends Component
+class EmployeesExport implements FromCollection, WithHeadings
 {
-    public $target;
-    public $firstname, $lastname, $age;
-
-    protected $rules = [
-        'firstname' => 'required',
-        'lastname' => 'required',
-        'age' => 'required|numeric|min:1',
-    ];
-
-    // Load employee data into form inputs
-    public function targetID($id)
+    public function collection()
     {
-        $this->target = $id;
-        $employee = Employee::find($id);
-
-        $this->firstname = $employee->firstname;
-        $this->lastname  = $employee->lastname;
-        $this->age       = $employee->age;
+        return Employee::select(
+            'company_id',
+            'full_name',
+            'position',
+            'farm',
+            'department'
+        )->get();
     }
 
-    // Create new employee
-    public function submit()
+    public function headings(): array
     {
-        $this->validate();
-
-        Employee::create([
-            'firstname' => $this->firstname,
-            'lastname'  => $this->lastname,
-            'age'       => $this->age,
-        ]);
-
-        $this->clear();
-    }
-
-    // Update existing employee
-    public function update()
-    {
-        $employee = Employee::find($this->target);
-
-        $employee->update([
-            'firstname' => $this->firstname,
-            'lastname'  => $this->lastname,
-            'age'       => $this->age,
-        ]);
-
-        $this->clear();
-    }
-
-    // Delete employee
-    public function delete()
-    {
-        Employee::find($this->target)?->delete();
-        $this->clear();
-    }
-
-    // Reset form fields
-    public function clear()
-    {
-        $this->reset(['target', 'firstname', 'lastname', 'age']);
-    }
-
-    // Render view with employee list
-    public function render()
-    {
-        return view('livewire.employee-crud', [
-            'employees' => Employee::latest()->get(),
-        ]);
+        return [
+            'Employee ID',
+            'Employee Full Name',
+            'Position',
+            'Farm',
+            'Department'
+        ];
     }
 }
-```
 
-### 🔹 Livewire View
-```html
-<div class="card content flex-1 flex flex-col" x-data="{ showModal: false, modalTemplate: '' }">
-
-    <!-- Action Buttons -->
-    <div class="flex gap-3 mb-4">
-        <button @click="showModal = true; modalTemplate = 'create'" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Add New</button>
-        <button @click="modalTemplate='edit'; showModal=true; $wire.targetID(1)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Edit</button>
-        <button @click="modalTemplate='delete'; showModal=true; $wire.targetID(1)" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
-    </div>
-
-    <!-- Backdrop -->
-    <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40"></div>
-
-    <!-- Modal -->
-    <div
-        x-show="showModal"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-90"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-90"
-        class="fixed inset-0 flex items-center justify-center z-50"
-    >
-        <div class="relative bg-white p-8 rounded-lg shadow-lg w-[26rem]">
-            <button class="absolute right-7 top-7 text-gray-400 hover:text-gray-800" @click="showModal = false">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <!-- Create / Edit Modal -->
-            <template x-if="modalTemplate === 'create' || modalTemplate === 'edit'">
-                <div class="flex flex-col gap-5">
-                    <h2 class="text-xl font-semibold" x-text="modalTemplate === 'create' ? 'Create Employee' : 'Edit Employee'"></h2>
-
-                    <div>
-                        <label>First Name</label>
-                        <input type="text" wire:model="firstname" class="border rounded w-full p-1" />
-                    </div>
-
-                    <div>
-                        <label>Last Name</label>
-                        <input type="text" wire:model="lastname" class="border rounded w-full p-1" />
-                    </div>
-
-                    <div>
-                        <label>Age</label>
-                        <input type="number" wire:model="age" class="border rounded w-full p-1" />
-                    </div>
-
-                    <div class="flex justify-end gap-3">
-                        <button @click="showModal = false; $wire.clear()" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                        <button
-                            @click="showModal = false; modalTemplate === 'create' ? $wire.submit() : $wire.update();"
-                            class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
-                        >
-                            <span x-text="modalTemplate === 'create' ? 'Confirm' : 'Update'"></span>
-                        </button>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Delete Confirmation -->
-            <div class="flex flex-col gap-5" x-show="modalTemplate === 'delete'">
-                <h2 class="text-xl font-semibold -mb-2">Delete Employee</h2>
-                <p>Are you sure you want to delete this employee?</p>
-
-                <div class="flex justify-end gap-3">
-                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button @click="showModal = false; $wire.delete()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-```
-### 💡 How It Works
-- Public properties (`$target`, `$firstname`, `$lastname`, `$age`) are automatically synced between component and view via `wire:model`
-- **targetID()** - Loads an employee's data into the form fields when Edit/Delete button is clicked
-- **submit()** - Validates input and creates a new employee record in the database
-- **update()** - Finds the targeted employee and updates their information
-- **delete()** - Removes the targeted employee from the database
-- **clear()** - Resets all form fields back to empty state
-- **render()** - Fetches all employees (newest first) and passes them to the view for display
-- **Alpine.js in view** handles modal visibility and switching between create/edit/delete templates
-- **$wire** magic property allows Alpine to call Livewire methods directly from the frontend
-
-
-
-
-# Upload File
-```
-Static:
-
-<div class="file-group flex flex-col gap-2">
-    <label for="" class="text-[15px] font-semibold relative">Attachment(s):</label>
-    <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
-        <div target="_blank" type="button" class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500" disabled>
-            Upload File
-        </div>
-        <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
-            No file attached
-        </div> 
-    </div>
-</div>
-```
-```
-    <!-- Create -->
-    <div class="file-group flex flex-col gap-2">
-        <label for="attachment" class="text-[15px] font-semibold relative">
-            Attachment(s):
-            @error('attachment')
-                <span class="absolute bg-white text-red-600 right-0 bottom-[-20px] text-xs p-1">
-                    {{ $message }}
-                </span>
-            @enderror
-        </label>
-
-        <!-- Same layout container -->
-        <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm relative">
-
-            <!-- Clickable Upload Button -->
-            <div 
-                class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
-                @click="$refs.attachment.click()"
-            >
-                Upload File
-            </div>
-
-            <!-- Filename or placeholder -->
-            <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
-                {{ $attachment_name ?? 'No file attached' }}
-            </div>
-
-            <!-- Hidden Real Input -->
-            <input 
-                x-ref="attachment"
-                type="file"
-                class="hidden"
-                wire:model="attachment"
-                accept="application/pdf"
-            >
-        </div>
-    </div>
-```
-
-``` 
-<!-- Viewing -->
-    <div class="file-group flex flex-col gap-2">
-        <label class="text-[15px] font-semibold">Attachment(s):</label>
-
-        <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
-
-            @if($dataEntry->attachment)
-                <a href="{{ Storage::url($dataEntry->attachment) }}" 
-                target="_blank" 
-                class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
-                >
-                    View File
-                </a>
-
-                <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
-                    {{ $dataEntry->attachment_name }}
-                </div>
-
-            @else
-                <div class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500" disabled>
-                    View File
-                </div>
-                
-                <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
-                    No file attached
-                </div>
-            @endif
-
-        </div>
-    </div>
 ```
 
 
 ```
-    public $attachment;
+<?php
 
-    protected $rules = [
-        'supporting_file' => 'nullable|file|mimes:pdf|max:5120'
-    ];
+namespace App\Imports;
 
-    if($this->attachment){
-        // store on the "public" disk in storage/app/public/pdfs
-        $path = $this->attachment->store('attachment', 'public');
-        $originalName = $this->attachment->getClientOriginalName();            
+use App\Models\Employee;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
+
+
+class EmployeesImport implements ToModel, WithHeadingRow, WithCalculatedFormulas
+{   
+    public $createdCount = 0;
+    public $updatedCount = 0;
+
+    public function model(array $row)
+    {
+        // Check if record already exists
+        $existing = Employee::where('company_id', $row['employee_id'])
+            ->where('full_name', $row['employee_full_name'])
+            ->where('position', $row['position'])
+            ->first();
+
+        if ($existing) {
+            return null; // skip duplicates
+        }
+
+        // Create new record
+        $model = Employee::create([
+            'company_id'     => $row['employee_id'],
+            'full_name'      => $row['employee_full_name'],
+            'position'       => $row['position'],
+            'farm'           => $row['farm'],
+            'department'     => $row['department'],
+        ]);
+
+        $this->createdCount++;
+
+        return $model;
     }
 
-    saving:
-    $dataEntry->attachment = $path ?? null;
-    $dataEntry->attachment_name = $originalName ?? null;
+
+}
+
 ```
 
+```
+<?php
 
+namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Exports\EmployeesExport;
+use App\Imports\EmployeesImport;
+use Maatwebsite\Excel\Facades\Excel;
 
+class FixedController extends Controller
+{
+    public function export()
+    {
+        return Excel::download(new EmployeesExport(), 'FIXED ASSET System - Employees.xlsx');
+    }
 
+    public function import(Request $request){
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
 
+        $import = new EmployeesImport;
+        Excel::import($import, $request->file('file'));
 
+        session()->flash('notif', [
+            'type' => 'success',
+            'header' => 'Import Successful',
+            'message' => "Import finished: {$import->createdCount} new rows, {$import->updatedCount} updated."
+        ]);
 
+        return back();
+    }
+}
 
+```
 
+```
+    <form id="import-form" action="/import" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
+        <div id="import-button" class="bg-blue-600 text-white hover:bg-blue-700 rounded-md cursor-pointer px-3 py-2">
+            <i class="fa-solid fa-file-import"></i>
+            import
+        </div>
+    </form>
 
+    <script>
+        document.getElementById('import-button').addEventListener('click', () => {
+            document.getElementById('import-file').click();
+        });
 
+        document.getElementById('import-file').addEventListener('change', () => {
+            document.getElementById('import-form').submit();
+        });
+    </script>
 
+    <div class="bg-blue-600 text-white hover:bg-blue-700 rounded-md cursor-pointer px-3 py-2" onclick="window.location.href='/export'">
+        <i class="fa-solid fa-file-export"></i>
+        Export
+    </div>
 
+```
 
-
-
+```
+    use App\Http\Controllers\EmployeeController;
+    
+    Route::get('/employees/export', [EmployeeController::class, 'export'])->name('employees.export');
+    Route::post('/employees/import', [EmployeeController::class, 'import'])->name('employees.import');
+```

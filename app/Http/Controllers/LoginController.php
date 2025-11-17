@@ -59,7 +59,7 @@ class LoginController extends Controller
 
                 if ($user) {
                     Auth::loginUsingId($user->id);
-                    return redirect()->route('home');
+                    return redirect()->route('dashboard');
                 }
 
                 // User exists in Authenticator but NOT in this system

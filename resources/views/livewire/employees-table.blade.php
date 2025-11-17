@@ -10,8 +10,27 @@
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
             </div>
             <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="showModal = true; modalTemplate = 'create'">ADD NEW EMPLOYEE</button>
-            <i class="fa-solid fa-file-import cursor-pointer"></i>
-            <i class="fa-solid fa-file-export cursor-pointer"></i>
+
+            <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
+                <div id="import-button">
+                    <i class="fa-solid fa-file-import cursor-pointer"></i>
+                </div>
+            </form>
+
+            <script>
+                document.getElementById('import-button').addEventListener('click', () => {
+                    document.getElementById('import-file').click();
+                });
+
+                document.getElementById('import-file').addEventListener('change', () => {
+                    document.getElementById('import-form').submit();
+                });
+            </script>
+
+            <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/employees/export'"></i>
+
             <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
         </div>
     </div>
