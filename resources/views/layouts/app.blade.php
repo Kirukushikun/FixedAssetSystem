@@ -16,6 +16,19 @@
      <link rel="stylesheet" href="{{asset('css/global.css')}}" />
 </head>
 <body>
+
+     <div x-data="{ loading: true }" x-init="setTimeout(() => loading = false, 1000)">
+          <!-- Loader -->
+          <div 
+               x-show="loading" 
+               x-cloak 
+               class="fixed inset-0 flex items-center justify-center bg-white z-50"
+          >
+               <!-- Smooth spinner -->
+               <div class="w-10 h-10 border-4 border-t-teal-500 border-l-gray-300 border-b-gray-300 border-r-gray-300 rounded-full animate-spin"></div>
+          </div>
+     </div>
+
      <nav>
           <div class="logo">
                <p class="font-bold flex gap-1 items-center"><img src="{{asset('img/Fixed.png')}}" width="25" alt=""> <span>FIXED ASSET</span></p>
@@ -70,6 +83,56 @@
           @yield('content')
 
      </main>
+
+     <div x-data="{ show: false, type: '', header: '', message: '' }" 
+          x-init="
+               @if(session('notif'))
+                    // Handle reload flash notification
+                    type = '{{ session('notif.type') }}';
+                    header = '{{ session('notif.header') }}';
+                    message = '{{ session('notif.message') }}';
+                    setTimeout(() => {
+                         show = true;
+                         setTimeout(() => show = false, 4000);
+                    }, 1000);
+               @endif
+
+               // Handle SPA/Livewire notification
+               window.addEventListener('notif', (event) => {
+                    console.log(event.detail); // 👈 check what you actually receive
+                    let data = event.detail
+                    type = data.type
+                    header = data.header
+                    message = data.message
+                    show = true
+                    setTimeout(() => {
+                         setTimeout(() => show = false, 4000)
+                    }, 1000)
+               })
+          "
+          class="absolute top-10 right-10 z-50">
+
+          <div x-show="show"
+               x-transition:enter="transition transform ease-out duration-500"
+               x-transition:enter-start="-translate-y-5 opacity-0"
+               x-transition:enter-end="translate-y-0 opacity-100"
+               x-transition:leave="transition transform ease-in duration-500"
+               x-transition:leave-start="translate-y-0 opacity-100"
+               x-transition:leave-end="-translate-y-5 opacity-0"
+               class="notification w-auto bg-white flex flex-col px-15 py-7 whitespace-nowrap rounded-lg border-solid shadow-xl z-50">
+
+               <div class="notif-header font-bold text-lg flex items-center relative">
+                    <i x-show="type == 'success'" class="fa-regular fa-circle-check absolute -left-8 text-green-500 text-xl"></i>
+                    <i x-show="type == 'failed'" class="fa-regular fa-circle-xmark absolute -left-8 text-red-500 text-xl"></i>
+                    <span x-text="header"></span>
+                    <i class="fa-solid fa-xmark absolute -right-8 text-gray-500 hover:text-gray-800 text-xl cursor-pointer" @click="show = false"></i>
+               </div>
+               
+               <div class="notif-body text-md text-gray-500" x-text="message">
+               </div>
+          </div>
+     </div>
+
      <script src="{{ asset('js/global.js') }}" defer></script>
      @livewireScripts
 </body>

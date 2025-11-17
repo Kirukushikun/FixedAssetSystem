@@ -5,9 +5,20 @@ namespace App\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 use App\Models\Employee;
+use Livewire\WithPagination;
 
 class EmployeesTable extends Component
 {   
+
+    use WithPagination;
+    
+    protected $paginationTheme = 'tailwind';
+
+    public function goToPage($page)
+    {
+       $this->setPage($page);
+    }
+
     public $target;
     public $employee_id, $employee_name, $position, $farm, $department;
 
@@ -34,38 +45,82 @@ class EmployeesTable extends Component
 
     public function submit()
     {
-        Employee::create([
-            'employee_id' => $this->employee_id,
-            'employee_name' => $this->employee_name,
-            'position' => $this->position,
-            'farm' => $this->farm,
-            'department' => $this->department,
-        ]);
+        try {
+            $this->validate();
 
-        $this->clear();
+            Employee::create([
+                'employee_id' => $this->employee_id,
+                'employee_name' => $this->employee_name,
+                'position' => $this->position,
+                'farm' => $this->farm,
+                'department' => $this->department,
+            ]);
+
+            $this->clear();
+
+            // Use NORELOAD - stays on same page, table refreshes automatically
+            $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
+
+        } catch (\Exception $e) {
+            Log::error('Employee creation failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Creation Failed', 'Unable to add employee. Please try again.');
+        }
     }
 
     public function update()
     {
-        $employee = Employee::find($this->target);
+        try {
+            $this->validate();
 
-        $employee->employee_id = $this->employee_id;
-        $employee->employee_name = $this->employee_name;
-        $employee->position = $this->position;
-        $employee->farm = $this->farm;
-        $employee->department = $this->department;
-        $employee->save();
+            $employee = Employee::find($this->target);
 
-        $this->clear();
+            if (!$employee) {
+                $this->noreloadNotif('failed', 'Update Failed', 'Employee not found.');
+                return;
+            }
+
+            $employee->employee_id = $this->employee_id;
+            $employee->employee_name = $this->employee_name;
+            $employee->position = $this->position;
+            $employee->farm = $this->farm;
+            $employee->department = $this->department;
+            $employee->save();
+
+            $this->clear();
+
+            // Use NORELOAD - stays on same page, table refreshes automatically
+            $this->noreloadNotif('success', 'Employee Updated', 'Employee ' . $this->employee_name . ' has been successfully updated.');
+
+        } catch (\Exception $e) {
+            Log::error('Employee update failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Update Failed', 'Unable to update employee. Please try again.');
+        }
     }
 
     public function delete()
     {
-        $employee = Employee::find($this->target);
-        $employee->is_deleted = true;
-        $employee->save();
-        
-        $this->clear();
+        try {
+            $employee = Employee::find($this->target);
+
+            if (!$employee) {
+                $this->noreloadNotif('failed', 'Deletion Failed', 'Employee not found.');
+                return;
+            }
+
+            $employeeName = $employee->employee_name;
+            
+            $employee->is_deleted = true;
+            $employee->save();
+            
+            $this->clear();
+
+            // Use NORELOAD - stays on same page, table refreshes automatically
+            $this->noreloadNotif('success', 'Employee Deleted', 'Employee ' . $employeeName . ' has been successfully deleted.');
+
+        } catch (\Exception $e) {
+            Log::error('Employee deletion failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Deletion Failed', 'Unable to delete employee. Please try again.');
+        }
     }
 
     public function clear()
@@ -79,8 +134,20 @@ class EmployeesTable extends Component
         $employees = Employee::where('is_deleted', false)
             ->selectRaw('employees.*, (SELECT COUNT(*) FROM assets WHERE assets.assigned_id = employees.id) as assets_count')
             ->latest()
-            ->get();
+            ->paginate(10);
             
         return view('livewire.employees-table', compact('employees'));
+    }
+
+    private function noreloadNotif($type, $header, $message){
+        $this->dispatch('notif', type: $type, header: $header, message: $message);
+    }
+
+    private function reloadNotif($type, $header, $message){
+        session()->flash('notif', [
+            'type' => $type,
+            'header' => $header,
+            'message' => $message
+        ]);
     }
 }

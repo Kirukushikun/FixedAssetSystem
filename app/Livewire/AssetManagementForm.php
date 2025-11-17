@@ -137,14 +137,7 @@ class AssetManagementForm extends Component
             
         }
 
-        // Temporary static list. Replace with DB later.
-        // $this->employees = [
-        //     ['id' => 1, 'employee_name' => 'Chris Bacon', 'farm' => 'BFC', 'department' => 'IT & Security'],
-        //     ['id' => 2, 'employee_name' => 'Juan Dela Cruz', 'farm' => 'BDL', 'department' => 'Production'],
-        // ];
-
         $this->employees = Employee::select('id','employee_name','farm','department')->get()->toArray();
-
     }
 
     public function updatedSelectedEmployee($value)
@@ -158,7 +151,6 @@ class AssetManagementForm extends Component
         }
     }
 
-
     // This function will validate before showing modal
     public function trySubmit()
     {
@@ -167,143 +159,205 @@ class AssetManagementForm extends Component
     }
     
     public function submit(){
-        // Final validation upon submit
-        $this->validate();
+        try {
+            // Final validation upon submit
+            $this->validate();
 
-        if ($this->attachment) {
-            $path = $this->attachment->store('attachment', 'public');
-            $originalName = $this->attachment->getClientOriginalName();
+            if ($this->attachment) {
+                $path = $this->attachment->store('attachment', 'public');
+                $originalName = $this->attachment->getClientOriginalName();
+            }
+            
+            $asset = Asset::create([
+                'ref_id' => $this->ref_id,
+                'category_type' => $this->category_type,
+                'category' => $this->category,
+                'sub_category' => $this->sub_category,
+
+                'brand' => $this->brand,
+                'model' => $this->model,
+                'status' => $this->status,
+                'condition' => $this->condition,
+
+                'acquisition_date' => $this->acquisition_date,
+                'item_cost' => $this->item_cost,
+                'depreciated_value' => $this->depreciated_value,
+                'usable_life' => $this->usable_life,
+
+                'technical_data' => json_encode($this->technicaldata),
+
+                'assigned_name' => $this->selectedEmployeeName ?? null,
+                'assigned_id' => $this->selectedEmployee ?? null,
+                'farm' => $this->farm ?? null,
+                'department' => $this->department ?? null,
+
+                'attachment' => $path ?? null,
+                'attachment_name' => $originalName ?? null
+            ]);
+
+            // -------- SAVE QR CODE FILE ----------
+            $url = url('/assetmanagement/view?targetID=' . $asset->id);
+            $qrFileName = 'qr_' . $asset->id . '.svg';
+
+            QrCode::format('svg')
+                ->size(300)
+                ->generate($url, storage_path('app/public/qrcodes/' . $qrFileName));
+
+            $asset->update([
+                'qr_code' => 'qrcodes/' . $qrFileName
+            ]);
+            // -------------------------------------
+
+            // Use RELOAD notification because we're redirecting
+            $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
+            $this->redirect('/assetmanagement');
+
+        } catch (\Exception $e) {
+            Log::error('Asset creation failed: ' . $e->getMessage());
+            // Use NORELOAD notification to show error without redirect
+            $this->noreloadNotif('failed', 'Creation Failed', 'Unable to create asset. Please try again.');
         }
-        
-        $asset = Asset::create([
-            'ref_id' => $this->ref_id,
-            'category_type' => $this->category_type,
-            'category' => $this->category,
-            'sub_category' => $this->sub_category,
-
-            'brand' => $this->brand,
-            'model' => $this->model,
-            'status' => $this->status,
-            'condition' => $this->condition,
-
-            'acquisition_date' => $this->acquisition_date,
-            'item_cost' => $this->item_cost,
-            'depreciated_value' => $this->depreciated_value,
-            'usable_life' => $this->usable_life,
-
-            'technical_data' => json_encode($this->technicaldata),
-
-            'assigned_name' => $this->selectedEmployeeName ?? null,
-            'assigned_id' => $this->selectedEmployee ?? null,
-            'farm' => $this->farm ?? null,
-            'department' => $this->department ?? null,
-
-            'attachment' => $path ?? null,
-            'attachment_name' => $originalName ?? null
-        ]);
-
-        // -------- SAVE QR CODE FILE ----------
-        $url = url('/assetmanagement/view?targetID=' . $asset->id);
-
-        $qrFileName = 'qr_' . $asset->id . '.svg';
-
-        QrCode::format('svg')
-            ->size(300)
-            ->generate($url, storage_path('app/public/qrcodes/' . $qrFileName));
-
-        $asset->update([
-            'qr_code' => 'qrcodes/' . $qrFileName
-        ]);
-        // -------------------------------------
-
-        $this->redirect('/assetmanagement');
     }
 
     public function update()
     {
-        // Validate input before updating
-        $this->validate();
+        try {
+            // Validate input before updating
+            $this->validate();
 
-        // Update the asset fields
-        $this->targetAsset->update([
-            'ref_id' => $this->ref_id,
-            'category_type' => $this->category_type,
-            'category' => $this->category,
-            'sub_category' => $this->sub_category,
+            // Update the asset fields
+            $this->targetAsset->update([
+                'ref_id' => $this->ref_id,
+                'category_type' => $this->category_type,
+                'category' => $this->category,
+                'sub_category' => $this->sub_category,
 
-            'brand' => $this->brand,
-            'model' => $this->model,
-            'status' => $this->status,
-            'condition' => $this->condition,
+                'brand' => $this->brand,
+                'model' => $this->model,
+                'status' => $this->status,
+                'condition' => $this->condition,
 
-            'acquisition_date' => $this->acquisition_date,
-            'item_cost' => $this->item_cost,
-            'depreciated_value' => $this->depreciated_value,
-            'usable_life' => $this->usable_life,
+                'acquisition_date' => $this->acquisition_date,
+                'item_cost' => $this->item_cost,
+                'depreciated_value' => $this->depreciated_value,
+                'usable_life' => $this->usable_life,
 
-            'technical_data' => json_encode($this->technicaldata),
-        ]);
+                'technical_data' => json_encode($this->technicaldata),
+            ]);
 
-        $this->redirect('/assetmanagement');
+            // Use RELOAD notification because we're redirecting
+            $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
+            $this->redirect('/assetmanagement');
+
+        } catch (\Exception $e) {
+            Log::error('Asset update failed: ' . $e->getMessage());
+            // Use NORELOAD notification to show error without redirect
+            $this->noreloadNotif('failed', 'Update Failed', 'Unable to update asset. Please try again.');
+        }
     }
 
     // --- TRANSFER ASSET ---
     public function transferAsset()
     {   
-        $assignee = Employee::find($this->newHolder);
+        try {
+            $assignee = Employee::find($this->newHolder);
 
-        // 1. Save history (old data first)
-        History::create([
-            'asset_id'      => $this->targetAsset->id,
-            'assignee_id'   => $this->targetAsset->assigned_id,
-            'assignee_name' => $this->targetAsset->assigned_name,
-            'status'        => $this->targetAsset->status,
-            'condition'     => $this->newCondition,
-            'farm'          => $this->targetAsset->farm,
-            'department'    => $this->targetAsset->department,
-            'action'        => 'Transfer',
-        ]);
+            if (!$assignee) {
+                $this->noreloadNotif('failed', 'Transfer Failed', 'Selected employee not found.');
+                return;
+            }
 
-        // 2. Update asset (new holder + new condition)
-        $this->targetAsset->update([
-            'assigned_id'   => $assignee->id,
-            'assigned_name' => $assignee->employee_name,
-            'farm' => $assignee->farm,
-            'department' => $assignee->department,
-            'condition' => $this->newCondition,
-        ]);
+            // 1. Save history (old data first)
+            History::create([
+                'asset_id'      => $this->targetAsset->id,
+                'assignee_id'   => $this->targetAsset->assigned_id,
+                'assignee_name' => $this->targetAsset->assigned_name,
+                'status'        => $this->targetAsset->status,
+                'condition'     => $this->newCondition,
+                'farm'          => $this->targetAsset->farm,
+                'department'    => $this->targetAsset->department,
+                'action'        => 'Transfer',
+            ]);
+
+            // 2. Update asset (new holder + new condition)
+            $this->targetAsset->update([
+                'assigned_id'   => $assignee->id,
+                'assigned_name' => $assignee->employee_name,
+                'farm' => $assignee->farm,
+                'department' => $assignee->department,
+                'condition' => $this->newCondition,
+            ]);
+
+            // Refresh history after transfer
+            $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
+
+            // Use NORELOAD notification - stays on same page to see updated data
+            $this->noreloadNotif('success', 'Asset Transferred', 'Asset has been successfully transferred to ' . $assignee->employee_name . '.');
+
+        } catch (\Exception $e) {
+            Log::error('Asset transfer failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Transfer Failed', 'Unable to transfer asset. Please try again.');
+        }
     }
 
     // --- ASSIGN ASSET ---
     public function assignAsset()
     {   
-        $assignee = Employee::find($this->newHolder);
+        try {
+            $assignee = Employee::find($this->newHolder);
 
-        // 1. Save history
-        History::create([
-            'asset_id'      => $this->targetAsset->id,
-            'assignee_id'   => $assignee->id,
-            'assignee_name' => $assignee->employee_name,
-            'status'        => $this->targetAsset->status,
-            'condition'     => $this->targetAsset->condition,
-            'farm'          => $assignee->farm,
-            'department'    => $assignee->department,
-            'action'        => 'Assign',
-        ]);
+            if (!$assignee) {
+                $this->noreloadNotif('failed', 'Assignment Failed', 'Selected employee not found.');
+                return;
+            }
 
-        // 2. Update asset (assign new holder)
-        $this->targetAsset->update([
-            'assigned_id'   => $assignee->id,
-            'assigned_name' => $assignee->employee_name,
-            'farm' => $assignee->farm,
-            'department' => $assignee->department,
-            'condition' => $this->targetAsset->condition,
-        ]);
+            // 1. Save history
+            History::create([
+                'asset_id'      => $this->targetAsset->id,
+                'assignee_id'   => $assignee->id,
+                'assignee_name' => $assignee->employee_name,
+                'status'        => $this->targetAsset->status,
+                'condition'     => $this->targetAsset->condition,
+                'farm'          => $assignee->farm,
+                'department'    => $assignee->department,
+                'action'        => 'Assign',
+            ]);
 
+            // 2. Update asset (assign new holder)
+            $this->targetAsset->update([
+                'assigned_id'   => $assignee->id,
+                'assigned_name' => $assignee->employee_name,
+                'farm' => $assignee->farm,
+                'department' => $assignee->department,
+                'condition' => $this->targetAsset->condition,
+            ]);
+
+            // Refresh history after assignment
+            $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
+
+            // Use NORELOAD notification - stays on same page to see updated data
+            $this->noreloadNotif('success', 'Asset Assigned', 'Asset has been successfully assigned to ' . $assignee->employee_name . '.');
+
+        } catch (\Exception $e) {
+            Log::error('Asset assignment failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to assign asset. Please try again.');
+        }
     }
     
     public function render()
     {   
         return view('livewire.assetmanagement-form');
+    }
+
+    private function noreloadNotif($type, $header, $message){
+        $this->dispatch('notif', type: $type, header: $header, message: $message);
+    }
+
+    private function reloadNotif($type, $header, $message){
+        session()->flash('notif', [
+            'type' => $type,
+            'header' => $header,
+            'message' => $message
+        ]);
     }
 }
