@@ -59,12 +59,25 @@
                     <td>{{$employee->department}}</td>
                     <td>{{ $employee->assets_count }}</td>
                     <td>
-                        <div class="flex gap-2 items-center">
-                            <i class="fa-solid fa-flag text-[#4299E1]"></i>
-                            <i class="fa-solid fa-flag text-[#C075F9]"></i>
-                            <i class="fa-solid fa-flag text-[#ECC94B]"></i>
-                            <p class="font-bold text-gray-400">+1</p>
-                        </div>
+                        @if($employee->flags_count > 0)
+                            <div class="flex gap-2 items-center">
+                                @php
+                                    $displayedFlags = $employee->flags->take(3);
+                                    $remainingCount = $employee->flags_count - 3;
+                                @endphp
+                                
+                                @foreach($displayedFlags as $flag)
+                                    <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}" 
+                                    title="{{ $flag->flag_type }} - {{ $flag->asset }}"></i>
+                                @endforeach
+                                
+                                @if($remainingCount > 0)
+                                    <p class="font-bold text-gray-400">+{{ $remainingCount }}</p>
+                                @endif
+                            </div>
+                        @else
+                            <span class="text-gray-400 text-xs">No flags</span>
+                        @endif
                     </td>
                     <td x-data="{ open: false }" class="relative">
                         <i class="fa-solid fa-ellipsis-vertical cursor-pointer" @click="open = !open"></i>

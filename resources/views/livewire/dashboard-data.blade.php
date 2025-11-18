@@ -423,10 +423,10 @@
 
                         <button
                             type="button"
-                            @click="showModal = false; modalTemplate === 'create' ? $wire.submit() : $wire.update();"
+                            @click="showModal = false; modalTemplate === 'create'; $wire.submit();"
                             class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800"
                         >
-                            <span x-text="modalTemplate === 'create' ? 'Confirm' : 'Update'"></span>
+                            Confirm
                         </button>
                     </div>
                 </div>

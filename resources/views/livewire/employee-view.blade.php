@@ -8,11 +8,12 @@
             <h1 class="text-lg font-bold">{{$employee->employee_name}}</h1>
             <p class="text-sm text-gray-400">{{$employee->position}} | {{$employee->farm}} | {{$employee->department}}</p>
         </div>
-        <div class="flex gap-3">
+        <!-- <div class="flex gap-3">
             <button class="px-5 py-2 bg-red-500 rounded-lg font-bold text-white text-xs hover:bg-red-600" @click="showModal = true; modalTemplate = 'delete'">DELETE</button>
             <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" @click="showModal = true; modalTemplate = 'create'">EDIT</button>
-        </div>
+        </div> -->
     </div>
+
 
     <div class="card flex flex-col gap-4">
         <div class="flex items-center justify-between">
@@ -20,25 +21,44 @@
             <i class="fa-solid fa-pen-to-square cursor-pointer text-gray-400"></i>
         </div>
 
-        <div class="grid grid-cols-3 gap-3 text-sm">
-            @php
-                $flagColor = [
-                    'Under Investigation' => '#4299E1',
-                    'Pending Clearances' => '#C075F9',
-                    'Lost Asset' => '#F56565',
-                    'Unreturned Asset' => '#ED8936',
-                    'Damaged Asset' => '#ECC94B',
-                ]
-            @endphp
-            @foreach($flags as $flag)
-                <p><i class="fa-solid fa-flag text-[{{$flagColor[$flag->flag_type]}}]"></i> {{$flag->flag_type}} - {{$flag->asset}}</p>
-            @endforeach
+        @php
+            $flagColors = [
+                'Under Investigation' => 'text-blue-500',
+                'Pending Clearances' => 'text-purple-500',
+                'Lost Asset' => 'text-red-500',
+                'Unreturned Asset' => 'text-orange-500',
+                'Damaged Asset' => 'text-yellow-500',
+            ];
+        @endphp
 
+        <!-- Flexible flag list -->
+        <div class="flex flex-wrap gap-4 text-sm">
+            @forelse($flags as $flag)
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"></i>
+                    <span>{{ $flag->flag_type }} - {{ $flag->asset }}</span>
+                </div>
+            @empty
+                <div class="text-gray-400">
+                    No flags yet
+                </div>
+            @endforelse
+            
         </div>
+
         <div class="flex gap-3">
-            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit" @click="showModal = true; modalTemplate = 'flag'">ADD NEW FLAG</button>
-            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit" @click="showModal = true; modalTemplate = 'flag'">MARK ALL AS RESOLVED</button>
+            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit"
+                @click="showModal = true; modalTemplate = 'flag'">
+                ADD NEW FLAG
+            </button>
+            @if(!$flags->empty())
+                <button class="px-5 py-2 bg-green-600 rounded-lg font-bold text-white text-xs hover:bg-green-700 w-fit"
+                    @click="showModal = true; modalTemplate = 'resolveAll'">
+                    MARK ALL AS RESOLVED
+                </button>
+            @endif
         </div>
+            
         
     </div>
 
@@ -63,7 +83,6 @@
                         <th>MODEL</th>
                         <th>STATUS</th>
                         <th>CONDITION</th>
-                        <th>ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,53 +129,13 @@
                                 @endphp 
                                 <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
                             </td>
-                            <td x-data="{ open: false }" class="relative">
-                                <i class="fa-solid fa-ellipsis-vertical cursor-pointer" @click="open = !open"></i>
-
-                                <!-- Dropdown -->
-                                <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-md z-40">
-                                <ul class="text-sm text-gray-700">
-                                    <li>
-                                            <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Clone</button>
-                                    </li>
-                                    <li>
-                                            <button class="w-full text-left px-4 py-2 hover:bg-gray-100">View</button>
-                                    </li>
-                                    <li>
-                                            <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Edit</button>
-                                    </li>
-                                    <li>
-                                            <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">Delete</button>
-                                    </li>
-                                </ul>
-                                </div>
-                            </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination-container flex items-center justify-end gap-3 mt-auto">
-            <div class="text-xs text-gray-400">Showing 1 to 10 of 50 results</div>
-
-            <!-- Previous Button -->
-            <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
-                <i class="fa-solid fa-caret-left text-teal-500"></i>
-            </button>
-
-            <!-- Page Numbers -->
-            <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">1</button>
-            <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">2</button>
-            <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">3</button>
-            <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">4</button>
-            <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">5</button>
-
-            <!-- Next Button -->
-            <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
-                <i class="fa-solid fa-caret-right text-teal-500"></i>
-            </button>
-        </div>
+        <x-pagination :paginator="$assets" />
     </div>
 
 
@@ -211,14 +190,37 @@
                 </div>
             </div>
 
-            <!-- Delete Confirmation -->
-            <div class="flex flex-col gap-5" x-show="modalTemplate === 'delete'">
-                <h2 class="text-xl font-semibold -mb-2">Delete Modal</h2>
-                <p>Are you sure you want to delete this item?</p>
+            <!-- Resolve Single Flag Confirmation -->
+            <div class="flex flex-col gap-5" x-show="modalTemplate === 'resolve'">
+                <h2 class="text-xl font-semibold -mb-2">Resolve Flag</h2>
+                <p>Are you sure you want to resolve this flag?</p>
 
                 <div class="flex justify-end gap-3">
-                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button @click="showModal = false" class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">Confirm</button>
+                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button @click="showModal = false" 
+                            wire:click="resolveFlag()" 
+                            class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resolve All Flags Confirmation -->
+            <div class="flex flex-col gap-5" x-show="modalTemplate === 'resolveAll'">
+                <h2 class="text-xl font-semibold -mb-2">Resolve All Flags</h2>
+                <p>Are you sure you want to mark all flags as resolved? This action will resolve {{ count($flags) }} flag(s).</p>
+
+                <div class="flex justify-end gap-3">
+                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button @click="showModal = false" 
+                            wire:click="resolveAllFlags()" 
+                            class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">
+                        Confirm
+                    </button>
                 </div>
             </div>
         </div>

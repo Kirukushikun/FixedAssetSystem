@@ -132,7 +132,8 @@ class EmployeesTable extends Component
     public function render()
     {   
         $employees = Employee::where('is_deleted', false)
-            ->selectRaw('employees.*, (SELECT COUNT(*) FROM assets WHERE assets.assigned_id = employees.id) as assets_count')
+            ->with(['flags'])
+            ->withCount(['assets', 'flags'])
             ->latest()
             ->paginate(10);
             

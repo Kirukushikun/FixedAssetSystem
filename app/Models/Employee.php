@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Flag;
+use App\Models\Asset;
 
 class Employee extends Model
 {
@@ -15,12 +17,19 @@ class Employee extends Model
         'position',
         'farm',
         'department',
-        'assigned_assets',
-        'flags',
     ];
 
-    protected $cast = [
+    protected $casts = [
         'is_deleted' => 'boolean',
-        'flags' => 'array'
     ];
+
+    public function flags()
+    {
+        return $this->hasMany(Flag::class, 'target_id');
+    }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class, 'assigned_id');
+    }
 }

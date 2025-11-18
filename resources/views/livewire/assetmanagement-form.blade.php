@@ -263,7 +263,7 @@
                 <textarea name="" id="" wire:model="remarks"></textarea>
             </div>
             
-            @if($mode == 'view')
+            @if($mode != 'create')
                 <div class="input-group">
                     <label class="block mb-2 font-medium">Assignment History:</label>
                     <table class="w-full border border-gray-300 border-collapse text-sm">
@@ -296,7 +296,7 @@
             @endif
 
             <div class="self-end flex gap-3">
-                @if($mode != 'create')
+                @if($mode == 'edit')
                     @if(!$targetAsset->assigned_id)
                         <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button> 
                     @else 

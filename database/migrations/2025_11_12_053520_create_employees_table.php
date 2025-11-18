@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('farm');
             $table->string('department');
             $table->integer('assigned_assets')->default(0);
-            $table->json('flags')->nullable();
             $table->timestamps();
         });
     }
