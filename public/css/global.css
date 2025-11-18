@@ -164,7 +164,6 @@ nav.collapsed .logo button {
     /* overflow-x: auto;
     overflow-y: auto; */
     border-radius: 10px 10px 0 0;
-    border-bottom: 3px solid var(--table-border-color);
     position: relative;
 }
 

@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\Asset;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\LoginController;
@@ -12,6 +15,7 @@ Route::get('/login', fn() => view('auth.login'))->name('login');
 Route::post('/login', [LoginController::class, 'postLogin'])->name('login.post');
 
 Route::get('/logout', [LoginController::class, 'logout']);
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
