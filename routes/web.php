@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\Asset;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\LoginController;
@@ -13,9 +16,8 @@ Route::post('/login', [LoginController::class, 'postLogin'])->name('login.post')
 
 Route::get('/logout', [LoginController::class, 'logout']);
 
-Route::middleware('auth')->group(function () {
-    Route::redirect('/', '/dashboard');
 
+Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');

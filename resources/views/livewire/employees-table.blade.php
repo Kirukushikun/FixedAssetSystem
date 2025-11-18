@@ -90,26 +90,7 @@
         </table>
     </div>
 
-    <div class="pagination-container flex items-center justify-end gap-3 mt-auto">
-        <div class="text-xs text-gray-400">Showing 1 to 10 of 50 results</div>
-
-        <!-- Previous Button -->
-        <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
-            <i class="fa-solid fa-caret-left text-teal-500"></i>
-        </button>
-
-        <!-- Page Numbers -->
-        <button class="bg-teal-400 text-white px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">1</button>
-        <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">2</button>
-        <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">3</button>
-        <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">4</button>
-        <button class="bg-teal-100 text-teal-500 px-4 py-2 rounded-md hover:scale-110 cursor-pointer text-sm">5</button>
-
-        <!-- Next Button -->
-        <button class="px-2 py-2 rounded-md hover:scale-110 cursor-pointer bg-teal-100 text-sm">
-            <i class="fa-solid fa-caret-right text-teal-500"></i>
-        </button>
-    </div>
+    <x-pagination :paginator="$employees" />
 
     <!-- Backdrop -->
     <div 
@@ -180,8 +161,8 @@
                             @click="showModal = false; modalTemplate === 'create' ? $wire.submit() : $wire.update();"
                             class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800"
                         >
-                        <span x-text="modalTemplate === 'create' ? 'Confirm' : 'Update'"></span>
-                    </button>
+                            <span x-text="modalTemplate === 'create' ? 'Confirm' : 'Update'"></span>
+                        </button>
                     </div>
                 </div>
             </template>

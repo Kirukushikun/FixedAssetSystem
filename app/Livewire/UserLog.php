@@ -3,11 +3,24 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
+use App\Models\UserLog as UserLogmodel;
 
 class UserLog extends Component
-{
-    public function render()
+{   
+    use WithPagination;
+    
+    protected $paginationTheme = 'tailwind';
+
+
+    public function goToPage($page)
     {
-        return view('livewire.user-log');
+       $this->setPage($page);
+    }
+
+    public function render()
+    {   
+        $userLogs = UserLogmodel::latest()->paginate(10);
+        return view('livewire.user-log', compact('userLogs'));
     }
 }

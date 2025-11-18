@@ -1,4 +1,4 @@
-<div class="table-container tab-content" id="audit">
+<div class="table-container tab-content h-full flex flex-col" id="audit">
     <table>
             <thead>
                 <tr>
@@ -10,13 +10,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>#1553 <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
-                    <td>Chris Bacon</td>
-                    <td>Asset Created</td>
-                    <td>Oct 31, 2025</td>
-                    <td>12:00 NN</td>
-                </tr>
+                @foreach($audits as $audit)
+                    <tr>
+                        <td>#1553 <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
+                        <td>Chris Bacon</td>
+                        <td>Asset Created</td>
+                        <td>Oct 31, 2025</td>
+                        <td>12:00 NN</td>
+                    </tr>
+                @endforeach
             </tbody>
     </table>
+
+    <x-pagination :paginator="$audits" />
 </div>
