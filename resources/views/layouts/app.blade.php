@@ -17,7 +17,7 @@
 </head>
 <body>
 
-     <div x-data="{ loading: true }" x-init="setTimeout(() => loading = false, 1000)">
+     <div class="absolute" x-data="{ loading: true }" x-init="setTimeout(() => loading = false, 1000)">
           <!-- Loader -->
           <div 
                x-show="loading" 

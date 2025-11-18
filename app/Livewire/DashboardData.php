@@ -5,9 +5,44 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Asset;
 use App\Models\Employee;
+use Illuminate\Support\Facades\Log;
 
 class DashboardData extends Component
 {   
+    public $employee_id, $employee_name, $position, $farm, $department;
+
+    protected $rules = [
+        'employee_id' => 'required',
+        'employee_name' => 'required',
+        'position' => 'required',
+        'farm' => 'required',
+        'department' => 'required',
+    ];
+
+    public function submit()
+    {
+        try {
+            $this->validate();
+
+            Employee::create([
+                'employee_id' => $this->employee_id,
+                'employee_name' => $this->employee_name,
+                'position' => $this->position,
+                'farm' => $this->farm,
+                'department' => $this->department,
+            ]);
+
+            $this->reset(['employee_id', 'employee_name', 'position', 'farm', 'department']);
+
+            // Use NORELOAD - stays on same page, table refreshes automatically
+            $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
+
+        } catch (\Exception $e) {
+            Log::error('Employee creation failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Creation Failed', 'Unable to add employee. Please try again.');
+        }
+    }
+
     public function render()
     {   
         // MAIN CONTAINERS
@@ -84,4 +119,9 @@ class DashboardData extends Component
             'farmDistribution' => $farmDistribution
         ]);
     }
+
+    private function noreloadNotif($type, $header, $message){
+        $this->dispatch('notif', type: $type, header: $header, message: $message);
+    }
+
 }

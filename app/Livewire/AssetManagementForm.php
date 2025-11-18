@@ -270,12 +270,12 @@ class AssetManagementForm extends Component
             // 1. Save history (old data first)
             History::create([
                 'asset_id'      => $this->targetAsset->id,
-                'assignee_id'   => $this->targetAsset->assigned_id,
-                'assignee_name' => $this->targetAsset->assigned_name,
+                'assignee_id'   => $assignee->employee_id,
+                'assignee_name' => $assignee->employee_name,
                 'status'        => $this->targetAsset->status,
                 'condition'     => $this->newCondition,
-                'farm'          => $this->targetAsset->farm,
-                'department'    => $this->targetAsset->department,
+                'farm'          => $assignee->farm,
+                'department'    => $assignee->department,
                 'action'        => 'Transfer',
             ]);
 
@@ -331,6 +331,8 @@ class AssetManagementForm extends Component
                 'department' => $assignee->department,
                 'condition' => $this->targetAsset->condition,
             ]);
+
+            $this->reset(['newHolder']);
 
             // Refresh history after assignment
             $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
