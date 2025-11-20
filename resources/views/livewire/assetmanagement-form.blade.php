@@ -44,7 +44,11 @@
                 @php
                     $categoryValue = [
                         'it' => 'IT Equipment',
-                        'office' => 'Office Furniture'    
+                        'office' => 'Office Furniture',
+                        'appliances' => 'Appliances',
+                        'audio' => 'Audio Equipment',
+                        'tools' => 'Tools & Misc',
+                        'kitchen' => 'Kitchen Equipment'
                     ]
                 @endphp
                 <label for="category">Category:</label>
