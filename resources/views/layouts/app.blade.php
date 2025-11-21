@@ -49,7 +49,7 @@
      </nav>
 
      <!-- Subject to tailwind -->
-     <main class="size-full flex flex-col gap-5">
+     <main class="size-full flex flex-col gap-5 min-h-0">
           <header class="flex justify-between">
                <div>
                     <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
