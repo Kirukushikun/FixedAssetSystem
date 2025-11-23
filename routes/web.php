@@ -18,6 +18,9 @@ Route::get('/logout', [LoginController::class, 'logout']);
 
 
 Route::middleware('auth')->group(function () {
+
+});
+
     Route::redirect('/', '/dashboard');
 
     Route::get('/dashboard', function () {
@@ -68,8 +71,5 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/employees/export', [EmployeeController::class, 'export'])->name('employees.export');
     Route::post('/employees/import', [EmployeeController::class, 'import'])->name('employees.import');
-});
-
-
 
 
