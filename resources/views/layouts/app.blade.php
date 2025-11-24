@@ -52,7 +52,45 @@
      <main class="size-full flex flex-col gap-5 min-h-0">
           <header class="flex justify-between">
                <div>
-                    <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
+                    <div class="text-sm text-gray-400">
+
+                         @switch(true)
+                              @case(request()->is('dashboard*'))
+                                   Dashboard
+                                   @break
+
+                              @case(request()->is('assetmanagement*'))
+                                   Asset Management
+
+                                   @if(request()->is('assetmanagement/create'))
+                                        / <span>Create</span>
+                                   @elseif(request()->is('assetmanagement/edit'))
+                                        / <span>Edit</span>
+                                   @elseif(request()->is('assetmanagement/view'))
+                                        / <span>View</span>
+                                   @elseif(request()->is('assetmanagement/audit'))
+                                        / <span>Audit</span>
+                                   @endif
+                                   @break
+
+                              @case(request()->is('employees*'))
+                                   Employees
+
+                                   @if(request()->is('employees/view'))
+                                        / <span>View</span>
+                                   @endif
+                                   @break
+
+                              @case(request()->is('systemrecords*'))
+                                   System Records
+                                   @break
+
+                              @case(request()->is('settings*'))
+                                   Settings
+                                   @break
+                         @endswitch
+
+                    </div>
                     
                     <div class="font-bold">
                          @if(request()->is('dashboard*'))
@@ -61,6 +99,10 @@
                               Asset Management
                          @elseif(request()->is('employees*'))
                               Employees
+                         @elseif(request()->is('systemrecords*'))
+                              System Records
+                         @elseif(request()->is('settings*'))
+                              Settings
                          @endif
                     </div>
                </div>

@@ -208,6 +208,12 @@ class AssetManagementForm extends Component
             ]);
             // -------------------------------------
 
+            
+            // 3. Check if IT category → Sync to Snipe-IT
+            if ($this->category_type === 'IT') {
+                $this->syncToSnipeIT($asset);
+            }
+
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
             $this->redirect('/assetmanagement');
@@ -361,5 +367,22 @@ class AssetManagementForm extends Component
             'header' => $header,
             'message' => $message
         ]);
+    }
+
+    public function syncToSnipeIT($asset)
+    {
+        $data = [
+            "asset_tag" => $asset->ref_id,
+            "serial" => $asset->model ?? null,
+            "model_id" => $asset->ref_id,     
+            "status_id" => 2,   
+            "name" => $asset->brand . ' ' . $asset->model,
+            "purchase_date" => $asset->acquisition_date,
+            "purchase_cost" => $asset->item_cost,
+        ];
+
+        $result = app(\App\Services\SnipeService::class)->createAsset($data);
+
+        Log::info('Snipe-IT Sync Result:', $result);
     }
 }
