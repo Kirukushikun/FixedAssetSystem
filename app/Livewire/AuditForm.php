@@ -17,6 +17,7 @@ class AuditForm extends Component
     
     // Form fields
     public $location;
+    public $last_audit;
     public $next_audit;
     public $notes;
 
@@ -24,6 +25,9 @@ class AuditForm extends Component
         $this->targetAsset = Asset::findOrFail($targetID);
         // Prefill location if asset has one
         $this->location = $this->targetAsset->farm ?? '';
+
+        // Prefill last audit if theres previous one
+        $this->last_audit = Audit::where('asset_id', $targetID)->orderByDesc('audited_at')->first();
     }
 
     public function trySubmit(){
@@ -55,7 +59,7 @@ class AuditForm extends Component
             'attachment_path' => $attachmentPath,
             'attachment_name' => $attachmentName,
             'audited_at' => now(),
-            'audited_by' => auth()->id(),
+            'audited_by' => 61,
         ]);
 
         // Update asset location
@@ -69,9 +73,9 @@ class AuditForm extends Component
         
         $this->redirect('/assetmanagement');
         session()->flash('notif', [
-            'type' => 'Success',
-            'header' => 'Success',
-            'message' => 'Success'
+            'type' => 'success',
+            'header' => 'Audit Saved',
+            'message' => 'The audit entry has been successfully added to the asset’s audit records'
         ]);
     }
 

@@ -31,8 +31,12 @@
 
             <div class="input-group">
                 <label for="ref_id">Last Audit: </label>
-                <div class="font-bold">
-                    None
+                <div >
+                    @if($last_audit)
+                        {{$last_audit->audited_at->format('d/m/Y')}}
+                    @else 
+                        No previous audit
+                    @endif
                 </div>
             </div>
 

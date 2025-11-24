@@ -13,7 +13,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\History;
-
+use App\Models\Audit;
 
 class AssetManagementForm extends Component
 {   
@@ -58,6 +58,7 @@ class AssetManagementForm extends Component
     public $farm;
     public $department;
     public $history;
+    public $audits;
 
     public $qr_code;
     public $attachment;
@@ -134,6 +135,9 @@ class AssetManagementForm extends Component
 
             // History
             $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
+
+            // Audits
+            $this->audits = Audit::where('asset_id', $this->targetAsset->id)->latest()->get();
             
         }
 
@@ -210,9 +214,9 @@ class AssetManagementForm extends Component
 
             
             // 3. Check if IT category → Sync to Snipe-IT
-            if ($this->category_type === 'IT') {
-                $this->syncToSnipeIT($asset);
-            }
+            // if ($this->category_type === 'IT') {
+            //     $this->syncToSnipeIT($asset);
+            // }
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');

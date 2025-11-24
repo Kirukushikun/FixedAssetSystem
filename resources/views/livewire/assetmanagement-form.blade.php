@@ -270,32 +270,72 @@
             @if($mode != 'create')
                 <div class="input-group">
                     <label class="block mb-2 font-medium">Assignment History:</label>
-                    <table class="w-full border border-gray-300 border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-gray-50 text-gray-500">
-                                <th class="border border-gray-300 text-left px-2 py-2">Assignee</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Status</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Condition</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Farm</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Department</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Action</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Date Issued</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($history as $asset)
-                                <tr>
-                                    <td class="border border-gray-300 px-2 py-2">(#{{$asset->assignee_id ?? '—'}}) {{$asset->assignee_name ?? '—'}}</td>
-                                    <td class="border border-gray-300 px-2 py-2">{{$asset->status}}</td>
-                                    <td class="border border-gray-300 px-2 py-2">{{$asset->condition}}</td>
-                                    <td class="border border-gray-300 px-2 py-2">{{$asset->farm ?? '—'}}</td>
-                                    <td class="border border-gray-300 px-2 py-2">{{$asset->department ?? '—'}}</td>
-                                    <td class="border border-gray-300 px-2 py-2">{{$asset->action}}</td>
-                                    <td class="border border-gray-300 px-2 py-2">{{$asset->updated_at->format('m/d/Y')}}</td>
+                    @if($history->isNotEmpty())
+                        <table class="w-full border border-gray-300 border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500">
+                                    <th class="border border-gray-300 text-left px-2 py-2">Assignee</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Status</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Condition</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Farm</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Department</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Action</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Date Issued</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach($history as $asset)
+                                    <tr>
+                                        <td class="border border-gray-300 px-2 py-2">(#{{$asset->assignee_id ?? '—'}}) {{$asset->assignee_name ?? '—'}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$asset->status}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$asset->condition}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$asset->farm ?? '—'}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$asset->department ?? '—'}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$asset->action}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$asset->updated_at->format('m/d/Y')}}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p class="text-gray-400 text-sm">This asset do not have history yet.</p>
+                    @endif
+                </div>
+
+                <div class="input-group">
+                    <label class="block mb-2 font-medium">Audit History:</label>
+                    @if($audits->isNotEmpty())
+                        <table class="w-full border border-gray-300 border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500">
+                                    <th class="border border-gray-300 text-left px-2 py-2">Date</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Auditor</th>
+                                    <!-- <th class="border border-gray-300 text-left px-2 py-2">Result</th> -->
+                                    <th class="border border-gray-300 text-left px-2 py-2">Notes</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Attachment(s)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($audits as $audit)
+                                    <tr>
+                                        <td class="border border-gray-300 px-2 py-2">{{$audit->audited_at->format('m/d/Y')}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$audit->audited_by}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$audit->notes ?? 'No notes were added for this audit.'}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">
+                                            {{$audit->attachment_name ?? 'No files attached'}} 
+                                            @if($audit->attachment_path)
+                                                <a href="{{ Storage::url($audit->attachment_path) }}" target="_blank" class="ml-1 px-2 py-1 bg-blue-400 rounded-md font-bold text-white text-xs hover:bg-blue-500">
+                                                    View
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else 
+                        <p class="text-gray-400 text-sm">This asset has not been audited yet.</p>
+                    @endif
                 </div>
             @endif
 
