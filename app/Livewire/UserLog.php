@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\UserLog as UserLogmodel;
+use App\Models\AccessLog;
 
 class UserLog extends Component
 {   
@@ -20,7 +20,7 @@ class UserLog extends Component
 
     public function render()
     {   
-        $userLogs = UserLogmodel::latest()->paginate(10);
+        $userLogs = AccessLog::latest()->paginate(10);
         return view('livewire.user-log', compact('userLogs'));
     }
 }

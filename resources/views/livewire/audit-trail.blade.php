@@ -12,11 +12,11 @@
             <tbody>
                 @foreach($audits as $audit)
                     <tr>
-                        <td>#1553 <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
-                        <td>Chris Bacon</td>
-                        <td>Asset Created</td>
-                        <td>Oct 31, 2025</td>
-                        <td>12:00 NN</td>
+                        <td>#{{$audit->user_id}} <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
+                        <td>{{$audit->user_name}}</td>
+                        <td>{{$audit->action}}</td>
+                        <td>{{$audit->created_at->format('d/m/Y')}}</td>
+                        <td>{{$audit->created_at->format('h:i A')}}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -347,10 +347,7 @@
                         <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button> 
                     @endif
                 @endif 
-                @if($mode == 'view')
-                    <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
-                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500">PRINT ACCOUNTABILITY FORM</button> 
-                @else
+                @if($mode != 'view')
                     <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
                     <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit()" @click="modalTemplate = 'submit'">SAVE</button> 
                 @endif

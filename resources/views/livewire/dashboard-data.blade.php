@@ -240,7 +240,6 @@
                     <div class="grid grid-cols-2 gap-4">
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'create'"><i class="fa-solid fa-plus text-teal-400"></i> Add New Asset</button>
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'employee'"><i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee</button>
-                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-lines text-teal-400"></i> Generate Report</button>
                         <!-- <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button> -->
                         
                         <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
@@ -260,6 +259,24 @@
                         </script>
 
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/employees/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Assets</button>
+
+                        <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <input type="file" id="import-employee" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
+                            <button id="import-button-btn" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Employees</button>
+                        </form>
+
+                        <script>
+                            document.getElementById('import-button-btn').addEventListener('click', () => {
+                                document.getElementById('import-employee').click();
+                            });
+
+                            document.getElementById('import-employee').addEventListener('change', () => {
+                                document.getElementById('import-form').submit();
+                            });
+                        </script>
+
+                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/employees/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Employees</button>
                     </div>
                 </div>
             </div>

@@ -9,14 +9,22 @@ use Livewire\WithPagination;
 
 class EmployeesTable extends Component
 {   
+    use WithPagination;
 
     use WithPagination;
     
     protected $paginationTheme = 'tailwind';
 
+    public $search = '';
+
     public function goToPage($page)
     {
        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
     }
 
     public $target;
@@ -58,6 +66,9 @@ class EmployeesTable extends Component
 
             $this->clear();
 
+            // Audit Trail
+            $this->audit('Added Employee: ' . $this->employee_id . ' - ' . $this->employee_name);
+
             // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
 
@@ -88,6 +99,9 @@ class EmployeesTable extends Component
 
             $this->clear();
 
+            // Audit Trail
+            $this->audit('Updated Employee: ' . $employee->employee_id . ' - ' . $employee->employee_name);
+
             // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Updated', 'Employee ' . $this->employee_name . ' has been successfully updated.');
 
@@ -114,6 +128,9 @@ class EmployeesTable extends Component
             
             $this->clear();
 
+            // Audit Trail
+            $this->audit('Deleted Employee: ' . $employee->employee_id . ' - ' . $employeeName);    
+
             // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Deleted', 'Employee ' . $employeeName . ' has been successfully deleted.');
 
@@ -132,6 +149,15 @@ class EmployeesTable extends Component
     public function render()
     {   
         $employees = Employee::where('is_deleted', false)
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('employee_id', 'like', '%' . $this->search . '%')
+                        ->orWhere('employee_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('position', 'like', '%' . $this->search . '%')
+                        ->orWhere('farm', 'like', '%' . $this->search . '%')
+                        ->orWhere('department', 'like', '%' . $this->search . '%');
+                });
+            })
             ->with(['flags'])
             ->withCount(['assets', 'flags'])
             ->latest()
@@ -149,6 +175,15 @@ class EmployeesTable extends Component
             'type' => $type,
             'header' => $header,
             'message' => $message
+        ]);
+    }
+
+    private function audit($action){
+        $user = auth()->user();
+        \App\Models\AuditTrail::create([
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'action' => $action,
         ]);
     }
 }

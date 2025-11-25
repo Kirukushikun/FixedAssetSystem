@@ -6,7 +6,7 @@
         <h1 class="text-lg font-bold">Employee List</h1>
         <div class="flex items-center gap-3">
             <div class="border border-2 px-3 py-1 rounded-md border-gray-300">
-                    <input class="outline-none text-sm" type="text">
+                    <input class="outline-none text-sm" type="text" wire:model.live="search" placeholder="Search employee...">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
             </div>
             <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="showModal = true; modalTemplate = 'create'">ADD NEW EMPLOYEE</button>

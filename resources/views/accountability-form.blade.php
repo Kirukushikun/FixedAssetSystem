@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accountability Form</title>
+    <title>FIXED Asset</title>
+    <link rel="shortcut icon" href="{{asset('img/Fixed.ico')}}" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -79,11 +80,11 @@
             <div class="mb-8 text-sm space-y-1">
                 <div class="flex">
                     <span class="font-bold text-gray-900 w-20">Date:</span>
-                    <span class="text-gray-900">11/17/2025</span>
+                    <span class="text-gray-900">{{ now()->format('d/m/Y') }}</span>
                 </div>
                 <div class="flex">
                     <span class="font-bold text-gray-900 w-20">To:</span>
-                    <span class="text-gray-900">DIANNE MANLICLIC</span>
+                    <span class="text-gray-900">{{$employee->employee_name}}</span>
                 </div>
                 <div class="flex">
                     <span class="font-bold text-gray-900 w-20">From:</span>
@@ -94,7 +95,7 @@
             <!-- Acknowledgment Text -->
             <div class="mb-8">
                 <p class="text-sm text-gray-900 leading-relaxed">
-                    I, <span class="font-bold">DIANNE MANLICLIC</span>, acknowledge the receipt of the item/s as listed below, today, <span class="font-bold">11/17/2025</span>.
+                    I, <span class="font-bold uppercase">{{$employee->employee_name}}</span>, acknowledge the receipt of the item/s as listed below, today, <span class="font-bold">{{ now()->format('d/m/Y') }}</span>.
                 </p>
             </div>
 
@@ -108,20 +109,30 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-400">Lenovo IG-4231</td>
-                            <td class="px-4 py-3 text-sm text-center text-gray-900 font-semibold">1</td>
-                        </tr>
+                        @foreach($assets as $asset)
+                            <tr>
+                                <td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-400">{{$asset->brand}} {{$asset->model}}</td>
+                                <td class="px-4 py-3 text-sm text-center text-gray-900 font-semibold">1</td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
 
             <!-- Terms Section -->
             <div class="mb-10 space-y-5 text-sm text-gray-900 leading-relaxed">
+                @php
+                    $farmCodes = [
+                        'BFC' => 'Brookside Farms',
+                        'BDL' => 'Brookdale Farms',
+                        'PFC' => 'Poultrypure Farms',
+                        'RH' => 'RH Farms',
+                    ];
+                @endphp
                 <p class="text-justify">
                     I understand that the item/s has/have been assigned to me as it is a requirement for my job in
-                    <span class="font-bold underline">FONTE FRESCA, FONTE FRESCA DIVISION/DEPARTMENT, FONTE FRESCA SECTION</span>, as
-                    <span class="font-bold underline">ACCOUNTING ASSISTANT</span>. I recognize that these item/s are private properties 
+                    <span class="font-bold underline uppercase">{{$farmCodes[$employee->farm]}}, {{$employee->department}} DEPARTMENT,</span> as
+                    <span class="font-bold underline uppercase">{{$employee->position}}</span>. I recognize that these item/s are private properties 
                     of the Company and are only assigned to me during my employment or when no longer necessary
                     for my use due to promotion, transfer, or related situations.
                 </p>
@@ -142,7 +153,7 @@
                     </div>
                     <div class="sm:w-40">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-                        <div class="text-sm font-semibold text-gray-900">11/17/2025</div>
+                        <div class="text-sm font-semibold text-gray-900">{{ now()->format('d/m/Y') }}</div>
                     </div>
                 </div>
 
@@ -154,7 +165,7 @@
                     </div>
                     <div class="sm:w-40">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-                        <div class="text-sm font-semibold text-gray-900">11/17/2025</div>
+                        <div class="text-sm font-semibold text-gray-900">{{ now()->format('d/m/Y') }}</div>
                     </div>
                 </div>
 
@@ -163,12 +174,12 @@
                     <div class="flex-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Issued By:</label>
                         <div class="border-b-2 border-blue-600 pb-1 min-h-[40px] flex items-end">
-                            <span class="font-bold text-gray-900">MARK LESTER DELA CRUZ</span>
+                            <!-- <span class="font-bold text-gray-900">MARK LESTER DELA CRUZ</span> -->
                         </div>
                     </div>
                     <div class="sm:w-40">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-                        <div class="text-sm font-semibold text-gray-900">11/17/2025</div>
+                        <div class="text-sm font-semibold text-gray-900">{{ now()->format('d/m/Y') }}</div>
                     </div>
                 </div>
             </div>

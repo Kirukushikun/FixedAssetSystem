@@ -58,26 +58,40 @@ class LoginController extends Controller
                 $user = User::find($userData['id'] ?? null);
 
                 if ($user) {
+                    $this->logAccess($email, true, $request);
                     Auth::loginUsingId($user->id);
                     return redirect()->route('dashboard');
                 }
 
                 // User exists in Authenticator but NOT in this system
+                $this->logAccess($email, false, $request);
                 return back()->withErrors([
                     'login' => 'You are not authorized to access this system.'
                 ])->withInput();
             }
 
             // External API authentication failed
+            $this->logAccess($request->input('email'), false, $request);
             return back()->withErrors([
                 'login' => $authResponse->json()['message'] ?? 'Incorrect username or password.'
             ])->withInput();
 
         } catch (\Exception $e) {
+            $this->logAccess($request->input('email'), false, $request);
             return back()->withErrors([
                 'login' => 'Authentication failed: ' . $e->getMessage()
             ])->withInput();
         }
+    }
+
+    private function logAccess($email, $success, Request $request)
+    {        
+        \App\Models\AccessLog::create([
+            'email' => $email,
+            'success' => $success,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
     }
 
     public function logout()

@@ -218,6 +218,9 @@ class AssetManagementForm extends Component
             //     $this->syncToSnipeIT($asset);
             // }
 
+            // Audit Trail
+            $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
+
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
             $this->redirect('/assetmanagement');
@@ -254,6 +257,10 @@ class AssetManagementForm extends Component
 
                 'technical_data' => json_encode($this->technicaldata),
             ]);
+
+            // Audit Trail
+            $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category); 
+            
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
@@ -373,6 +380,15 @@ class AssetManagementForm extends Component
         ]);
     }
 
+    private function audit($action){
+        $user = auth()->user();
+        \App\Models\AuditTrail::create([
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'action' => $action,
+        ]);
+    }
+
     public function syncToSnipeIT($asset)
     {
         $data = [
@@ -389,4 +405,6 @@ class AssetManagementForm extends Component
 
         Log::info('Snipe-IT Sync Result:', $result);
     }
+
+    
 }
