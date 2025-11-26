@@ -62,7 +62,7 @@ class AssetManagementTable extends Component
             })
             ->latest()
             ->paginate(10);
-        return view('livewire.assetmanagement-table', compact('assets'));
+        return view('livewire.asset-management-table', compact('assets'));
     }
 
     private function audit($action){

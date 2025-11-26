@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 use App\Models\Employee;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeesTable extends Component
 {   
