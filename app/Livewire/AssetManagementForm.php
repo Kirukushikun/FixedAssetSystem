@@ -13,7 +13,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\History;
-
+use App\Models\Audit;
 
 class AssetManagementForm extends Component
 {   
@@ -58,6 +58,7 @@ class AssetManagementForm extends Component
     public $farm;
     public $department;
     public $history;
+    public $audits;
 
     public $qr_code;
     public $attachment;
@@ -134,6 +135,9 @@ class AssetManagementForm extends Component
 
             // History
             $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
+
+            // Audits
+            $this->audits = Audit::where('asset_id', $this->targetAsset->id)->latest()->get();
             
         }
 
@@ -208,6 +212,15 @@ class AssetManagementForm extends Component
             ]);
             // -------------------------------------
 
+            
+            // 3. Check if IT category → Sync to Snipe-IT
+            // if ($this->category_type === 'IT') {
+            //     $this->syncToSnipeIT($asset);
+            // }
+
+            // Audit Trail
+            $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
+
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
             $this->redirect('/assetmanagement');
@@ -244,6 +257,10 @@ class AssetManagementForm extends Component
 
                 'technical_data' => json_encode($this->technicaldata),
             ]);
+
+            // Audit Trail
+            $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category); 
+            
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
@@ -362,4 +379,32 @@ class AssetManagementForm extends Component
             'message' => $message
         ]);
     }
+
+    private function audit($action){
+        $user = auth()->user();
+        \App\Models\AuditTrail::create([
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'action' => $action,
+        ]);
+    }
+
+    public function syncToSnipeIT($asset)
+    {
+        $data = [
+            "asset_tag" => $asset->ref_id,
+            "serial" => $asset->model ?? null,
+            "model_id" => $asset->ref_id,     
+            "status_id" => 2,   
+            "name" => $asset->brand . ' ' . $asset->model,
+            "purchase_date" => $asset->acquisition_date,
+            "purchase_cost" => $asset->item_cost,
+        ];
+
+        $result = app(\App\Services\SnipeService::class)->createAsset($data);
+
+        Log::info('Snipe-IT Sync Result:', $result);
+    }
+
+    
 }

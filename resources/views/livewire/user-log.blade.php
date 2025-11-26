@@ -13,12 +13,12 @@
             <tbody>
                 @foreach($userLogs as $log)
                 <tr>
-                    <td>#i.guno@bfcgroup <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
-                    <td>True</td>
-                    <td>192.123.4.5</td>
-                    <td>BCD-1234</td>
-                    <td>Oct 31, 2025</td>
-                    <td>12:00 NN</td>
+                    <td>{{$log->email}} <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
+                    <td>{{$log->success}}</td>
+                    <td>{{$log->ip_address}}</td>
+                    <td>{{$log->user_agent}}</td>
+                    <td>{{$log->created_at->format('d/m/Y')}}</td>
+                    <td>{{$log->created_at->format('h:i A')}}</td>
                 </tr>
                 @endforeach
             </tbody>

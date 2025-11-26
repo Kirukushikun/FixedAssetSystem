@@ -47,4 +47,15 @@ class Asset extends Model
         'acquisition_date' => 'datetime',
         'technical_data' => 'array'
     ];
+
+    // Add relationship
+    public function audits()
+    {
+        return $this->hasMany(Audit::class);
+    }
+
+    public function latestAudit()
+    {
+        return $this->hasOne(Audit::class)->latestOfMany('audited_at');
+    }
 }

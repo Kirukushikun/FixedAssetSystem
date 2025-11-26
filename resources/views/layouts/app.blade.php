@@ -4,7 +4,7 @@
 <head>
      <meta charset="UTF-8" />
      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-     <title>Document</title>
+     <title>FIXED Asset</title>
 
      @livewireStyles
      @vite(['resources/css/app.css'])
@@ -17,17 +17,6 @@
 </head>
 <body>
 
-     <div class="absolute" x-data="{ loading: true }" x-init="setTimeout(() => loading = false, 1000)">
-          <!-- Loader -->
-          <div 
-               x-show="loading" 
-               x-cloak 
-               class="fixed inset-0 flex items-center justify-center bg-white z-50"
-          >
-               <!-- Smooth spinner -->
-               <div class="w-10 h-10 border-4 border-t-teal-500 border-l-gray-300 border-b-gray-300 border-r-gray-300 rounded-full animate-spin"></div>
-          </div>
-     </div>
 
      <nav>
           <div class="logo">
@@ -60,10 +49,48 @@
      </nav>
 
      <!-- Subject to tailwind -->
-     <main class="size-full flex flex-col gap-5">
+     <main class="size-full flex flex-col gap-5 min-h-0">
           <header class="flex justify-between">
                <div>
-                    <div class="text-sm text-gray-400">Pages / <span>Header</span></div>
+                    <div class="text-sm text-gray-400">
+
+                         @switch(true)
+                              @case(request()->is('dashboard*'))
+                                   Dashboard
+                                   @break
+
+                              @case(request()->is('assetmanagement*'))
+                                   Asset Management
+
+                                   @if(request()->is('assetmanagement/create'))
+                                        / <span>Create</span>
+                                   @elseif(request()->is('assetmanagement/edit'))
+                                        / <span>Edit</span>
+                                   @elseif(request()->is('assetmanagement/view'))
+                                        / <span>View</span>
+                                   @elseif(request()->is('assetmanagement/audit'))
+                                        / <span>Audit</span>
+                                   @endif
+                                   @break
+
+                              @case(request()->is('employees*'))
+                                   Employees
+
+                                   @if(request()->is('employees/view'))
+                                        / <span>View</span>
+                                   @endif
+                                   @break
+
+                              @case(request()->is('systemrecords*'))
+                                   System Records
+                                   @break
+
+                              @case(request()->is('settings*'))
+                                   Settings
+                                   @break
+                         @endswitch
+
+                    </div>
                     
                     <div class="font-bold">
                          @if(request()->is('dashboard*'))
@@ -72,6 +99,10 @@
                               Asset Management
                          @elseif(request()->is('employees*'))
                               Employees
+                         @elseif(request()->is('systemrecords*'))
+                              System Records
+                         @elseif(request()->is('settings*'))
+                              Settings
                          @endif
                     </div>
                </div>

@@ -65,11 +65,9 @@
     <div class="card content flex-1 flex flex-col">
         <div class="table-header flex justify-between items-center">
             <h1 class="text-lg font-bold">Assigned Assets</h1>
-            <!-- <div class="flex items-center gap-3">
-                <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500">ASSIGN ASSET</button>
-                <i class="fa-solid fa-arrow-down-wide-short cursor-pointer"></i>
-                <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
-            </div> -->
+            <div class="flex items-center gap-3">
+                <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" onclick="window.location.href='/accountability-form?targetID={{$employee->id}}'">GENERATE ACCOUNTABILITY FORM</button>
+            </div>
         </div>
 
         <div class="table-container">

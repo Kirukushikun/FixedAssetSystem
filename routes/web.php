@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use App\Models\Asset;
 use App\Models\Employee;
 use Illuminate\Http\Request;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\AssetController;
 
 Route::get('/login', fn() => view('auth.login'))->name('login');
 
@@ -61,15 +63,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', function () {
         return view('settings');
     });
-
-    Route::get('/accountability-form', function () {
-        return view('accountability-form');
+    
+    Route::get('/accountability-form', function (Request $request) {
+        $employee = Employee::find($request->targetID);
+        $assets = Asset::where('assigned_id', $employee->id)->get();
+        return view('accountability-form', compact('employee', 'assets'));
     });
 
     Route::get('/employees/export', [EmployeeController::class, 'export'])->name('employees.export');
     Route::post('/employees/import', [EmployeeController::class, 'import'])->name('employees.import');
+
+    Route::get('/assets/export', [AssetController::class, 'export'])->name('assets.export');
+    Route::post('/assets/import', [AssetController::class, 'import'])->name('assets.import');
 });
 
 
+Route::get('/testing', function () {
+    $user = User::find(1); 
+	Auth::login($user);
 
-
+    return view('dashboard');
+})->name('dashboard');

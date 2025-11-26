@@ -8,12 +8,29 @@
           <h1 class="text-lg font-bold">All Assets</h1>
           <div class="flex items-center gap-3">
                <div class="border border-2 px-3 py-1 rounded-md border-gray-300">
-                    <input class="outline-none text-sm" type="text">
+                    <input class="outline-none text-sm" type="text" wire:model.live="search" placeholder="Search asset...">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                </div>
                <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="showModal = true; modalTemplate = 'create'">ADD NEW ASSET</button>
-               <i class="fa-solid fa-file-import cursor-pointer"></i>
-               <i class="fa-solid fa-file-export cursor-pointer"></i>
+               
+               <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
+                    <div id="import-button">
+                    <i class="fa-solid fa-file-import cursor-pointer"></i>
+                    </div>
+               </form>
+
+               <script>
+                    document.getElementById('import-button').addEventListener('click', () => {
+                    document.getElementById('import-file').click();
+                    });
+
+                    document.getElementById('import-file').addEventListener('change', () => {
+                    document.getElementById('import-form').submit();
+                    });
+               </script>
+               <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/assets/export'"></i>
                <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
           </div>
      </div>
@@ -84,9 +101,9 @@
                               <!-- Dropdown -->
                               <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-md z-40">
                               <ul class="text-sm text-gray-700">
-                                   <!-- <li>
-                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Clone</button>
-                                   </li> -->
+                                   <li>
+                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/audit?targetID={{$asset->id}}'">Audit</button>
+                                   </li>
                                    <li>
                                         <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/view?targetID={{$asset->id}}'">View</button>
                                    </li>
@@ -145,8 +162,15 @@
                               </button>
 
                               <div x-show="openCategory === 'it'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                   <template x-for="item in ['Desktop','Laptop','Printer','Router','Photocopy Machine','Digital Camera']">
+                                   <template x-for="item in ['Desktop','Laptop','Router']">
                                    <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=IT&category=it&sub_category=${item}`">
+                                        <span x-text="item"></span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                   </a>
+                                   </template>
+                                   
+                                   <template x-for="item in ['Printer','Photocopy Machine','Digital Camera']">
+                                   <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=it&sub_category=${item}`">
                                         <span x-text="item"></span>
                                         <i class="fa-solid fa-arrow-right"></i>
                                    </a>
@@ -188,10 +212,10 @@
 
                               <div x-show="openCategory === 'appliances'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                                    <template x-for="item in ['Aircon','Refrigerator','Water Dispenser','Waching Machine','Wall Fan']">
-                                   <div class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1">
+                                   <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=appliances&sub_category=${item}`">
                                         <span x-text="item"></span>
                                         <i class="fa-solid fa-arrow-right"></i>
-                                   </div>
+                                   </a>
                                    </template>
                               </div>
                          </div>
@@ -209,10 +233,10 @@
 
                               <div x-show="openCategory === 'audio'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                                    <template x-for="item in ['Amplifier','Mixer','Speaker']">
-                                   <div class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1">
+                                   <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=audio&sub_category=${item}`">
                                         <span x-text="item"></span>
                                         <i class="fa-solid fa-arrow-right"></i>
-                                   </div>
+                                   </a>
                                    </template>
                               </div>
                          </div>
@@ -230,10 +254,10 @@
 
                               <div x-show="openCategory === 'tools'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                                    <template x-for="item in ['Helmet','Radio','Thermistor Temperature','Pipe Wrench','Pliers','Machine']">
-                                   <div class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1">
+                                   <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=tools&sub_category=${item}`">
                                         <span x-text="item"></span>
                                         <i class="fa-solid fa-arrow-right"></i>
-                                   </div>
+                                   </a>
                                    </template>
                               </div>
                          </div>
@@ -251,10 +275,10 @@
 
                               <div x-show="openCategory === 'kitchen'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
                                    <template x-for="item in ['Cooking Pot','Repair Chiller']">
-                                   <div class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1">
+                                   <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=kitchen&sub_category=${item}`">
                                         <span x-text="item"></span>
                                         <i class="fa-solid fa-arrow-right"></i>
-                                   </div>
+                                   </a>
                                    </template>
                               </div>
                          </div>
