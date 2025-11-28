@@ -215,9 +215,9 @@ class AssetManagementForm extends Component
 
             
             // 3. Check if IT category → Sync to Snipe-IT
-            if ($this->category_type === 'IT') {
-                $this->syncToSnipeIT($asset);
-            }
+            // if ($this->category_type === 'IT') {
+            //     $this->syncToSnipeIT($asset);
+            // }
 
             // Audit Trail
             $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
