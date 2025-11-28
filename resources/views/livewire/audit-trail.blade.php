@@ -1,4 +1,4 @@
-<div class="table-container tab-content h-full flex flex-col" id="audit">
+<div class="table-container h-full flex flex-col">
     <table>
             <thead>
                 <tr>

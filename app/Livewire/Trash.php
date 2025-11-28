@@ -3,11 +3,15 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use App\Models\Asset;
 
 class Trash extends Component
 {
     public function render()
-    {
-        return view('livewire.trash');
+    {   
+        // Collect Assets marked as deleted
+        $deletedAssets = Asset::where('is_deleted', true)->get();
+
+        return view('livewire.trash', compact('deletedAssets'));
     }
 }
