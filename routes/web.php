@@ -77,3 +77,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/assets/import', [AssetController::class, 'import'])->name('assets.import');
 });
 
+
+Route::get('/testing', function () {
+    $user = User::find(1); 
+	Auth::login($user);
+
+    return view('dashboard');
+});

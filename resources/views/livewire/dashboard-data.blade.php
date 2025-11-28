@@ -4,7 +4,7 @@
         showModal: false,
         modalTemplate: '',
         openCategory: 'it',
-        targetAsset: ''
+        targetAsset: '',
     }"
 >
     <!-- Summary Cards -->
@@ -184,7 +184,7 @@
                                 <div class="h-1 bg-teal-400 rounded transition-all duration-300" style="width: {{ $farm['percentage'] }}%"></div>
                             </div>
                         </div>
-                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500 transition">VIEW</button>
+                        <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500 transition" @click="showModal = true; modalTemplate = 'farm-assets';" wire:click="setFarm('{{ $farm['code'] }}')">VIEW</button>
                     </div>
                     @endforeach
                 </div>
@@ -478,6 +478,8 @@
                         </button>
                     </div>
                 </div>
+
+                <livewire:farm-assets :farmCode="$targetFarm" :key="$targetFarm"/>
             </div>
         </div>
 

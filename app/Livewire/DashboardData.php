@@ -9,7 +9,17 @@ use Illuminate\Support\Facades\Log;
 
 class DashboardData extends Component
 {   
+
+    public $targetFarm;
+
+    public function setFarm($code)
+    {
+        $this->targetFarm = $code;
+        Log::info('Target farm set to: ' . $this->targetFarm);
+    }
+
     public $employee_id, $employee_name, $position, $farm, $department;
+
 
     protected $rules = [
         'employee_id' => 'required',

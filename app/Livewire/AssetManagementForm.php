@@ -215,9 +215,9 @@ class AssetManagementForm extends Component
 
             
             // 3. Check if IT category → Sync to Snipe-IT
-            // if ($this->category_type === 'IT') {
-            //     $this->syncToSnipeIT($asset);
-            // }
+            if ($this->category_type === 'IT') {
+                $this->syncToSnipeIT($asset);
+            }
 
             // Audit Trail
             $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
@@ -395,7 +395,7 @@ class AssetManagementForm extends Component
         $data = [
             "asset_tag" => $asset->ref_id,
             "serial" => $asset->model ?? null,
-            "model_id" => $asset->ref_id,     
+            "model_id" => $asset->id,     
             "status_id" => 2,   
             "name" => $asset->brand . ' ' . $asset->model,
             "purchase_date" => $asset->acquisition_date,
