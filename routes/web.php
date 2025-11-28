@@ -83,4 +83,4 @@ Route::get('/testing', function () {
 	Auth::login($user);
 
     return view('dashboard');
-})->name('dashboard');
+});

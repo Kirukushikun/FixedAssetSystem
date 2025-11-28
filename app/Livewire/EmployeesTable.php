@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Log;
-use App\Models\Employee;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Employee;
+
 
 class EmployeesTable extends Component
 {   
