@@ -59,7 +59,7 @@ class UserAccess extends Component
         try {
             // Check if user already exists
             if ($this->dbUsers->has($userId)) {
-                session()->flash('error', 'User already has access.');
+                $this->noreloadNotif('failed', 'Access Denied', 'User already has access.');
                 return;
             }
 
@@ -74,11 +74,11 @@ class UserAccess extends Component
             // Update the dbUsers collection with the new user
             $this->dbUsers->put($userId, $user);
 
-            session()->flash('success', 'Access granted to ' . $user->name);
+            $this->noreloadNotif('success', 'Access Granted', 'Access granted to ' . $user->name);
             Log::info('User granted access: ' . $user->email);
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to grant access: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Grant Access Failed', 'Failed to grant access: ' . $e->getMessage());
             Log::error('Grant access error: ' . $e->getMessage());
         }
     }
@@ -89,7 +89,7 @@ class UserAccess extends Component
             $user = User::find($userId);
             
             if (!$user) {
-                session()->flash('error', 'User not found in system.');
+                $this->noreloadNotif('failed', 'User Not Found', 'User not found in system.');
                 return;
             }
 
@@ -98,13 +98,17 @@ class UserAccess extends Component
             // Remove from dbUsers collection
             $this->dbUsers->forget($userId);
 
-            session()->flash('success', 'Access revoked for ' . $name);
+            $this->noreloadNotif('success', 'Access Revoked', 'Access revoked for ' . $name);
             Log::info('User access revoked: ' . $userId);
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to revoke access: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Revoke Access Failed', 'Failed to revoke access: ' . $e->getMessage());
             Log::error('Revoke access error: ' . $e->getMessage());
         }
+    }
+
+    private function noreloadNotif($type, $header, $message){
+        $this->dispatch('notif', type: $type, header: $header, message: $message);
     }
 
     public function render()
