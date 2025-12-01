@@ -13,6 +13,11 @@ class UserAccess extends Component
 {   
     public $users = [];
     public $dbUsers = [];
+    
+    // Selected user properties for modal
+    public $selectedUserId;
+    public $selectedUserName;
+    public $selectedUserEmail;
 
     public function mount()
     {
@@ -54,7 +59,17 @@ class UserAccess extends Component
         }
     }
 
-    public function grantAccess($userId, $name, $email)
+    public function confirmGrantAccess()
+    {
+        $this->grantAccess($this->selectedUserId, $this->selectedUserName, $this->selectedUserEmail);
+    }
+
+    public function confirmRevokeAccess()
+    {
+        $this->revokeAccess($this->selectedUserId, $this->selectedUserName);
+    }
+
+    private function grantAccess($userId, $name, $email)
     {
         try {
             // Check if user already exists
@@ -83,7 +98,7 @@ class UserAccess extends Component
         }
     }
 
-    public function revokeAccess($userId, $name)
+    private function revokeAccess($userId, $name)
     {
         try {
             $user = User::find($userId);
