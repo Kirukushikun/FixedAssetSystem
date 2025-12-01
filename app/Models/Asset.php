@@ -58,4 +58,10 @@ class Asset extends Model
     {
         return $this->hasOne(Audit::class)->latestOfMany('audited_at');
     }
+
+    // In your Asset model
+    public function assignedEmployee()
+    {
+        return $this->belongsTo(Employee::class, 'assigned_id');
+    }
 }

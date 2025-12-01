@@ -30,8 +30,200 @@
                     document.getElementById('import-form').submit();
                     });
                </script>
+
                <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/assets/export'"></i>
-               <i class="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
+
+               <div x-data="{ filterOpen: false }" class="relative">
+                    <!-- Toggle Button -->
+                    <button @click="filterOpen = !filterOpen">
+                         <i class="fa-solid fa-ellipsis-vertical cursor-pointer text-gray-600 hover:text-teal-500 transition"></i>
+                    </button>
+
+                    <!-- Dropdown Panel -->
+                    <div
+                         x-show="filterOpen"
+                         @click.outside="filterOpen = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-96 bg-white border-2 border-gray-200 rounded-lg shadow-xl z-50"
+                    >
+                         <!-- Header -->
+                         <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                              <h3 class="text-md font-bold text-gray-800">Filter Assets</h3>
+                              <button 
+                                   @click="filterOpen = false"
+                                   class="text-teal-500 hover:text-teal-600 transition"
+                              >
+                                   <i class="fa-solid fa-chevron-up"></i>
+                              </button>
+                         </div>
+
+                         <!-- Body -->
+                         <div class="p-4 space-y-6 max-h-[28rem] overflow-y-auto">
+                              <!-- Category Section -->
+                              <div>
+                                   <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Category</h4>
+                                   <div class="input-group !grid !grid-cols-2 !gap-3">
+                                        <select wire:model.live="filterCategoryType">
+                                             <option value="">Category Type</option>
+                                             <option value="IT">IT</option>
+                                             <option value="NON-IT">NON-IT</option>
+                                        </select>
+
+                                        <select wire:model.live="filterCategory">
+                                             <option value="">Category</option>
+                                             <option value="it">IT Equipment</option>
+                                             <option value="office">Office Furniture</option>
+                                             <option value="appliances">Appliances</option>
+                                             <option value="audio">Audio Equipment</option>
+                                             <option value="tools">Tools & Misc</option>
+                                             <option value="kitchen">Kitchen Equipment</option>
+                                        </select>
+
+                                        <select wire:model.live="filterSubCategory" class="!col-span-2">
+                                             <option value="">Sub-category</option>
+                                             @if($filterCategory === 'it')
+                                                  <option value="Desktop">Desktop</option>
+                                                  <option value="Laptop">Laptop</option>
+                                                  <option value="Printer">Printer</option>
+                                                  <option value="Router">Router</option>
+                                                  <option value="Photocopy Machine">Photocopy Machine</option>
+                                                  <option value="Digital Camera">Digital Camera</option>
+                                             @elseif($filterCategory === 'office')
+                                                  <option value="Table">Table</option>
+                                                  <option value="Office Chair">Office Chair</option>
+                                                  <option value="Visitors Chair">Visitors Chair</option>
+                                                  <option value="Office Table">Office Table</option>
+                                                  <option value="Conference Chair">Conference Chair</option>
+                                                  <option value="Monoblock Chair">Monoblock Chair</option>
+                                             @elseif($filterCategory === 'appliances')
+                                                  <option value="Aircon">Aircon</option>
+                                                  <option value="Refrigerator">Refrigerator</option>
+                                                  <option value="Water Dispenser">Water Dispenser</option>
+                                                  <option value="Washing Machine">Washing Machine</option>
+                                                  <option value="Wall Fan">Wall Fan</option>
+                                             @elseif($filterCategory === 'audio')
+                                                  <option value="Amplifier">Amplifier</option>
+                                                  <option value="Mixer">Mixer</option>
+                                                  <option value="Speaker">Speaker</option>
+                                             @elseif($filterCategory === 'tools')
+                                                  <option value="Helmet">Helmet</option>
+                                                  <option value="Radio">Radio</option>
+                                                  <option value="Thermistor Temperature Instrument">Thermistor Temperature Instrument</option>
+                                                  <option value="Pipe Wrench">Pipe Wrench</option>
+                                                  <option value="Pliers">Pliers</option>
+                                                  <option value="Machine">Machine</option>
+                                             @elseif($filterCategory === 'kitchen')
+                                                  <option value="Cooking Pot">Cooking Pot</option>
+                                                  <option value="Repair Chiller">Repair Chiller</option>
+                                             @endif
+                                        </select>
+                                   </div>
+                              </div>
+
+                              <!-- Assignment Section -->
+                              <div>
+                                   <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Assignment</h4>
+                                   <div class="input-group !grid !grid-cols-2 !gap-3">
+                                        <select wire:model.live="filterFarm">
+                                             <option value="">Farm</option>
+                                             <option value="BFC">BFC</option>
+                                             <option value="BDL">BDL</option>
+                                             <option value="PFC">PFC</option>
+                                             <option value="RH">RH</option>
+                                             <!-- Add your farm options here -->
+                                        </select>
+
+                                        <select wire:model.live="filterDepartment">
+                                             <option value="">Department</option>
+                                             <option value="FEEDMILL">Feedmill</option>
+                                             <option value="FOC">FOC</option>
+                                             <option value="GENERAL SERVICES">General Services</option>
+                                             <option value="HR">HR</option>
+                                             <option value="IT &amp; SECURITY">IT & Security</option>
+                                             <option value="POULTRY">Poultry</option>
+                                             <option value="PURCHASING">Purchasing</option>
+                                             <option value="SALES &amp; ANALYTICS">Sales & Analytics</option>
+                                             <option value="SWINE">Swine</option>
+                                             <!-- Add your department options here -->
+                                        </select>
+                                   </div>
+                              </div>
+
+                              <!-- Status Section -->
+                              <div class="input-group">
+                                   <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Status</h4>
+                                   <select wire:model.live="filterStatus" class="input-filter w-full">
+                                        <option value="">-- Select Status --</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Issued">Issued</option>
+                                        <option value="Transferred">Transferred</option>
+                                        <option value="For Disposal">For Disposal</option>
+                                        <option value="Disposed">Disposed</option>
+                                        <option value="Lost">Lost</option>
+                                   </select>
+                              </div>
+
+                              <!-- Condition -->
+                              <div class="input-group">
+                                   <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Condition</h4>
+                                   <select wire:model.live="filterCondition" class="input-filter w-full">
+                                        <option value="">-- Select Condition --</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Defective">Defective</option>
+                                        <option value="Repair">Repair</option>
+                                        <option value="Replace">Replace</option>
+                                   </select>
+                              </div>
+
+                              <!-- Acquisition Date -->
+                              <div>
+                                   <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Acquisition Date</h4>
+                                   <div class="grid grid-cols-2 gap-3">
+                                        <div class="input-group">
+                                             <span class="text-xs text-gray-400">From</span>
+                                             <input type="date" wire:model.live="filterDateFrom" class="input-filter">
+                                        </div>
+
+                                        <div class="input-group">
+                                             <span class="text-xs text-gray-400">To</span>
+                                             <input type="date" wire:model.live="filterDateTo" class="input-filter">
+                                        </div>
+                                   </div>
+                              </div>
+
+                              <!-- Cost Range -->
+                              <div class="input-group">
+                                   <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Cost Range</h4>
+                                   <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" placeholder="Min" wire:model.live="filterCostMin" class="input-filter">
+                                        <input type="number" placeholder="Max" wire:model.live="filterCostMax" class="input-filter">
+                                   </div>
+                              </div>
+                         </div>
+
+                         <!-- Footer Buttons -->
+                         <div class="flex items-center justify-between p-4 border-t border-gray-200">
+                              <button 
+                                   wire:click="resetFilters"
+                                   class="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-800"
+                              >
+                                   Reset
+                              </button>
+
+                              <button 
+                                   @click="filterOpen = false"
+                                   class="px-5 py-2 bg-teal-500 text-white rounded-lg text-xs font-bold hover:bg-teal-600"
+                              >
+                                   Apply Filter
+                              </button>
+                         </div>
+                    </div>
+               </div>
           </div>
      </div>
 

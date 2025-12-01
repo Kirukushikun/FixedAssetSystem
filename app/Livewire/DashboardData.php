@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Asset;
 use App\Models\Employee;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class DashboardData extends Component
@@ -51,6 +52,66 @@ class DashboardData extends Component
             Log::error('Employee creation failed: ' . $e->getMessage());
             $this->noreloadNotif('failed', 'Creation Failed', 'Unable to add employee. Please try again.');
         }
+    }
+
+    public function getAlertsProperty()
+    {
+        $alerts = [];
+
+        // Alert 1: Assets marked as Lost
+        $lostAssetsCount = Asset::where('status', 'Lost')->count();
+        if ($lostAssetsCount > 0) {
+            $alerts[] = [
+                'message' => "{$lostAssetsCount} assets are marked Lost",
+                'timestamp' => $this->getLatestTimestamp(Asset::where('status', 'Lost')),
+                'icon' => 'fa-solid fa-bell',
+                'color' => 'text-teal-400'
+            ];
+        }
+
+        // Alert 2: Assets Under Repair for more than 30 days
+        $repairAssetsCount = Asset::where('condition', 'Repair')
+            ->where('updated_at', '<=', Carbon::now()->subDays(30))
+            ->count();
+        if ($repairAssetsCount > 0) {
+            $alerts[] = [
+                'message' => "{$repairAssetsCount} assets are Under Repair for more than 30 days",
+                'timestamp' => $this->getLatestTimestamp(
+                    Asset::where('condition', 'Repair')
+                        ->where('updated_at', '<=', Carbon::now()->subDays(30))
+                ),
+                'icon' => 'fa-solid fa-bell',
+                'color' => 'text-teal-400'
+            ];
+        }
+
+        // Alert 3: Employees with unreturned items (deleted employees)
+        $unreturnedCount = Asset::whereNotNull('assigned_id')
+            ->whereHas('assignedEmployee', function($query) {
+                $query->where('is_deleted', true);
+            })
+            ->count();
+        if ($unreturnedCount > 0) {
+            $alerts[] = [
+                'message' => "{$unreturnedCount} employees have unreturned items",
+                'timestamp' => $this->getLatestTimestamp(
+                    Asset::whereNotNull('assigned_id')
+                        ->whereHas('assignedEmployee', function($query) {
+                            $query->where('is_deleted', true);
+                        })
+                ),
+                'icon' => 'fa-solid fa-bell',
+                'color' => 'text-teal-400'
+            ];
+        }
+
+        return collect($alerts)->sortByDesc('timestamp')->values();
+    }
+
+    private function getLatestTimestamp($query)
+    {
+        $asset = $query->latest('updated_at')->first();
+        return $asset ? $asset->updated_at : now();
     }
 
     public function render()

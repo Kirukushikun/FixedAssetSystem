@@ -194,44 +194,27 @@
                 <div class="card flex-1">
                     <h1 class="text-lg font-bold mb-5">Alerts</h1>
                     <div class="pl-5 flex flex-col gap-5">
-                        <!-- Alert 1 -->
-                        <div class="relative flex flex-col gap-2">
-                            <!-- icon and line -->
-                            <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
-                                <i class="fa-solid fa-bell text-teal-400 text-md"></i>
-                                <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
+                        @forelse($this->alerts as $index => $alert)
+                            <div class="relative flex flex-col gap-2">
+                                <!-- icon and line -->
+                                <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
+                                    <i class="{{ $alert['icon'] }} {{ $alert['color'] }} text-md"></i>
+                                    @if(!$loop->last)
+                                        <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
+                                    @endif
+                                </div>
+
+                                <!-- text content -->
+                                <p class="text-sm text-gray-800 font-bold ml-2">{{ $alert['message'] }}</p>
+                                <p class="text-xs text-gray-500 font-semibold ml-2">
+                                    {{ $alert['timestamp']->format('d M g:i A') }}
+                                </p>
                             </div>
-
-                            <!-- text content -->
-                            <p class="text-sm text-gray-800 font-bold ml-2">5 assets are marked Lost</p>
-                            <p class="text-xs text-gray-500 font-semibold ml-2">22 DEC 7:20 PM</p>
-                        </div>
-
-                        <!-- Alert 2 -->
-                        <div class="relative flex flex-col gap-2">
-                            <!-- icon and line -->
-                            <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
-                                <i class="fa-solid fa-bell text-teal-400 text-md"></i>
-                                <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
+                        @empty
+                            <div class="">
+                                <p class="text-sm text-gray-500">No alerts at this time</p>
                             </div>
-
-                            <!-- text content -->
-                            <p class="text-sm text-gray-800 font-bold ml-2">12 assets are Under Repair for more than 30 days</p>
-                            <p class="text-xs text-gray-500 font-semibold ml-2">21 DEC 11:21 PM</p>
-                        </div>
-
-                        <!-- Alert 3 -->
-                        <div class="relative flex flex-col gap-2">
-                            <!-- icon and line -->
-                            <div class="absolute top-1 -left-6 flex flex-col items-center gap-1 h-full">
-                                <i class="fa-solid fa-bell text-teal-400 text-md"></i>
-                                <div class="w-[3px] rounded-lg flex-1 bg-gray-200"></div>
-                            </div>
-
-                            <!-- text content -->
-                            <p class="text-sm text-gray-800 font-bold ml-2">3 employees have unreturned items</p>
-                            <p class="text-xs text-gray-500 font-semibold ml-2">21 DEC 9:28 PM</p>
-                        </div>
+                        @endforelse
                     </div>
                 </div>
                 <div class="card !bg-[#4FD1C5] flex-1 flex flex-col gap-5">
