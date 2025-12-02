@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('snipe_id')->nullable();
             $table->boolean('is_deleted')->default(false);
             $table->boolean('is_archived')->default(false);
 

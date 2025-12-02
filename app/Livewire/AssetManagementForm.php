@@ -15,6 +15,7 @@ use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\History;
 use App\Models\Audit;
+use App\Services\SnipeService;
 
 class AssetManagementForm extends Component
 {   
@@ -43,6 +44,7 @@ class AssetManagementForm extends Component
     
     // TECHNICAL DETAILS ARRAY
     public $technicaldata = [
+        'serial'   => '',
         'processor'   => '',
         'ram'         => '',
         'storage'     => '',
@@ -164,7 +166,6 @@ class AssetManagementForm extends Component
     }
     
     public function submit(){
-        try {
             // Final validation upon submit
             $this->validate();
 
@@ -215,22 +216,16 @@ class AssetManagementForm extends Component
 
             
             // 3. Check if IT category → Sync to Snipe-IT
-            // if ($this->category_type === 'IT') {
-            //     $this->syncToSnipeIT($asset);
-            // }
+            if ($this->category_type === 'IT') {
+                $this->syncToSnipeIT($asset);
+            }
 
             // Audit Trail
             $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
-            $this->redirect('/assetmanagement');
-
-        } catch (\Exception $e) {
-            Log::error('Asset creation failed: ' . $e->getMessage());
-            // Use NORELOAD notification to show error without redirect
-            $this->noreloadNotif('failed', 'Creation Failed', 'Unable to create asset. Please try again.');
-        }
+            
     }
 
     public function update()
@@ -393,6 +388,7 @@ class AssetManagementForm extends Component
     public function syncToSnipeIT($asset)
     {
         $data = [
+            "name" => $asset->brand . ' ' . $asset->model,
             "asset_tag" => $asset->ref_id,
             "serial" => $asset->model ?? null,
             "model_id" => $asset->id,     
@@ -403,6 +399,12 @@ class AssetManagementForm extends Component
         ];
 
         $result = app(\App\Services\SnipeService::class)->createAsset($data);
+        
+        $targetAsset = Asset::find($asset->id);    
+
+        $targetAsset->update([
+            'snipe_id' => $result['payload']['id'] ?? null,
+        ]);
 
         Log::info('Snipe-IT Sync Result:', $result);
     }
