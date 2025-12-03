@@ -116,6 +116,10 @@
             <p class="text-gray-400 text-sm mb-5">Additional specifications used for IT-related assets. These details are helpful for troubleshooting, configuration, and inventory auditing.</p>
             <div class="grid grid-cols-4 gap-5">
                 <div class="input-group">
+                    <label for="serial">Serial No:</label>
+                    <input type="text" id="serial" wire:model="technicaldata.serial" {{$mode == 'view' ? 'readonly' : ''}}>
+                </div>
+                <div class="input-group">
                     <label for="processor">Processor:</label>
                     <input type="text" id="processor" wire:model="technicaldata.processor" {{$mode == 'view' ? 'readonly' : ''}}>
                 </div>

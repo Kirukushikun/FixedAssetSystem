@@ -107,7 +107,7 @@
                     </div>
                </div>
 
-               <div>Hi, <span class="font-semibold">Iverson</span></div>
+               <div>Hi, <span class="font-semibold">{{Auth::user()->name}}</span></div>
           </header>
 
 
