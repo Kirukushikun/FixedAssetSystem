@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
             $category = $request->category;
             $sub_category = $request->sub_category;        
         } else {
-            $targetID = $request->targetID;
+            $targetID = decrypt($request->targetID);
         }
 
         return view('assetmanagement-view', compact('mode', 'targetID', 'category_type', 'category', 'sub_category'));
