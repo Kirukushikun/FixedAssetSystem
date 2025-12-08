@@ -30,6 +30,7 @@ class Employee extends Model
 
     public function assets()
     {
-        return $this->hasMany(Asset::class, 'assigned_id');
+        return $this->hasMany(Asset::class, 'assigned_id')
+                    ->where('is_deleted', false);
     }
 }

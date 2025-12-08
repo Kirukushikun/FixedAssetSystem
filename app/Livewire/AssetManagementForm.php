@@ -73,7 +73,7 @@ class AssetManagementForm extends Component
 
     // RULES FOR VALIDATIOn
     protected $rules = [
-        'ref_id' => 'required',
+        'ref_id' => 'required|unique:assets,ref_id',
         'category_type' => 'required',
         'category' => 'required',
         'sub_category' => 'required',
@@ -166,6 +166,7 @@ class AssetManagementForm extends Component
     }
     
     public function submit(){
+        try{
             // Final validation upon submit
             $this->validate();
 
@@ -216,16 +217,22 @@ class AssetManagementForm extends Component
 
             
             // 3. Check if IT category → Sync to Snipe-IT
-            if ($this->category_type === 'IT') {
-                $this->syncToSnipeIT($asset);
-            }
+            // if ($this->category_type === 'IT') {
+            //     $this->syncToSnipeIT($asset);
+            // }
 
             // Audit Trail
             $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
-            
+            $this->redirect('/assetmanagement');
+
+        } catch (\Exception $e) {
+            Log::error('Asset creation failed: ' . $e->getMessage());
+            // Use NORELOAD notification to show error without redirect
+            $this->noreloadNotif('failed', 'Update Failed', 'Unable to update asset. Please try again.');
+        }
     }
 
     public function update()
