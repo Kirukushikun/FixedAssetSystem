@@ -156,7 +156,7 @@
                             <option value=""></option>
                             <option value="BFC">BFC</option>
                             <option value="BDL">BDL</option>
-                            <option value="BFC">BFC</option>
+                            <option value="PFC">PFC</option>
                             <option value="RH">RH</option>
                         </select>
                     </div>

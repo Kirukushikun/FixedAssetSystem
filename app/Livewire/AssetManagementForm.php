@@ -409,5 +409,28 @@ class AssetManagementForm extends Component
         Log::info('Snipe-IT Sync Result:', $result);
     }
 
+    public function updateToSnipeIT($asset)
+    {
+        $data = [
+            "asset_tag" => $asset->ref_id,
+            "serial" => $asset->model,
+            "name" => $asset->brand . ' ' . $asset->model,
+            "purchase_date" => $asset->acquisition_date,
+            "purchase_cost" => $asset->item_cost,
+        ];
+
+        $result = app(\App\Services\SnipeService::class)
+            ->updateAsset($asset->snipe_id, $data);
+
+        Log::info('Snipe-IT Update Result:', $result);
+    }
+
+    public function deleteFromSnipeIT($asset)
+    {
+        $result = app(\App\Services\SnipeService::class)
+            ->deleteAsset($asset->snipe_id);
+
+        Log::info('Snipe-IT Delete Result:', $result);
+    }
     
 }

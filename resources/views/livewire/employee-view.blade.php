@@ -90,12 +90,20 @@
                             <td>
                                 @php
                                     $categoryImg = [
-                                            'it' => 'desktop',
-                                            'office' => 'furniture'     
+                                        'it' => 'desktop',
+                                        'office' => 'furniture',
+                                        'appliances' => 'appliances',
+                                        'audio' => 'speaker',
+                                        'tools' => 'tools',
+                                        'kitchen' => 'kitchen' 
                                     ];
                                     $categoryValue = [
-                                            'it' => 'IT Equipment',
-                                            'office' => 'Office Furniture'    
+                                        'it' => 'IT Equipment',
+                                        'office' => 'Office Furniture',
+                                        'appliances' => 'Appliances',
+                                        'audio' => 'Audio Equipment',
+                                        'tools' => 'Tools & Misc',
+                                        'kitchen' => 'Kitchen Equipment' 
                                     ];
                                 @endphp
                                 <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryImg[$asset->category] . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryValue[$asset->category]}}</span></p>

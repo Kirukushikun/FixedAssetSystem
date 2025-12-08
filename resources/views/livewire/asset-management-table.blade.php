@@ -250,7 +250,7 @@
                               @php
                                    $categoryImg = [
                                         'it' => 'desktop',
-                                        'office' => 'Office Furniture',
+                                        'office' => 'furniture',
                                         'appliances' => 'appliances',
                                         'audio' => 'speaker',
                                         'tools' => 'tools',
@@ -302,13 +302,13 @@
                               <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-md z-40">
                               <ul class="text-sm text-gray-700">
                                    <li>
-                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/audit?targetID={{$asset->id}}'">Audit</button>
+                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/audit?targetID={{encrypt($asset->id)}}'">Audit</button>
                                    </li>
                                    <li>
-                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/view?targetID={{$asset->id}}'">View</button>
+                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/view?targetID={{encrypt($asset->id)}}'">View</button>
                                    </li>
                                    <li>
-                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/edit?targetID={{$asset->id}}'">Edit</button>
+                                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/edit?targetID={{encrypt($asset->id)}}'">Edit</button>
                                    </li>
                                    <li>
                                         <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100" @click="showModal = true; modalTemplate = 'delete'; targetAsset = {{$asset->id}}">Delete</button>

@@ -176,13 +176,17 @@
             <!-- EMPLOYEE SELECT -->
             <div class="input-group">
                 <label>Assigned To:</label>
-                <select wire:model.live="selectedEmployee" {{ $mode == 'view' || $mode == 'edit' ? 'disabled' : '' }}>
-                    <option value="">Select</option>
+                @if($mode == 'view' && $targetAsset->assigned_name)
+                    <input type="text" value="{{$targetAsset->assigned_name}}" readonly>
+                @else 
+                    <select wire:model.live="selectedEmployee" {{ $mode == 'view' || $mode == 'edit' ? 'disabled' : '' }}>
+                        <option value="">Select</option>
 
-                    @foreach ($employees as $emp)
-                        <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
-                    @endforeach
-                </select>
+                        @foreach ($employees as $emp)
+                            <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <!-- FARM -->
