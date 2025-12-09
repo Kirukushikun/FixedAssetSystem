@@ -30,6 +30,53 @@
                     document.getElementById('import-form').submit();
                     });
                </script>
+               
+               <!-- Loading Modal Backdrop -->
+               <div 
+                    id="import-loading-backdrop"
+                    class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+               >
+                    <div class="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center gap-4 min-w-[300px]">
+                         <!-- Spinner -->
+                          <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-teal-500"></div>
+                         
+                         <!-- Text -->
+                         <div class="text-center">
+                              <h3 class="text-lg font-semibold text-gray-800 mb-1">Importing Assets</h3>
+                              <p class="text-sm text-gray-500">Please wait while we process your file...</p>
+                         </div>
+                    </div>
+               </div>
+
+               <script>
+                    const importButton = document.getElementById('import-button');
+                    const importFile = document.getElementById('import-file');
+                    const importForm = document.getElementById('import-form');
+                    const loadingBackdrop = document.getElementById('import-loading-backdrop');
+
+                    // Trigger file input when button is clicked
+                    importButton.addEventListener('click', () => {
+                         importFile.click();
+                    });
+
+                    // Handle file selection and show loading
+                    importFile.addEventListener('change', () => {
+                         if (importFile.files.length > 0) {
+                              // Show loading modal
+                              loadingBackdrop.classList.remove('hidden');
+                              
+                              // Submit the form
+                              importForm.submit();
+                         }
+                    });
+
+                    // Optional: Hide loading if user navigates back (for better UX)
+                    window.addEventListener('pageshow', (event) => {
+                         if (event.persisted) {
+                              loadingBackdrop.classList.add('hidden');
+                         }
+                    });
+               </script>
 
                <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/assets/export'"></i>
 

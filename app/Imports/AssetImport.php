@@ -3,50 +3,61 @@
 namespace App\Imports;
 
 use App\Models\Asset;
-use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
+use Maatwebsite\Excel\Concerns\OnEachRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Row;
 
-class AssetImport implements ToModel, WithHeadingRow, WithCalculatedFormulas
-{   
+class AssetImport implements 
+    OnEachRow,
+    WithHeadingRow,
+    WithCalculatedFormulas,
+    WithChunkReading
+{
     public $createdCount = 0;
     public $updatedCount = 0;
 
-    public function model(array $row)
+    public function onRow(Row $row)
     {
-        // Check if record already exists
-        $existing = Asset::where('ref_id', $row['reference_id'])
-            ->where('brand', $row['brand'])
-            ->where('model', $row['model'])
-            ->first();
+        $r = $row->toArray();
 
-        if ($existing) {
-            return null; // skip duplicates
+        // Check duplicate
+        $exists = Asset::where('ref_id', $r['reference_id'])
+            ->where('brand', $r['brand'])
+            ->where('model', $r['model'])
+            ->exists();
+
+        if ($exists) {
+            return;
         }
 
-        // Create new record
-        $model = Asset::create([
-            'ref_id'         => $row['ref_id'],
-            'category_type'  => $row['category_type'],
-            'category'       => $row['category'],
-            'sub_category'   => $row['sub_category'],
-            'brand'          => $row['brand'],
-            'model'          => $row['model'],
-            'status'         => $row['status'],
-            'condition'      => $row['condition'],
-            'acquisition_date' => $row['acquisition_date'],
-            'item_cost'      => $row['item_cost'],
-            'depreciated_value' => $row['depreciated_value'],
-            'usable_life'    => $row['usable_life'],
-            'assigned_name'  => $row['assigned_name'],
-            'assigned_id'    => $row['assigned_id'],
-            'farm'           => $row['farm'],
-            'department'     => $row['department'],
-            'remarks'        => $row['remarks'],
+        // Create
+        Asset::create([
+            'ref_id'            => $r['reference_id'],
+            'category_type'     => $r['category_type'],
+            'category'          => $r['category'],
+            'sub_category'      => $r['sub_category'],
+            'brand'             => $r['brand'],
+            'model'             => $r['model'],
+            'status'            => $r['status'],
+            'condition'         => $r['condition'],
+            'acquisition_date'  => $r['acquisition_date'],
+            'item_cost'         => $r['item_cost'],
+            'depreciated_value' => $r['depreciated_value'],
+            'usable_life'       => $r['usable_life'],
+            'assigned_name'     => $r['assigned_name'],
+            'assigned_id'       => $r['assigned_id'],
+            'farm'              => $r['farm'],
+            'department'        => $r['department'],
+            'remarks'           => $r['remarks'],
         ]);
 
         $this->createdCount++;
+    }
 
-        return $model;
+    public function chunkSize(): int
+    {
+        return 500;
     }
 }
