@@ -286,13 +286,13 @@
                          <td> 
                               @php 
                                    $conditionColor = [
-                                        'Good' => 'green',
-                                        'Defective' => 'amber',
-                                        'Repair' => 'sky',
-                                        'Replace' => 'red'
+                                        'Good' => 'text-green-500',
+                                        'Defective' => 'text-amber-500',
+                                        'Repair' => 'text-sky-500',
+                                        'Replace' => 'text-red-500'
                                    ]
                               @endphp 
-                              <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
+                              <div class="{{$conditionColor[$asset->condition]}} font-bold uppercase">{{$asset->condition}}</div>
                          </td>
                          <td>{{$asset->assigned_name ?? '--'}}</td>
                          <td x-data="{ open: false }" class="relative">

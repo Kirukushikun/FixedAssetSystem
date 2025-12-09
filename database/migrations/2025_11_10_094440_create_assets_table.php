@@ -16,20 +16,31 @@ return new class extends Migration
             $table->boolean('is_deleted')->default(false);
             $table->boolean('is_archived')->default(false);
 
-            $table->string('ref_id');
-            $table->string('category_type');
-            $table->string('category');
-            $table->string('sub_category');
+            $table->string('ref_id'); // e.g. FA-(year)-(3 digit number)
+            $table->string('category_type'); // e.g. IT, NON-IT
+            $table->string('category'); // e.g. it, office, appliances, audio, tools, kitchen 
+            $table->string('sub_category'); 
+            // it is a category and category type is (IT, NON-IT)
+            // it: Desktop, Laptop, Router, non-it: Printer, Photocopy Machine, Dogital Camera
+            // office: Table. Office Chair, Office table, Conference Table, Monoblock Chair
+            // Aapliances: Aircon, Refrigerator, Washing Machine, Microwave Oven, Water Dispenser, Washing , wallf fan
+            // audio: Amplifier, Speaker, Microphone,   
+            // tools: Drill, Grinder, Saw, Sander, Pipe Wrench, Hammer, Screwdriver
+            // kitchen: Stove, Oven, Mixer, Toaster, Blender
 
-            $table->string('brand');
-            $table->string('model');
-            $table->string('status');
-            $table->string('condition');
+
+
+            $table->string('brand'); // e.g. Dell, HP, Canon, Nikon, Samsung, LG, Asus, Acer
+            $table->string('model'); // e.g. Inspiron, Pavilion, EOS, Galaxy, ThinkPad
+            $table->string('status'); // GOOD, DEFECTIVE, REPAIR, REPLACE
+            $table->string('condition');// Available, Issued, Transferred, For Disposal, Disposed, Lost
 
             $table->date('acquisition_date');
             $table->string('item_cost')->nullable();
             $table->string('depreciated_value')->nullable();
             $table->string('usable_life')->nullable();
+
+            // Ignore below for now
 
             $table->json('technical_data')->nullable();
 
