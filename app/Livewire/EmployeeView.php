@@ -74,7 +74,7 @@ class EmployeeView extends Component
 
     public function render()
     {   
-        $assets = Asset::where('assigned_id', $this->employee->id)->latest()->paginate(10);
+        $assets = Asset::where('is_deleted', false)->where('assigned_id', $this->employee->id)->latest()->paginate(10);
         $flags = Flag::where('target_id', $this->employee->id)->get();
 
         return view('livewire.employee-view', compact('assets', 'flags'));

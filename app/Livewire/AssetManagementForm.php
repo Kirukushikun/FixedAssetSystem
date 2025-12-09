@@ -73,7 +73,7 @@ class AssetManagementForm extends Component
 
     // RULES FOR VALIDATIOn
     protected $rules = [
-        'ref_id' => 'required',
+        'ref_id' => 'required|unique:assets,ref_id',
         'category_type' => 'required',
         'category' => 'required',
         'sub_category' => 'required',
@@ -166,7 +166,7 @@ class AssetManagementForm extends Component
     }
     
     public function submit(){
-        try {
+        try{
             // Final validation upon submit
             $this->validate();
 
@@ -231,7 +231,7 @@ class AssetManagementForm extends Component
         } catch (\Exception $e) {
             Log::error('Asset creation failed: ' . $e->getMessage());
             // Use NORELOAD notification to show error without redirect
-            $this->noreloadNotif('failed', 'Creation Failed', 'Unable to create asset. Please try again.');
+            $this->noreloadNotif('failed', 'Update Failed', 'Unable to update asset. Please try again.');
         }
     }
 
