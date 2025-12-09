@@ -388,8 +388,8 @@
             
             <!-- SUBMIT MODAL -->
             <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'submit'">
-                <h2 class="text-xl font-semibold -mb-2">Submit Modal</h2>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, incidunt! asdadasd</p>
+                <h2 class="text-xl font-semibold -mb-2">Save Asset</h2>
+                <p>Do you want to save this asset? Make sure all required details are correct.</p>
 
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="showModal = false;" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer">Cancel</button>

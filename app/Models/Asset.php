@@ -9,6 +9,7 @@ class Asset extends Model
     protected $table = 'assets';
 
     protected $fillable = [
+        'snipe_id',
         'is_deleted',
         'is_archived',
 

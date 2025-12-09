@@ -175,7 +175,6 @@
                             <option value="SALES &amp; ANALYTICS">SALES &amp; ANALYTICS</option>
                             <option value="SWINE">SWINE</option>
                         </select>
-                        <input type="text" wire:model="department" class="border rounded px-2 py-1 w-full" />
                     </div>
 
                     <div class="flex justify-end gap-3">
@@ -194,8 +193,8 @@
 
             <!-- Delete Confirmation Modal -->
             <div class="flex flex-col gap-5" x-show="modalTemplate === 'delete'">
-                <h2 class="text-xl font-semibold -mb-2">Delete Modal</h2>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, incidunt!</p>
+                <h2 class="text-xl font-semibold -mb-2">Delete Employee</h2>
+                <p>Are you sure you want to delete this employee? This action cannot be undone.</p>
 
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="showModal = false" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>

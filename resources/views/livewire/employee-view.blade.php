@@ -51,7 +51,7 @@
                 @click="showModal = true; modalTemplate = 'flag'">
                 ADD NEW FLAG
             </button>
-            @if(!$flags->empty())
+            @if($flags->isNotEmpty())
                 <button class="px-5 py-2 bg-green-600 rounded-lg font-bold text-white text-xs hover:bg-green-700 w-fit"
                     @click="showModal = true; modalTemplate = 'resolveAll'">
                     MARK ALL AS RESOLVED
@@ -173,7 +173,7 @@
                     <select name="" id="" wire:model="flag_type">
                         <option value="">Select type:</option>
                         <option value="Under Investigation">Under Investigation</option>
-                        <option value="Unreturned Asset">Pending Clearances</option>
+                        <option value="Unreturned Asset">Unreturned Asset</option>
                         <option value="Pending Clearances">Pending Clearances</option>
                         <option value="Damaged Asset">Damaged Asset</option>
                         <option value="Lost Asset">Lost Asset</option>

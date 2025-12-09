@@ -33,7 +33,7 @@ class EmployeesTable extends Component
     public $employee_id, $employee_name, $position, $farm, $department;
 
     protected $rules = [
-        'employee_id' => 'required',
+        'employee_id' => 'required|unique:employees,employee_id',
         'employee_name' => 'required',
         'position' => 'required',
         'farm' => 'required',
