@@ -88,8 +88,6 @@ class AssetManagementTable extends Component
     public function render()
     {   
         $assets = Asset::where('is_deleted', false)
-            ->where('is_archived', false)
-            
             // Search filter
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
