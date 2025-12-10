@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_deleted')->default(false);
             $table->boolean('is_archived')->default(false);
 
-            $table->string('ref_id'); // e.g. FA-(year)-(3 digit number)
+            $table->string('ref_id'); 
             $table->string('category_type'); // e.g. IT, NON-IT
             $table->string('category'); // e.g. it, office, appliances, audio, tools, kitchen 
             $table->string('sub_category'); 

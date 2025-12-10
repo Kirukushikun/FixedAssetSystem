@@ -8,6 +8,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -97,7 +98,15 @@ class AssetManagementForm extends Component
 
         if($mode == 'create'){
             // Prefill initial info for creation
-            $this->ref_id = 'FA-' . now()->year . '-' . rand(100, 999);
+            // Predict the next auto-increment ID to show an incremental ref_id in the form
+            try {
+                $status = DB::select("SHOW TABLE STATUS LIKE 'assets'");
+                $nextId = $status[0]->Auto_increment ?? (DB::table('assets')->max('id') + 1);
+            } catch (\Exception $e) {
+                $nextId = DB::table('assets')->max('id') + 1;
+            }
+
+            $this->ref_id = 'FA-' . now()->year . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
             $this->category_type = $category_type;
             $this->category = $category;
             $this->sub_category = $sub_category;            
@@ -202,6 +211,13 @@ class AssetManagementForm extends Component
                 'attachment_name' => $originalName ?? null
             ]);
 
+            // Ensure ref_id is set to an incremental unique value based on the created id
+            $finalRefId = 'FA-' . now()->year . '-' . str_pad($asset->id, 4, '0', STR_PAD_LEFT);
+            $asset->update(['ref_id' => $finalRefId]);
+
+            // Update the form state for accurate notifications
+            $this->ref_id = $finalRefId;
+
             // -------- SAVE QR CODE FILE ----------
             $url = url('/assetmanagement/view?targetID=' . $asset->id);
             $qrFileName = 'qr_' . $asset->id . '.svg';
@@ -222,7 +238,7 @@ class AssetManagementForm extends Component
             // }
 
             // Audit Trail
-            $this->audit('Created Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
+            $this->audit('Created Asset: ' . $this->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');

@@ -3,8 +3,9 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\Asset;
 use Livewire\WithPagination;
+use App\Models\Asset;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 
 class AssetManagementTable extends Component
@@ -30,6 +31,18 @@ class AssetManagementTable extends Component
     public $filterCostMin = '';
     public $filterCostMax = '';
 
+    public $categories;
+    public $openCategory = null;
+
+    public function toggleCategory($categoryId)
+    {
+        if ($this->openCategory === $categoryId) {
+            $this->openCategory = null;
+        } else {
+            $this->openCategory = $categoryId;
+        }
+    }
+
     public function goToPage($page)
     {
        $this->setPage($page);
@@ -38,6 +51,11 @@ class AssetManagementTable extends Component
     public function updatedSearch()
     {
         $this->resetPage();
+    }
+
+    public function mount()
+    {
+        $this->categories = Category::with('subcategories')->get();
     }
 
     // Reset pagination when filters change

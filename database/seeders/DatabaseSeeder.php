@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Category;
+use App\Models\Subcategory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -144,5 +146,87 @@ class DatabaseSeeder extends Seeder
             $totalInserted++;
         }
         $this->command->info('Assets seeded successfully! Total assets: ' . ($counter - 1));
+
+
+        $data = [
+            'IT Equipment' => [
+                'icon' => 'desktop',
+                'subcategories' => [
+                    ['name' => 'Desktop', 'category_type' => 'IT'],
+                    ['name' => 'Laptop', 'category_type' => 'IT'],
+                    ['name' => 'Router', 'category_type' => 'IT'],
+                    ['name' => 'Printer', 'category_type' => 'NON-IT'],
+                    ['name' => 'Photocopy Machine', 'category_type' => 'NON-IT'],
+                    ['name' => 'Digital Camera', 'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Office Furniture' => [
+                'icon' => 'furniture',
+                'subcategories' => [
+                    ['name' => 'Table', 'category_type' => 'NON-IT'],
+                    ['name' => 'Office Chair', 'category_type' => 'NON-IT'],
+                    ['name' => 'Office Table', 'category_type' => 'NON-IT'],
+                    ['name' => 'Conference Table', 'category_type' => 'NON-IT'],
+                    ['name' => 'Monoblock Chair', 'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Appliances' => [
+                'icon' => 'appliances',
+                'subcategories' => [
+                    ['name' => 'Aircon', 'category_type' => 'NON-IT'],
+                    ['name' => 'Refrigerator', 'category_type' => 'NON-IT'],
+                    ['name' => 'Water Dispenser', 'category_type' => 'NON-IT'],
+                    ['name' => 'Washing Machine', 'category_type' => 'NON-IT'],
+                    ['name' => 'Wall Fan', 'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Audio Equipment' => [
+                'icon' => 'speaker',
+                'subcategories' => [
+                    ['name' => 'Amplifier', 'category_type' => 'NON-IT'],
+                    ['name' => 'Mixer', 'category_type' => 'NON-IT'],
+                    ['name' => 'Speaker', 'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Tools & Misc' => [
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Helmet', 'category_type' => 'NON-IT'],
+                    ['name' => 'Radio', 'category_type' => 'NON-IT'],
+                    ['name' => 'Thermistor Temperature', 'category_type' => 'NON-IT'],
+                    ['name' => 'Pipe Wrench', 'category_type' => 'NON-IT'],
+                    ['name' => 'Pliers', 'category_type' => 'NON-IT'],
+                    ['name' => 'Machine', 'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Kitchen Equipment' => [
+                'icon' => 'kitchen',
+                'subcategories' => [
+                    ['name' => 'Cooking Pot', 'category_type' => 'NON-IT'],
+                    ['name' => 'Repair Chiller', 'category_type' => 'NON-IT'],
+                ],
+            ],
+        ];
+
+        foreach ($data as $categoryName => $categoryData) {
+            $category = Category::updateOrCreate(
+                ['name' => $categoryName],
+                ['icon' => $categoryData['icon']]
+            );
+
+            foreach ($categoryData['subcategories'] as $subcat) {
+                Subcategory::updateOrCreate(
+                    [
+                        'name' => $subcat['name'],
+                        'category_id' => $category->id,
+                    ],
+                    [
+                        'category_type' => $subcat['category_type']
+                    ]
+                );
+            }
+        }
+
+        $this->command->info('Categories and Sub Categories seeded successfully!');
     }
 }
