@@ -31,6 +31,30 @@ class Trash extends Component
         }
     }
 
+    public function permanentDelete($assetId)
+    {
+        try {
+            $asset = Asset::find($assetId);
+            
+            if (!$asset) {
+                $this->noreloadNotif('failed', 'Asset Not Found', 'Asset not found in system.');
+                return;
+            }
+
+            $refId = $asset->ref_id;
+            
+            // Permanently delete the asset from database
+            $asset->delete();
+
+            $this->noreloadNotif('success', 'Asset Deleted', 'Asset ' . $refId . ' has been permanently deleted.');
+            Log::info('Asset permanently deleted: ' . $refId);
+            
+        } catch (\Exception $e) {
+            $this->noreloadNotif('failed', 'Delete Failed', 'Failed to permanently delete asset: ' . $e->getMessage());
+            Log::error('Permanent delete asset error: ' . $e->getMessage());
+        }
+    }
+
     private function noreloadNotif($type, $header, $message)
     {
         $this->dispatch('notif', type: $type, header: $header, message: $message);

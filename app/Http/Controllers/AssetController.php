@@ -23,6 +23,8 @@ class AssetController extends Controller
     }
 
     public function import(Request $request){
+        ini_set('max_execution_time', 300); // 5 minutes
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv'
         ]);

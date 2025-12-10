@@ -86,86 +86,39 @@ class AssetManagementTable extends Component
     }
     
     public function render()
-    {   
-        $assets = Asset::where('is_deleted', false)
-            // Search filter
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('ref_id', 'like', '%' . $this->search . '%')
-                        ->orWhere('category_type', 'like', '%' . $this->search . '%')
-                        ->orWhere('category', 'like', '%' . $this->search . '%')
-                        ->orWhere('sub_category', 'like', '%' . $this->search . '%')
-                        ->orWhere('brand', 'like', '%' . $this->search . '%')
-                        ->orWhere('model', 'like', '%' . $this->search . '%')
-                        ->orWhere('status', 'like', '%' . $this->search . '%')
-                        ->orWhere('condition', 'like', '%' . $this->search . '%')
-                        ->orWhere('item_cost', 'like', '%' . $this->search . '%')
-                        ->orWhere('assigned_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('assigned_id', 'like', '%' . $this->search . '%')
-                        ->orWhere('farm', 'like', '%' . $this->search . '%')
-                        ->orWhere('department', 'like', '%' . $this->search . '%')
-                        ->orWhere('remarks', 'like', '%' . $this->search . '%');
-                });
-            })
-            
-            // Category Type filter
-            ->when($this->filterCategoryType, function ($query) {
-                $query->where('category_type', $this->filterCategoryType);
-            })
-            
-            // Category filter
-            ->when($this->filterCategory, function ($query) {
-                $query->where('category', $this->filterCategory);
-            })
-            
-            // Sub-category filter
-            ->when($this->filterSubCategory, function ($query) {
-                $query->where('sub_category', $this->filterSubCategory);
-            })
-            
-            // Farm filter
-            ->when($this->filterFarm, function ($query) {
-                $query->where('farm', $this->filterFarm);
-            })
-            
-            // Department filter
-            ->when($this->filterDepartment, function ($query) {
-                $query->where('department', $this->filterDepartment);
-            })
-            
-            // Assigned To filter
-            ->when($this->filterAssignedTo, function ($query) {
-                $query->where('assigned_name', $this->filterAssignedTo);
-            })
-            
-            // Status filter
-            ->when($this->filterStatus, function ($query) {
-                $query->where('status', $this->filterStatus);
-            })
-            
-            // Condition filter
-            ->when($this->filterCondition, function ($query) {
-                $query->where('condition', $this->filterCondition);
-            })
-            
-            // Date range filter
-            ->when($this->filterDateFrom, function ($query) {
-                $query->whereDate('acquisition_date', '>=', $this->filterDateFrom);
-            })
-            ->when($this->filterDateTo, function ($query) {
-                $query->whereDate('acquisition_date', '<=', $this->filterDateTo);
-            })
-            
-            // Cost range filter
-            ->when($this->filterCostMin, function ($query) {
-                $query->where('item_cost', '>=', $this->filterCostMin);
-            })
-            ->when($this->filterCostMax, function ($query) {
-                $query->where('item_cost', '<=', $this->filterCostMax);
-            })
-            
-            ->latest()
-            ->paginate(10);
+    {
+        $query = Asset::query()
+            ->where('is_deleted', false)
+            ->where('is_archived', false);
+
+        if ($this->search) {
+            $search = '%' . $this->search . '%';
+            $query->whereRaw("
+                CONCAT(
+                    ref_id, ' ', category_type, ' ', category, ' ', sub_category, ' ',
+                    brand, ' ', model, ' ', status, ' ', `condition`, ' ',
+                    item_cost, ' ', farm
+                ) LIKE ?
+            ", [$search]);
+        }
+
+        $query->when($this->filterCategoryType, fn ($q) => $q->where('category_type', $this->filterCategoryType));
+        $query->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory));
+        $query->when($this->filterSubCategory, fn ($q) => $q->where('sub_category', $this->filterSubCategory));
+        $query->when($this->filterFarm, fn ($q) => $q->where('farm', $this->filterFarm));
+        $query->when($this->filterDepartment, fn ($q) => $q->where('department', $this->filterDepartment));
+        $query->when($this->filterAssignedTo, fn ($q) => $q->where('assigned_name', $this->filterAssignedTo));
+        $query->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus));
+        $query->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition));
+
+        $query->when($this->filterDateFrom, fn ($q) => $q->whereDate('acquisition_date', '>=', $this->filterDateFrom));
+        $query->when($this->filterDateTo, fn ($q) => $q->whereDate('acquisition_date', '<=', $this->filterDateTo));
+
+        $query->when($this->filterCostMin, fn ($q) => $q->where('item_cost', '>=', $this->filterCostMin));
+        $query->when($this->filterCostMax, fn ($q) => $q->where('item_cost', '<=', $this->filterCostMax));
+
+        $assets = $query->latest()->paginate(10);
+
         return view('livewire.asset-management-table', compact('assets'));
     }
 

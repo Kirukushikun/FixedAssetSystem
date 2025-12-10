@@ -30,6 +30,53 @@
                     document.getElementById('import-form').submit();
                     });
                </script>
+               
+               <!-- Loading Modal Backdrop -->
+               <div 
+                    id="import-loading-backdrop"
+                    class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+               >
+                    <div class="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center gap-4 min-w-[300px]">
+                         <!-- Spinner -->
+                          <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-teal-500"></div>
+                         
+                         <!-- Text -->
+                         <div class="text-center">
+                              <h3 class="text-lg font-semibold text-gray-800 mb-1">Importing Assets</h3>
+                              <p class="text-sm text-gray-500">Please wait while we process your file...</p>
+                         </div>
+                    </div>
+               </div>
+
+               <script>
+                    const importButton = document.getElementById('import-button');
+                    const importFile = document.getElementById('import-file');
+                    const importForm = document.getElementById('import-form');
+                    const loadingBackdrop = document.getElementById('import-loading-backdrop');
+
+                    // Trigger file input when button is clicked
+                    importButton.addEventListener('click', () => {
+                         importFile.click();
+                    });
+
+                    // Handle file selection and show loading
+                    importFile.addEventListener('change', () => {
+                         if (importFile.files.length > 0) {
+                              // Show loading modal
+                              loadingBackdrop.classList.remove('hidden');
+                              
+                              // Submit the form
+                              importForm.submit();
+                         }
+                    });
+
+                    // Optional: Hide loading if user navigates back (for better UX)
+                    window.addEventListener('pageshow', (event) => {
+                         if (event.persisted) {
+                              loadingBackdrop.classList.add('hidden');
+                         }
+                    });
+               </script>
 
                <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/assets/export'"></i>
 
@@ -286,13 +333,13 @@
                          <td> 
                               @php 
                                    $conditionColor = [
-                                        'Good' => 'green',
-                                        'Defective' => 'amber',
-                                        'Repair' => 'sky',
-                                        'Replace' => 'red'
+                                        'Good' => 'text-green-500',
+                                        'Defective' => 'text-amber-500',
+                                        'Repair' => 'text-sky-500',
+                                        'Replace' => 'text-red-500'
                                    ]
                               @endphp 
-                              <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
+                              <div class="{{$conditionColor[$asset->condition]}} font-bold uppercase">{{$asset->condition}}</div>
                          </td>
                          <td>{{$asset->assigned_name ?? '--'}}</td>
                          <td x-data="{ open: false }" class="relative">
@@ -486,8 +533,8 @@
                </div>
                
                <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'delete'">
-                    <h2 class="text-xl font-semibold -mb-2">Delete Modal</h2>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, incidunt! asdadasd</p>
+                    <h2 class="text-xl font-semibold -mb-2">Delete Asset</h2>
+                    <p>Are you sure you want to delete this asset? You can restore it later if needed.</p>
 
                     <div class="flex justify-end gap-3">
                          <button type="button" @click="showModal = false;" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer">Cancel</button>

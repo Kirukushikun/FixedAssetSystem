@@ -42,7 +42,7 @@
                         <td class="border border-gray-300 px-2 py-1">{{$asset->condition}}</td>
                         <td class="border border-gray-300 px-2 py-1">{{$asset->assigned_name}}</td>
                         <td class="border border-gray-300 px-2 py-1">
-                            <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500 transition">
+                            <button class="bg-teal-400 text-white rounded-md text-xs w-fit py-2 px-4 hover:bg-teal-500 transition" onclick="window.location.href='/assetmanagement/view?targetID={{encrypt($asset->id)}}'">
                                 VIEW
                             </button>
                         </td>
