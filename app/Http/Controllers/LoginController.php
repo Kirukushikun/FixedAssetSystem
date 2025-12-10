@@ -18,12 +18,12 @@ class LoginController extends Controller
         $email = $request->input('email');
         
         // Check if account is locked
-        if ($this->isLocked($email)) {
-            $remainingTime = $this->getRemainingLockoutTime($email);
-            return back()->withErrors([
-                'login' => "Account temporarily locked due to multiple failed attempts. Please try again in {$remainingTime} minutes."
-            ])->withInput();
-        }
+        // if ($this->isLocked($email)) {
+        //     $remainingTime = $this->getRemainingLockoutTime($email);
+        //     return back()->withErrors([
+        //         'login' => "Account temporarily locked due to multiple failed attempts. Please try again in {$remainingTime} minutes."
+        //     ])->withInput();
+        // }
 
         try {
             // External API config

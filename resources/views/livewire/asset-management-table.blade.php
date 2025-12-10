@@ -20,16 +20,6 @@
                     <i class="fa-solid fa-file-import cursor-pointer"></i>
                     </div>
                </form>
-
-               <script>
-                    document.getElementById('import-button').addEventListener('click', () => {
-                    document.getElementById('import-file').click();
-                    });
-
-                    document.getElementById('import-file').addEventListener('change', () => {
-                    document.getElementById('import-form').submit();
-                    });
-               </script>
                
                <!-- Loading Modal Backdrop -->
                <div 
