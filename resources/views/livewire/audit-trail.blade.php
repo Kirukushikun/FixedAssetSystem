@@ -10,7 +10,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($audits as $audit)
+                @forelse($audits as $audit)
                     <tr>
                         <td>#{{$audit->user_id}} <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
                         <td>{{$audit->user_name}}</td>
@@ -18,7 +18,13 @@
                         <td>{{$audit->created_at->format('d/m/Y')}}</td>
                         <td>{{$audit->created_at->format('h:i A')}}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                            No audit trail record found
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
     </table>
 

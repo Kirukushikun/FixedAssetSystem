@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use App\Models\Department;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
@@ -13,11 +14,17 @@ class UserAccess extends Component
 {   
     public $users = [];
     public $dbUsers = [];
+    public $departments = [];
     
     // Selected user properties for modal
     public $selectedUserId;
     public $selectedUserName;
     public $selectedUserEmail;
+    
+    // Edit properties
+    public $editUserId;
+    public $editFarm;
+    public $editDepartment;
 
     public function mount()
     {
@@ -25,6 +32,8 @@ class UserAccess extends Component
         
         // Get all registered users keyed by id (not employee_id)
         $this->dbUsers = User::all()->keyBy('id');
+
+        $this->departments = Department::all();
     }
 
     public function fetchUsers()
@@ -69,6 +78,51 @@ class UserAccess extends Component
         $this->revokeAccess($this->selectedUserId, $this->selectedUserName);
     }
 
+    public function openEditModal($userId)
+    {
+        if (!$this->dbUsers->has($userId)) {
+            $this->noreloadNotif('failed', 'Access Denied', 'User must be granted access first.');
+            return;
+        }
+
+        $user = $this->dbUsers->get($userId);
+        $this->editUserId = $userId;
+        $this->editFarm = $user->farm;
+        $this->editDepartment = $user->department;
+        
+        $this->dispatch('open-edit-modal');
+    }
+
+    public function updateUserDetails()
+    {
+        try {
+            $user = User::find($this->editUserId);
+            
+            if (!$user) {
+                $this->noreloadNotif('failed', 'User Not Found', 'User not found in system.');
+                return;
+            }
+
+            $user->update([
+                'farm' => $this->editFarm,
+                'department' => $this->editDepartment,
+            ]);
+
+            // Update the dbUsers collection
+            $this->dbUsers->put($this->editUserId, $user);
+
+            $this->noreloadNotif('success', 'Updated', 'User details updated successfully.');
+            Log::info('User details updated: ' . $user->email);
+            
+            // Reset edit properties
+            $this->reset(['editUserId', 'editFarm', 'editDepartment']);
+            
+        } catch (\Exception $e) {
+            $this->noreloadNotif('failed', 'Update Failed', 'Failed to update user: ' . $e->getMessage());
+            Log::error('Update user error: ' . $e->getMessage());
+        }
+    }
+
     private function grantAccess($userId, $name, $email)
     {
         try {
@@ -84,6 +138,8 @@ class UserAccess extends Component
                 'name' => $name,
                 'email' => $email,
                 'password' => Hash::make('default_password_' . rand(1000, 9999)),
+                'farm' => null,
+                'department' => null,
             ]);
 
             // Update the dbUsers collection with the new user

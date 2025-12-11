@@ -11,7 +11,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($userLogs as $log)
+                @forelse($userLogs as $log)
                 <tr>
                     <td>{{$log->email}} <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
                     <td>{{$log->success}}</td>
@@ -20,7 +20,13 @@
                     <td>{{$log->created_at->format('d/m/Y')}}</td>
                     <td>{{$log->created_at->format('h:i A')}}</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                        No user log record found
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
     </table>
 

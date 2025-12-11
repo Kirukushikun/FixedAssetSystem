@@ -4,6 +4,7 @@ namespace App\Livewire\DynamicValues;
 
 use Livewire\Component;
 use App\Models\Category;
+use Exception;
 
 class CategoryManagement extends Component
 {
@@ -36,59 +37,122 @@ class CategoryManagement extends Component
 
     public function load()
     {
-        $this->categories = Category::orderBy('name')->get();
+        try {
+            $this->categories = Category::orderBy('name')->get();
+        } catch (Exception $e) {
+            $this->noreloadNotif('Failed', 'Load Error', 'Failed to load categories: ' . $e->getMessage());
+        }
     }
 
     public function add()
     {
-        if (!$this->newName) return;
+        try {
+            if (!$this->newName) {
+                $this->noreloadNotif('Failed', 'Validation Error', 'Category name is required.');
+                return;
+            }
 
-        Category::create([
-            'name' => $this->newName,
-            'icon' => $this->newIcon,
-        ]);
+            Category::create([
+                'name' => $this->newName,
+                'icon' => $this->newIcon,
+            ]);
 
-        $this->newName = '';
-        $this->newIcon = 'folder';
+            $this->newName = '';
+            $this->newIcon = 'folder';
 
-        $this->load();
+            $this->load();
+            
+            $this->noreloadNotif('Success', 'Category Added', 'Category has been successfully created.');
+        } catch (Exception $e) {
+            $this->noreloadNotif('Failed', 'Add Error', 'Failed to add category: ' . $e->getMessage());
+        }
     }
 
     public function startEdit($id)
     {
-        $cat = Category::find($id);
-        $this->editId = $id;
-        $this->editName = $cat->name;
-        $this->editIcon = $cat->icon;
+        try {
+            $cat = Category::find($id);
+            
+            if (!$cat) {
+                $this->noreloadNotif('Failed', 'Not Found', 'Category not found.');
+                return;
+            }
+            
+            $this->editId = $id;
+            $this->editName = $cat->name;
+            $this->editIcon = $cat->icon;
+        } catch (Exception $e) {
+            $this->noreloadNotif('Failed', 'Edit Error', 'Failed to load category: ' . $e->getMessage());
+        }
     }
 
     public function saveEdit()
     {
-        Category::where('id', $this->editId)->update([
-            'name' => $this->editName,
-            'icon' => $this->editIcon,
-        ]);
+        try {
+            if (!$this->editName) {
+                $this->noreloadNotif('Failed', 'Validation Error', 'Category name is required.');
+                return;
+            }
 
-        $this->editId = null;
-        $this->editName = '';
-        $this->editIcon = '';
+            Category::where('id', $this->editId)->update([
+                'name' => $this->editName,
+                'icon' => $this->editIcon,
+            ]);
 
-        $this->load();
+            $this->editId = null;
+            $this->editName = '';
+            $this->editIcon = '';
+
+            $this->load();
+            
+            $this->noreloadNotif('Success', 'Category Updated', 'Category has been successfully updated.');
+        } catch (Exception $e) {
+            $this->noreloadNotif('Failed', 'Update Error', 'Failed to update category: ' . $e->getMessage());
+        }
     }
 
     public function cancelEdit()
     {
         $this->editId = null;
+        $this->editName = '';
+        $this->editIcon = '';
     }
 
     public function delete($id)
     {
-        Category::where('id', $id)->delete();
-        $this->load();
+        try {
+            $category = Category::find($id);
+            
+            if (!$category) {
+                $this->noreloadNotif('Failed', 'Not Found', 'Category not found.');
+                return;
+            }
+            
+            $category->delete();
+            $this->load();
+            
+            $this->noreloadNotif('Success', 'Category Deleted', 'Category has been successfully deleted.');
+        } catch (Exception $e) {
+            $this->noreloadNotif('Failed', 'Delete Error', 'Failed to delete category: ' . $e->getMessage());
+        }
     }
 
     public function render()
     {
         return view('livewire.dynamic-values.category-management');
+    }
+
+    private function noreloadNotif($type, $header, $message)
+    {
+        $this->dispatch('notif', type: $type, header: $header, message: $message);
+    }
+
+    private function reloadNotif($type, $header, $message)
+    {
+        session()->flash('notif', [
+            'type' => $type,
+            'header' => $header,
+            'message' => $message
+        ]);
     }
 }

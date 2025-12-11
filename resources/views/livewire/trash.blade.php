@@ -15,32 +15,32 @@
         </thead>
         <tbody>
             @forelse($deletedAssets as $item)
-            <tr>
-                <td>{{$item->ref_id}}</td>
-                <td>{{$item->updated_at->format('m/d/Y')}}</td>
-                <td>
-                    <div class="flex gap-2">
-                        <button 
-                            @click="showRestoreModal = true; selectedAssetId = {{ $item->id }}; selectedRefId = '{{ $item->ref_id }}'"
-                            class="bg-white border border-2 text-gray-500 rounded-md text-xs py-2 px-4 hover:bg-gray-500 hover:text-white transition"
-                        >
-                            RESTORE
-                        </button>
-                        <button 
-                            @click="showDeleteModal = true; selectedAssetId = {{ $item->id }}; selectedRefId = '{{ $item->ref_id }}'"
-                            class="bg-white border border-2 border-red-500 text-red-500 rounded-md text-xs py-2 px-4 hover:bg-red-500 hover:text-white transition"
-                        >
-                            DELETE
-                        </button>
-                    </div>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{$item->ref_id}}</td>
+                    <td>{{$item->updated_at->format('m/d/Y')}}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button 
+                                @click="showRestoreModal = true; selectedAssetId = {{ $item->id }}; selectedRefId = '{{ $item->ref_id }}'"
+                                class="bg-white border border-2 text-gray-500 rounded-md text-xs py-2 px-4 hover:bg-gray-500 hover:text-white transition"
+                            >
+                                RESTORE
+                            </button>
+                            <button 
+                                @click="showDeleteModal = true; selectedAssetId = {{ $item->id }}; selectedRefId = '{{ $item->ref_id }}'"
+                                class="bg-white border border-2 border-red-500 text-red-500 rounded-md text-xs py-2 px-4 hover:bg-red-500 hover:text-white transition"
+                            >
+                                DELETE
+                            </button>
+                        </div>
+                    </td>
+                </tr>
             @empty
-            <tr>
-                <td colspan="3" class="px-4 py-8 text-center text-gray-500">
-                    No deleted assets found
-                </td>
-            </tr>
+                <tr>
+                    <td colspan="3" class="px-4 py-8 text-center text-gray-500">
+                        No deleted assets found
+                    </td>
+                </tr>
             @endforelse            
         </tbody>
     </table>

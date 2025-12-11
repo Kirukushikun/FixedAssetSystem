@@ -5,7 +5,7 @@
         <input 
             type="text" 
             wire:model="newDepartment"
-            class="border rounded w-full py-1 px-2 focus:border-indigo-500"
+            class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="Add department..."
         >
         <button 

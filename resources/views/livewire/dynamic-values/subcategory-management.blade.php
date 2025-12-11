@@ -3,11 +3,11 @@
 
     {{-- Add New Subcategory --}}
     <div class="flex gap-3 items-center">
-        <select wire:model="newCategoryType" class="border rounded px-2 py-1 w-1/6">
-            <option value="IT">IT</option>
+        <select wire:model="newCategoryType" class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 w-1/6">
             <option value="NON-IT">NON-IT</option>
+            <option value="IT">IT</option>
         </select>
-        <select wire:model="newCategoryId" class="border rounded px-2 py-1 w-1/3">
+        <select wire:model="newCategoryId" class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 w-1/3">
             <option value="">Select Category</option>
             @foreach($categories as $cat)
                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -17,7 +17,7 @@
             type="text" 
             wire:model="newName" 
             placeholder="Add subcategory..."
-            class="border rounded px-2 py-1 w-1/3 focus:border-indigo-600"
+            class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
         <button wire:click="add" class="text-indigo-600">Add</button>
     </div>
