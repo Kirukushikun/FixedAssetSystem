@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Employee;
+use App\Models\Department;
 
 
 class EmployeesTable extends Component
@@ -150,6 +151,8 @@ class EmployeesTable extends Component
 
     public function render()
     {   
+        $departments = Department::all();
+
         $employees = Employee::where('is_deleted', false)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -165,7 +168,7 @@ class EmployeesTable extends Component
             ->latest()
             ->paginate(10);
             
-        return view('livewire.employees-table', compact('employees'));
+        return view('livewire.employees-table', compact('employees', 'departments'));
     }
 
     private function noreloadNotif($type, $header, $message){

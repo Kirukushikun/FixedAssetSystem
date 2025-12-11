@@ -228,5 +228,26 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->command->info('Categories and Sub Categories seeded successfully!');
+
+        $department = [
+            'FEEDMILL',
+            'FOC',
+            'GENERAL SERVICES',
+            'IT & SECURITY',
+            'POULTRY',
+            'PURCHASING',
+            'SALES & ANALYTICS',
+            'SWINE',
+        ];
+
+        foreach ($department as $dept) {
+            DB::table('departments')->insert([
+                'name' => $dept,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->command->info('Department seeded successfully!');
     }
 }

@@ -164,16 +164,10 @@
                     <div class="input-group">
                         <label>Department/Division:</label>
                         <select wire:model="department">
-                            <option value="">Select Department</option>
-                            <option value="FEEDMILL">FEEDMILL</option>
-                            <option value="FOC">FOC</option>
-                            <option value="GENERAL SERVICES">GENERAL SERVICES</option>
-                            <option value="HR">HR</option>
-                            <option value="IT &amp; SECURITY">IT &amp; SECURITY</option>
-                            <option value="POULTRY">POULTRY</option>
-                            <option value="PURCHASING">PURCHASING</option>
-                            <option value="SALES &amp; ANALYTICS">SALES &amp; ANALYTICS</option>
-                            <option value="SWINE">SWINE</option>
+                            <option value=""></option>
+                            @foreach($departments as $department)
+                                <option value="{{ $department->name }}">{{ $department->name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
