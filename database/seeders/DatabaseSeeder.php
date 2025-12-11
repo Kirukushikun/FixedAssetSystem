@@ -42,17 +42,17 @@ class DatabaseSeeder extends Seeder
 
         $categories = [
             'IT' => [
-                'it' => [
+                'itequipment' => [
                     'Desktop', 'Laptop', 'Router', 'Switch',
                     'Firewall', 'Server', 'Monitor', 'Keyboard'
                 ],
             ],
             'NON-IT' => [
-                'it' => [
+                'itequipment' => [
                     'Printer', 'Photocopy Machine', 'Digital Camera', 'Scanner',
                     'Projector', 'CCTV Camera'
                 ],
-                'office' => [
+                'officefurniture' => [
                     'Table', 'Office Chair', 'Office Table', 'Conference Table',
                     'Monoblock Chair', 'Filing Cabinet', 'Bookshelf', 'Whiteboard'
                 ],
@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
                     'Aircon', 'Refrigerator', 'Washing Machine', 'Microwave Oven',
                     'Water Dispenser', 'Wall Fan', 'Ceiling Fan', 'Rice Cooker'
                 ],
-                'audio' => [
+                'audioequipment' => [
                     'Amplifier', 'Speaker', 'Microphone', 'Mixer Console',
                     'Headset', 'PA System'
                 ],
@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
                     'Drill', 'Grinder', 'Saw', 'Sander', 'Pipe Wrench',
                     'Hammer', 'Screwdriver', 'Pliers', 'Measuring Tape'
                 ],
-                'kitchen' => [
+                'kitchenequipment' => [
                     'Stove', 'Oven', 'Mixer', 'Toaster', 'Blender',
                     'Fryer', 'Rice Cooker', 'Steamer'
                 ],
@@ -123,13 +123,18 @@ class DatabaseSeeder extends Seeder
 
         // --- Ensure minimum 3000 assets ---
         while ($totalInserted < 3000) {
+            // Pick random category
+            $randomCategoryType = array_rand($categories);
+            $randomCategoryGroup = array_rand($categories[$randomCategoryType]);
+            $randomSubCategory = $categories[$randomCategoryType][$randomCategoryGroup][array_rand($categories[$randomCategoryType][$randomCategoryGroup])];
+
             DB::table('assets')->insert([
                 'is_deleted' => false,
                 'is_archived' => rand(0, 10) > 8,
                 'ref_id' => sprintf('FA-%s-%05d', $year, $counter++),
                 'category_type' => 'NON-IT',
-                'category' => 'office',
-                'sub_category' => 'Table',
+                'category' => $randomCategoryGroup,
+                'sub_category' => $randomSubCategory,
                 'brand' => $brands[array_rand($brands)],
                 'model' => $models[array_rand($models)],
                 'status' => $statuses[array_rand($statuses)],
@@ -150,6 +155,7 @@ class DatabaseSeeder extends Seeder
 
         $data = [
             'IT Equipment' => [
+                'code' => 'itequipment', 
                 'icon' => 'desktop',
                 'subcategories' => [
                     ['name' => 'Desktop', 'category_type' => 'IT'],
@@ -161,6 +167,7 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             'Office Furniture' => [
+                'code' => 'officefurniture', 
                 'icon' => 'furniture',
                 'subcategories' => [
                     ['name' => 'Table', 'category_type' => 'NON-IT'],
@@ -171,6 +178,7 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             'Appliances' => [
+                'code' => 'appliances',
                 'icon' => 'appliances',
                 'subcategories' => [
                     ['name' => 'Aircon', 'category_type' => 'NON-IT'],
@@ -181,6 +189,7 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             'Audio Equipment' => [
+                'code' => 'audioequipment',
                 'icon' => 'speaker',
                 'subcategories' => [
                     ['name' => 'Amplifier', 'category_type' => 'NON-IT'],
@@ -189,6 +198,7 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             'Tools & Misc' => [
+                'code' => 'tools',
                 'icon' => 'tools',
                 'subcategories' => [
                     ['name' => 'Helmet', 'category_type' => 'NON-IT'],
@@ -200,6 +210,7 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             'Kitchen Equipment' => [
+                'code' => 'kitchenequipment',
                 'icon' => 'kitchen',
                 'subcategories' => [
                     ['name' => 'Cooking Pot', 'category_type' => 'NON-IT'],
@@ -211,7 +222,10 @@ class DatabaseSeeder extends Seeder
         foreach ($data as $categoryName => $categoryData) {
             $category = Category::updateOrCreate(
                 ['name' => $categoryName],
-                ['icon' => $categoryData['icon']]
+                [
+                    'code' => $categoryData['code'],
+                    'icon' => $categoryData['icon'],
+                ]
             );
 
             foreach ($categoryData['subcategories'] as $subcat) {

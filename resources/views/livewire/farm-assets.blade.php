@@ -24,17 +24,7 @@
                 @forelse($assets as $asset)
                     <tr>
                         <td class="border border-gray-300 px-2 py-1">{{$asset->ref_id}}</td>
-                        @php
-                            $categoryValue = [
-                                'it' => 'IT Equipment',
-                                'office' => 'Office Furniture',
-                                'appliances' => 'Appliances',
-                                'audio' => 'Audio Equipment',
-                                'tools' => 'Tools & Misc',
-                                'kitchen' => 'Kitchen Equipment'
-                            ]
-                        @endphp
-                        <td class="border border-gray-300 px-2 py-1">{{$categoryValue[$asset->category]}}</td>
+                        <td class="border border-gray-300 px-2 py-1">{{$categoryCodeImage[$asset->category]->name}}</td>
                         <td class="border border-gray-300 px-2 py-1">{{$asset->sub_category}}</td>
                         <td class="border border-gray-300 px-2 py-1">{{$asset->brand}}</td>
                         <td class="border border-gray-300 px-2 py-1">{{$asset->model}}</td>

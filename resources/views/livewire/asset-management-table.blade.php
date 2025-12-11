@@ -112,52 +112,17 @@
                                         </select>
 
                                         <select wire:model.live="filterCategory">
-                                             <option value="">Category</option>
-                                             <option value="it">IT Equipment</option>
-                                             <option value="office">Office Furniture</option>
-                                             <option value="appliances">Appliances</option>
-                                             <option value="audio">Audio Equipment</option>
-                                             <option value="tools">Tools & Misc</option>
-                                             <option value="kitchen">Kitchen Equipment</option>
+                                        <option value="">Category</option>
+                                        @foreach($categories as $category)
+                                             <option value="{{ $category->code }}">{{ $category->name }}</option>
+                                        @endforeach
                                         </select>
 
                                         <select wire:model.live="filterSubCategory" class="!col-span-2">
-                                             <option value="">Sub-category</option>
-                                             @if($filterCategory === 'it')
-                                                  <option value="Desktop">Desktop</option>
-                                                  <option value="Laptop">Laptop</option>
-                                                  <option value="Printer">Printer</option>
-                                                  <option value="Router">Router</option>
-                                                  <option value="Photocopy Machine">Photocopy Machine</option>
-                                                  <option value="Digital Camera">Digital Camera</option>
-                                             @elseif($filterCategory === 'office')
-                                                  <option value="Table">Table</option>
-                                                  <option value="Office Chair">Office Chair</option>
-                                                  <option value="Visitors Chair">Visitors Chair</option>
-                                                  <option value="Office Table">Office Table</option>
-                                                  <option value="Conference Chair">Conference Chair</option>
-                                                  <option value="Monoblock Chair">Monoblock Chair</option>
-                                             @elseif($filterCategory === 'appliances')
-                                                  <option value="Aircon">Aircon</option>
-                                                  <option value="Refrigerator">Refrigerator</option>
-                                                  <option value="Water Dispenser">Water Dispenser</option>
-                                                  <option value="Washing Machine">Washing Machine</option>
-                                                  <option value="Wall Fan">Wall Fan</option>
-                                             @elseif($filterCategory === 'audio')
-                                                  <option value="Amplifier">Amplifier</option>
-                                                  <option value="Mixer">Mixer</option>
-                                                  <option value="Speaker">Speaker</option>
-                                             @elseif($filterCategory === 'tools')
-                                                  <option value="Helmet">Helmet</option>
-                                                  <option value="Radio">Radio</option>
-                                                  <option value="Thermistor Temperature Instrument">Thermistor Temperature Instrument</option>
-                                                  <option value="Pipe Wrench">Pipe Wrench</option>
-                                                  <option value="Pliers">Pliers</option>
-                                                  <option value="Machine">Machine</option>
-                                             @elseif($filterCategory === 'kitchen')
-                                                  <option value="Cooking Pot">Cooking Pot</option>
-                                                  <option value="Repair Chiller">Repair Chiller</option>
-                                             @endif
+                                        <option value="">Sub-category</option>
+                                        @foreach($subCategories as $subCategory)
+                                             <option value="{{ $subCategory->name }}">{{ $subCategory->name }}</option>
+                                        @endforeach
                                         </select>
                                    </div>
                               </div>
@@ -177,16 +142,9 @@
 
                                         <select wire:model.live="filterDepartment">
                                              <option value="">Department</option>
-                                             <option value="FEEDMILL">Feedmill</option>
-                                             <option value="FOC">FOC</option>
-                                             <option value="GENERAL SERVICES">General Services</option>
-                                             <option value="HR">HR</option>
-                                             <option value="IT &amp; SECURITY">IT & Security</option>
-                                             <option value="POULTRY">Poultry</option>
-                                             <option value="PURCHASING">Purchasing</option>
-                                             <option value="SALES &amp; ANALYTICS">Sales & Analytics</option>
-                                             <option value="SWINE">Swine</option>
-                                             <!-- Add your department options here -->
+                                             @foreach($departments as $department)
+                                                  <option value="{{ $department->name }}">{{ $department->name }}</option>
+                                             @endforeach
                                         </select>
                                    </div>
                               </div>
@@ -284,39 +242,7 @@
                     <tr>
                          <td>{{$asset->ref_id}}</td>
                          <td>
-                              @php
-                                   $categoryImg = [
-                                        'it' => 'desktop',
-                                        'office' => 'furniture',
-                                        'appliances' => 'appliances',
-                                        'audio' => 'speaker',
-                                        'tools' => 'tools',
-                                        'kitchen' => 'kitchen',
-                                        
-                                        'itequipment' => 'desktop',
-                                        'officefurniture' => 'furniture',
-                                        'appliances' => 'appliances',
-                                        'audioequipment' => 'speaker',
-                                        'tools' => 'tools',
-                                        'kitchenequipment' => 'kitchen'
-                                   ];
-                                   $categoryValue = [
-                                        'it' => 'IT Equipment',
-                                        'office' => 'Office Furniture',
-                                        'appliances' => 'Appliances',
-                                        'audio' => 'Audio Equipment',
-                                        'tools' => 'Tools & Misc',
-                                        'kitchen' => 'Kitchen Equipment',
-
-                                        'itequipment' => 'IT Equipment',
-                                        'officefurniture' => 'Office Furniture',
-                                        'appliances' => 'Appliances',
-                                        'audioequipment' => 'Audio Equipment',
-                                        'tools' => 'Tools & Misc',
-                                        'kitchenequipment' => 'Kitchen Equipment'  
-                                   ];
-                              @endphp
-                              <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryImg[$asset->category] . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryValue[$asset->category]}}</span></p>
+                              <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryCodeImage[$asset->category]->icon . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryCodeImage[$asset->category]->name}}</span></p>
                          </td>
                          <td>{{$asset->sub_category}}</td>
                          <td>{{$asset->brand}}</td>
@@ -400,40 +326,40 @@
                     <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
 
                     <!-- Category List -->
-    <div class="space-y-3">
-        @foreach($categories as $category)
-            <div>
-                <button 
-                    class="flex items-center justify-between w-full font-semibold"
-                    wire:click.prevent="toggleCategory({{ $category->id }})"
-                >
-                    <span class="flex items-center gap-2 font-bold">
-                        <img src="{{ asset('img/' . $category->icon . '.png') }}" style="width: 23px;" alt="">
-                        {{ $category->name }}
-                    </span>
+                    <div class="space-y-3">
+                    @foreach($categories as $category)
+                         <div>
+                              <button 
+                                   class="flex items-center justify-between w-full font-semibold"
+                                   wire:click.prevent="toggleCategory({{ $category->id }})"
+                              >
+                                   <span class="flex items-center gap-2 font-bold">
+                                        <img src="{{ asset('img/' . $category->icon . '.png') }}" style="width: 23px;" alt="">
+                                        {{ $category->name }}
+                                   </span>
 
-                    <i 
-                        class="fa-solid fa-chevron-down transition-transform duration-200"
-                        style="transform: rotate({{ $openCategory === $category->id ? '180deg' : '0deg' }})"
-                    ></i>
-                </button>
+                                   <i 
+                                        class="fa-solid fa-chevron-down transition-transform duration-200"
+                                        style="transform: rotate({{ $openCategory === $category->id ? '180deg' : '0deg' }})"
+                                   ></i>
+                              </button>
 
-                @if($openCategory === $category->id)
-                    <div class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                        @foreach($category->subcategories as $sub)
-                            <a 
-                                href="{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . strtolower(str_replace(' ', '', $category->name)) . '&sub_category=' . $sub->name) }}" 
-                                class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1"
-                            >
-                                <span>{{ $sub->name }}</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </a>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        @endforeach
-    </div>                   
+                              @if($openCategory === $category->id)
+                                   <div class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                        @foreach($category->subcategories as $sub)
+                                        <a 
+                                             href="{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . $category->code . '&sub_category=' . $sub->name) }}" 
+                                             class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1"
+                                        >
+                                             <span>{{ $sub->name }}</span>
+                                             <i class="fa-solid fa-arrow-right"></i>
+                                        </a>
+                                        @endforeach
+                                   </div>
+                              @endif
+                         </div>
+                    @endforeach
+                    </div>                
                </div>
                
                <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'delete'">

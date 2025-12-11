@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Asset;
 use App\Models\Category;
+use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 
 class AssetManagementTable extends Component
@@ -32,7 +33,9 @@ class AssetManagementTable extends Component
     public $filterCostMax = '';
 
     public $categories;
+    public $subCategories = [];
     public $openCategory = null;
+    public $departments;
 
     public function toggleCategory($categoryId)
     {
@@ -40,6 +43,19 @@ class AssetManagementTable extends Component
             $this->openCategory = null;
         } else {
             $this->openCategory = $categoryId;
+        }
+    }
+    public function updatedFilterCategory($value)
+    {
+        // Reset subcategory when category changes
+        $this->filterSubCategory = '';
+        
+        // Load subcategories for selected category
+        if ($value) {
+            $category = Category::where('code', $value)->first();
+            $this->subCategories = $category ? $category->subCategories : [];
+        } else {
+            $this->subCategories = [];
         }
     }
 
@@ -54,8 +70,9 @@ class AssetManagementTable extends Component
     }
 
     public function mount()
-    {
+    {   
         $this->categories = Category::with('subcategories')->get();
+        $this->departments = Department::all();
     }
 
     // Reset pagination when filters change
@@ -137,7 +154,10 @@ class AssetManagementTable extends Component
 
         $assets = $query->latest()->paginate(10);
 
-        return view('livewire.asset-management-table', compact('assets'));
+        // Get categories as array with code as key
+        $categoryCodeImage = Category::all()->keyBy('code');
+
+        return view('livewire.asset-management-table', compact('assets', 'categoryCodeImage'));
     }
 
     private function audit($action){

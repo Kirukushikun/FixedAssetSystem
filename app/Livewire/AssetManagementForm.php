@@ -16,6 +16,7 @@ use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\History;
 use App\Models\Audit;
+use App\Models\Category;
 use App\Services\SnipeService;
 
 class AssetManagementForm extends Component
@@ -61,6 +62,7 @@ class AssetManagementForm extends Component
     public $selectedEmployeeName;
     public $farm;
     public $department;
+    public $categoryCodeImage;
     public $history;
     public $audits;
 
@@ -161,6 +163,7 @@ class AssetManagementForm extends Component
         }
 
         $this->employees = Employee::select('id','employee_name','farm','department')->get()->toArray();
+        $this->categoryCodeImage = Category::all()->keyBy('code');
     }
 
     public function updatedSelectedEmployee($value)
@@ -194,7 +197,7 @@ class AssetManagementForm extends Component
             $asset = Asset::create([
                 'ref_id' => $this->ref_id,
                 'category_type' => $this->category_type,
-                'category' => $this->category,
+                'category' => $this->categoryCodeImage[$this->category]->code,
                 'sub_category' => $this->sub_category,
 
                 'brand' => $this->brand,
@@ -268,7 +271,7 @@ class AssetManagementForm extends Component
             $this->targetAsset->update([
                 'ref_id' => $this->ref_id,
                 'category_type' => $this->category_type,
-                'category' => $this->category,
+                'category' => $this->categoryCodeImage[$this->category]->code,
                 'sub_category' => $this->sub_category,
 
                 'brand' => $this->brand,

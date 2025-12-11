@@ -41,18 +41,8 @@
                 <input type="text" id="category_type" value="{{$category_type}}" readonly>
             </div>
             <div class="input-group">
-                @php
-                    $categoryValue = [
-                        'itequipment' => 'IT Equipment',
-                        'officefurniture' => 'Office Furniture',
-                        'appliances' => 'Appliances',
-                        'audioequipment' => 'Audio Equipment',
-                        'tools' => 'Tools & Misc',
-                        'kitchenequipment' => 'Kitchen Equipment'
-                    ]
-                @endphp
                 <label for="category">Category:</label>
-                <input type="text" id="category" value="{{$categoryValue[$category]}}" readonly>
+                <input type="text" id="category" value="{{$categoryCodeImage[$category]->name}}" readonly>
             </div>
             <div class="input-group">
                 <label for="sub_category">Sub-category:</label>
