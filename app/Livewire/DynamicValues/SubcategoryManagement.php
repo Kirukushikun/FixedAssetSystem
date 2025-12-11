@@ -4,7 +4,7 @@ namespace App\Livewire\DynamicValues;
 
 use Livewire\Component;
 use App\Models\Category;
-use App\Models\Subcategory;
+use App\Models\SubCategory;
 use Exception;
 
 class SubcategoryManagement extends Component
@@ -32,7 +32,7 @@ class SubcategoryManagement extends Component
     {
         try {
             $this->categories = Category::orderBy('name')->get();
-            $this->subcategories = Subcategory::with('category')->orderBy('name')->get();
+            $this->subcategories = SubCategory::with('category')->orderBy('name')->get();
         } catch (Exception $e) {
             $this->noreloadNotif('Failed', 'Load Error', 'Failed to load data: ' . $e->getMessage());
         }
@@ -46,7 +46,7 @@ class SubcategoryManagement extends Component
                 return;
             }
 
-            Subcategory::create([
+            SubCategory::create([
                 'name' => $this->newName,
                 'category_id' => $this->newCategoryId,
                 'category_type' => $this->newCategoryType,
@@ -71,7 +71,7 @@ class SubcategoryManagement extends Component
     public function startEdit($id)
     {
         try {
-            $sub = Subcategory::find($id);
+            $sub = SubCategory::find($id);
             
             if (!$sub) {
                 $this->noreloadNotif('Failed', 'Not Found', 'Subcategory not found.');
@@ -95,7 +95,7 @@ class SubcategoryManagement extends Component
                 return;
             }
 
-            Subcategory::where('id', $this->editId)->update([
+            SubCategory::where('id', $this->editId)->update([
                 'name' => $this->editName,
                 'category_id' => $this->editCategoryId,
                 'category_type' => $this->editCategoryType,
@@ -126,7 +126,7 @@ class SubcategoryManagement extends Component
     public function delete($id)
     {
         try {
-            $subcategory = Subcategory::find($id);
+            $subcategory = SubCategory::find($id);
             
             if (!$subcategory) {
                 $this->noreloadNotif('Failed', 'Not Found', 'Subcategory not found.');

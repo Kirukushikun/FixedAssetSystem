@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Category;
-use App\Models\Subcategory;
+use App\Models\SubCategory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -215,7 +215,7 @@ class DatabaseSeeder extends Seeder
             );
 
             foreach ($categoryData['subcategories'] as $subcat) {
-                Subcategory::updateOrCreate(
+                SubCategory::updateOrCreate(
                     [
                         'name' => $subcat['name'],
                         'category_id' => $category->id,
