@@ -98,15 +98,22 @@ class AssetManagementForm extends Component
 
         if($mode == 'create'){
             // Prefill initial info for creation
-            // Predict the next auto-increment ID to show an incremental ref_id in the form
-            try {
-                $status = DB::select("SHOW TABLE STATUS LIKE 'assets'");
-                $nextId = $status[0]->Auto_increment ?? (DB::table('assets')->max('id') + 1);
-            } catch (\Exception $e) {
-                $nextId = DB::table('assets')->max('id') + 1;
+            // Get the next ref_id based on the last one
+            $year = now()->year;
+
+            $lastRefId = DB::table('assets')
+                ->where('ref_id', 'LIKE', "FA-{$year}-%")
+                ->orderByRaw('CAST(SUBSTRING(ref_id, 9) AS UNSIGNED) DESC')
+                ->value('ref_id');
+
+            if ($lastRefId) {
+                $lastNumber = (int) substr($lastRefId, 8);
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
             }
 
-            $this->ref_id = 'FA-' . now()->year . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            $this->ref_id = 'FA-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             $this->category_type = $category_type;
             $this->category = $category;
             $this->sub_category = $sub_category;            

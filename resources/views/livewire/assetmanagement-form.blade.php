@@ -43,12 +43,12 @@
             <div class="input-group">
                 @php
                     $categoryValue = [
-                        'it' => 'IT Equipment',
-                        'office' => 'Office Furniture',
+                        'itequipment' => 'IT Equipment',
+                        'officefurniture' => 'Office Furniture',
                         'appliances' => 'Appliances',
-                        'audio' => 'Audio Equipment',
+                        'audioequipment' => 'Audio Equipment',
                         'tools' => 'Tools & Misc',
-                        'kitchen' => 'Kitchen Equipment'
+                        'kitchenequipment' => 'Kitchen Equipment'
                     ]
                 @endphp
                 <label for="category">Category:</label>

@@ -43,7 +43,7 @@ class Asset extends Model
         'remarks'
     ];
 
-    protected $cast = [
+    protected $casts = [  // Fixed: should be 'casts' not 'cast'
         'is_deleted' => 'boolean',
         'is_archived' => 'boolean',
         'acquisition_date' => 'datetime',
@@ -51,37 +51,35 @@ class Asset extends Model
     ];
 
     /**
-     * Ensure ref_id is set to a unique, incremental value BEFORE creation
-     * if it wasn't provided (this prevents DB errors when the column
-     * is non-nullable and ensures seeders/creators get a predictable id).
+     * Generate the next incremental ref_id based on the last one
      */
     protected static function booted()
     {
         static::creating(function ($asset) {
             if (empty($asset->ref_id)) {
-                try {
-                    $status = DB::select("SHOW TABLE STATUS LIKE 'assets'");
-                    $nextId = $status[0]->Auto_increment ?? (DB::table('assets')->max('id') + 1);
-                } catch (\Exception $e) {
-                    $nextId = DB::table('assets')->max('id') + 1;
+                $year = now()->year;
+                
+                // Get the last ref_id for this year
+                $lastRefId = DB::table('assets')
+                    ->where('ref_id', 'LIKE', "FA-{$year}-%")
+                    ->orderByRaw('CAST(SUBSTRING(ref_id, 9) AS UNSIGNED) DESC')
+                    ->value('ref_id');
+                
+                if ($lastRefId) {
+                    // Extract the number from FA-2024-0001 format
+                    $lastNumber = (int) substr($lastRefId, 8);
+                    $nextNumber = $lastNumber + 1;
+                } else {
+                    // First asset of the year
+                    $nextNumber = 1;
                 }
-
-                $year = now()->year;
-                $asset->ref_id = 'FA-' . $year . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-            }
-        });
-
-        // Keep a fallback: after created, ensure ref_id is present (rare)
-        static::created(function ($asset) {
-            if (empty($asset->ref_id)) {
-                $year = now()->year;
-                $asset->ref_id = 'FA-' . $year . '-' . str_pad($asset->id, 4, '0', STR_PAD_LEFT);
-                $asset->saveQuietly();
+                
+                $asset->ref_id = 'FA-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             }
         });
     }
 
-    // Add relationship
+    // Relationships
     public function audits()
     {
         return $this->hasMany(Audit::class);
@@ -92,7 +90,6 @@ class Asset extends Model
         return $this->hasOne(Audit::class)->latestOfMany('audited_at');
     }
 
-    // In your Asset model
     public function assignedEmployee()
     {
         return $this->belongsTo(Employee::class, 'assigned_id');

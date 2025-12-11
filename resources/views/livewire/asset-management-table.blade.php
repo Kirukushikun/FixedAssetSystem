@@ -291,7 +291,14 @@
                                         'appliances' => 'appliances',
                                         'audio' => 'speaker',
                                         'tools' => 'tools',
-                                        'kitchen' => 'kitchen'      
+                                        'kitchen' => 'kitchen',
+                                        
+                                        'itequipment' => 'desktop',
+                                        'officefurniture' => 'furniture',
+                                        'appliances' => 'appliances',
+                                        'audioequipment' => 'speaker',
+                                        'tools' => 'tools',
+                                        'kitchenequipment' => 'kitchen'
                                    ];
                                    $categoryValue = [
                                         'it' => 'IT Equipment',
@@ -299,7 +306,14 @@
                                         'appliances' => 'Appliances',
                                         'audio' => 'Audio Equipment',
                                         'tools' => 'Tools & Misc',
-                                        'kitchen' => 'Kitchen Equipment'    
+                                        'kitchen' => 'Kitchen Equipment',
+
+                                        'itequipment' => 'IT Equipment',
+                                        'officefurniture' => 'Office Furniture',
+                                        'appliances' => 'Appliances',
+                                        'audioequipment' => 'Audio Equipment',
+                                        'tools' => 'Tools & Misc',
+                                        'kitchenequipment' => 'Kitchen Equipment'  
                                    ];
                               @endphp
                               <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryImg[$asset->category] . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryValue[$asset->category]}}</span></p>
@@ -316,7 +330,7 @@
                                         'For Disposal' => 'bg-[#ED8936]',
                                         'Disposed' => 'bg-[#2D3748]',
                                         'Lost' => 'bg-[#F56565]'
-                                   ]
+                                   ];
                               @endphp 
                               <div class="px-4 py-1 {{$statusColor[$asset->status]}} text-white w-fit rounded-lg">{{$asset->status}}</div>
                          </td>
@@ -327,7 +341,7 @@
                                         'Defective' => 'text-amber-500',
                                         'Repair' => 'text-sky-500',
                                         'Replace' => 'text-red-500'
-                                   ]
+                                   ];
                               @endphp 
                               <div class="{{$conditionColor[$asset->condition]}} font-bold uppercase">{{$asset->condition}}</div>
                          </td>
