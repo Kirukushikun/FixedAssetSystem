@@ -25,10 +25,12 @@ class CategoryManagement extends Component
 
     public $newName = '';
     public $newIcon = 'folder';
+    public $newCode = '';
 
     public $editId = null;
     public $editName = '';
     public $editIcon = '';
+    public $editCode = '';
 
     public function mount()
     {
@@ -38,33 +40,58 @@ class CategoryManagement extends Component
     public function load()
     {
         try {
-            $this->categories = Category::orderBy('name')->get();
+            $this->categories = Category::withCount('subcategories')->orderBy('name')->get();
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Load Error', 'Failed to load categories: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Load Error', 'Failed to load categories: ' . $e->getMessage());
         }
+    }
+
+    public function updatedNewName($value)
+    {
+        $this->newCode = $this->generateCode($value);
+    }
+
+    public function updatedEditName($value)
+    {
+        $this->editCode = $this->generateCode($value);
+    }
+
+    private function generateCode($name)
+    {
+        return strtolower(str_replace(' ', '', $name));
     }
 
     public function add()
     {
         try {
             if (!$this->newName) {
-                $this->noreloadNotif('Failed', 'Validation Error', 'Category name is required.');
+                $this->noreloadNotif('failed', 'Validation Error', 'Category name is required.');
+                return;
+            }
+
+            // Check if code already exists
+            $exists = Category::where('code', $this->newCode)->exists();
+            if ($exists) {
+                $this->noreloadNotif('failed', 'Duplicate Code', 'A category with this code already exists.');
                 return;
             }
 
             Category::create([
                 'name' => $this->newName,
                 'icon' => $this->newIcon,
+                'code' => $this->newCode,
             ]);
 
             $this->newName = '';
             $this->newIcon = 'folder';
+            $this->newCode = '';
 
             $this->load();
+            $this->dispatch('subCategoryRefresh');
             
-            $this->noreloadNotif('Success', 'Category Added', 'Category has been successfully created.');
+            $this->noreloadNotif('success', 'Category Added', 'Category has been successfully created.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Add Error', 'Failed to add category: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Add Error', 'Failed to add category: ' . $e->getMessage());
         }
     }
 
@@ -74,15 +101,16 @@ class CategoryManagement extends Component
             $cat = Category::find($id);
             
             if (!$cat) {
-                $this->noreloadNotif('Failed', 'Not Found', 'Category not found.');
+                $this->noreloadNotif('failed', 'Not Found', 'Category not found.');
                 return;
             }
             
             $this->editId = $id;
             $this->editName = $cat->name;
             $this->editIcon = $cat->icon;
+            $this->editCode = $cat->code;
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Edit Error', 'Failed to load category: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Edit Error', 'Failed to load category: ' . $e->getMessage());
         }
     }
 
@@ -90,24 +118,37 @@ class CategoryManagement extends Component
     {
         try {
             if (!$this->editName) {
-                $this->noreloadNotif('Failed', 'Validation Error', 'Category name is required.');
+                $this->noreloadNotif('failed', 'Validation Error', 'Category name is required.');
+                return;
+            }
+
+            // Check if code already exists (excluding current category)
+            $exists = Category::where('code', $this->editCode)
+                ->where('id', '!=', $this->editId)
+                ->exists();
+            
+            if ($exists) {
+                $this->noreloadNotif('failed', 'Duplicate Code', 'A category with this code already exists.');
                 return;
             }
 
             Category::where('id', $this->editId)->update([
                 'name' => $this->editName,
                 'icon' => $this->editIcon,
+                'code' => $this->editCode,
             ]);
 
             $this->editId = null;
             $this->editName = '';
             $this->editIcon = '';
+            $this->editCode = '';
 
             $this->load();
+            $this->dispatch('subCategoryRefresh');
             
-            $this->noreloadNotif('Success', 'Category Updated', 'Category has been successfully updated.');
+            $this->noreloadNotif('success', 'Category Updated', 'Category has been successfully updated.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Update Error', 'Failed to update category: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Update Error', 'Failed to update category: ' . $e->getMessage());
         }
     }
 
@@ -116,6 +157,7 @@ class CategoryManagement extends Component
         $this->editId = null;
         $this->editName = '';
         $this->editIcon = '';
+        $this->editCode = '';
     }
 
     public function delete($id)
@@ -124,16 +166,25 @@ class CategoryManagement extends Component
             $category = Category::find($id);
             
             if (!$category) {
-                $this->noreloadNotif('Failed', 'Not Found', 'Category not found.');
+                $this->noreloadNotif('failed', 'Not Found', 'Category not found.');
+                return;
+            }
+            
+            // Check if any assets are using this category code
+            $assetCount = \App\Models\Asset::where('category', $category->code)->count();
+            
+            if ($assetCount > 0) {
+                $this->noreloadNotif('failed', 'Cannot Delete', "Cannot delete '{$category->name}'. It is being used by {$assetCount} asset(s).");
                 return;
             }
             
             $category->delete();
             $this->load();
+            $this->dispatch('subCategoryRefresh');
             
-            $this->noreloadNotif('Success', 'Category Deleted', 'Category has been successfully deleted.');
+            $this->noreloadNotif('success', 'Category Deleted', 'Category has been successfully deleted.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Delete Error', 'Failed to delete category: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Delete Error', 'Failed to delete category: ' . $e->getMessage());
         }
     }
 

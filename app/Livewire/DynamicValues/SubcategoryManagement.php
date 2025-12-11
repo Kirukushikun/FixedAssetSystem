@@ -8,8 +8,9 @@ use App\Models\SubCategory;
 use Exception;
 
 class SubcategoryManagement extends Component
-{
-    public $categories = [];
+{   
+    protected $listeners = ['subCategoryRefresh' => '$refresh'];
+
     public $subcategories = [];
 
     // For add new subcategory
@@ -31,10 +32,9 @@ class SubcategoryManagement extends Component
     public function loadData()
     {
         try {
-            $this->categories = Category::orderBy('name')->get();
             $this->subcategories = SubCategory::with('category')->orderBy('name')->get();
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Load Error', 'Failed to load data: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Load Error', 'Failed to load data: ' . $e->getMessage());
         }
     }
 
@@ -42,7 +42,7 @@ class SubcategoryManagement extends Component
     {
         try {
             if (!$this->newName || !$this->newCategoryId) {
-                $this->noreloadNotif('Failed', 'Validation Error', 'Please fill in all required fields.');
+                $this->noreloadNotif('failed', 'Validation Error', 'Please fill in all required fields.');
                 return;
             }
 
@@ -55,9 +55,9 @@ class SubcategoryManagement extends Component
             $this->resetNew();
             $this->loadData();
             
-            $this->noreloadNotif('Success', 'Subcategory Added', 'Subcategory has been successfully created.');
+            $this->noreloadNotif('success', 'Subcategory Added', 'Subcategory has been successfully created.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Add Error', 'Failed to add subcategory: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Add Error', 'Failed to add subcategory: ' . $e->getMessage());
         }
     }
 
@@ -74,7 +74,7 @@ class SubcategoryManagement extends Component
             $sub = SubCategory::find($id);
             
             if (!$sub) {
-                $this->noreloadNotif('Failed', 'Not Found', 'Subcategory not found.');
+                $this->noreloadNotif('failed', 'Not Found', 'Subcategory not found.');
                 return;
             }
             
@@ -83,7 +83,7 @@ class SubcategoryManagement extends Component
             $this->editCategoryId = $sub->category_id;
             $this->editCategoryType = $sub->category_type;
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Edit Error', 'Failed to load subcategory: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Edit Error', 'Failed to load subcategory: ' . $e->getMessage());
         }
     }
 
@@ -91,7 +91,7 @@ class SubcategoryManagement extends Component
     {
         try {
             if (!$this->editName || !$this->editCategoryId) {
-                $this->noreloadNotif('Failed', 'Validation Error', 'Please fill in all required fields.');
+                $this->noreloadNotif('failed', 'Validation Error', 'Please fill in all required fields.');
                 return;
             }
 
@@ -104,9 +104,9 @@ class SubcategoryManagement extends Component
             $this->resetEdit();
             $this->loadData();
             
-            $this->noreloadNotif('Success', 'Subcategory Updated', 'Subcategory has been successfully updated.');
+            $this->noreloadNotif('success', 'Subcategory Updated', 'Subcategory has been successfully updated.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Update Error', 'Failed to update subcategory: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Update Error', 'Failed to update subcategory: ' . $e->getMessage());
         }
     }
 
@@ -129,22 +129,27 @@ class SubcategoryManagement extends Component
             $subcategory = SubCategory::find($id);
             
             if (!$subcategory) {
-                $this->noreloadNotif('Failed', 'Not Found', 'Subcategory not found.');
+                $this->noreloadNotif('failed', 'Not Found', 'Subcategory not found.');
                 return;
             }
             
             $subcategory->delete();
             $this->loadData();
             
-            $this->noreloadNotif('Success', 'Subcategory Deleted', 'Subcategory has been successfully deleted.');
+            $this->noreloadNotif('success', 'Subcategory Deleted', 'Subcategory has been successfully deleted.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Delete Error', 'Failed to delete subcategory: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Delete Error', 'Failed to delete subcategory: ' . $e->getMessage());
         }
     }
 
     public function render()
     {
-        return view('livewire.dynamic-values.subcategory-management');
+        // Move categories here so it always refreshes
+        $categories = Category::orderBy('name')->get();
+        
+        return view('livewire.dynamic-values.subcategory-management', [
+            'categories' => $categories
+        ]);
     }
 
     private function noreloadNotif($type, $header, $message)
