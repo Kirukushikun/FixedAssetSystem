@@ -88,25 +88,7 @@
                         <tr>
                             <td>{{$asset->ref_id}}</td>
                             <td>
-                                @php
-                                    $categoryImg = [
-                                        'it' => 'desktop',
-                                        'office' => 'furniture',
-                                        'appliances' => 'appliances',
-                                        'audio' => 'speaker',
-                                        'tools' => 'tools',
-                                        'kitchen' => 'kitchen' 
-                                    ];
-                                    $categoryValue = [
-                                        'it' => 'IT Equipment',
-                                        'office' => 'Office Furniture',
-                                        'appliances' => 'Appliances',
-                                        'audio' => 'Audio Equipment',
-                                        'tools' => 'Tools & Misc',
-                                        'kitchen' => 'Kitchen Equipment' 
-                                    ];
-                                @endphp
-                                <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryImg[$asset->category] . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryValue[$asset->category]}}</span></p>
+                                <p class="flex items-center gap-2"><img src="{{ asset('img/' . $categoryCodeImage[$asset->category]->icon . '.png') }}" style="width: 25px" alt="" /> <span class="font-bold">{{$categoryCodeImage[$asset->category]->name}}</span></p>
                             </td>
                             <td>{{$asset->sub_category}}</td>
                             <td>{{$asset->brand}}</td>

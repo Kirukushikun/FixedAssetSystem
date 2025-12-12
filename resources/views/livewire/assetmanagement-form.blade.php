@@ -169,9 +169,8 @@
                 @if($mode == 'view' && $targetAsset->assigned_name)
                     <input type="text" value="{{$targetAsset->assigned_name}}" readonly>
                 @else 
-                    <select wire:model.live="selectedEmployee" {{ $mode == 'view' || $mode == 'edit' ? 'disabled' : '' }}>
+                    <select wire:model.live="selectedEmployee" {{ $mode == 'view' ? 'disabled' : '' }}>
                         <option value="">Select</option>
-
                         @foreach ($employees as $emp)
                             <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
                         @endforeach
@@ -182,13 +181,31 @@
             <!-- FARM -->
             <div class="input-group">
                 <label>Farm:</label>
-                <input type="text" wire:model="farm" readonly>
+                @if($selectedEmployee || $mode == 'view')
+                    <input type="text" wire:model="farm" readonly>
+                @else
+                    <select wire:model="farm" {{ $mode == 'view' ? 'disabled' : '' }}>
+                        <option value="">Select Farm</option>
+                        @foreach($farms as $farmOption)
+                            <option value="{{ $farmOption }}">{{ $farmOption }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <!-- DEPARTMENT -->
             <div class="input-group">
                 <label>Department/Division:</label>
-                <input type="text" wire:model="department" readonly>
+                @if($selectedEmployee || $mode == 'view')
+                    <input type="text" wire:model="department" readonly>
+                @else
+                    <select wire:model="department" {{ $mode == 'view' ? 'disabled' : '' }}>
+                        <option value="">Select Department</option>
+                        @foreach($departments as $deptOption)
+                            <option value="{{ $deptOption }}">{{ $deptOption }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
         </div>
 

@@ -17,6 +17,7 @@ use App\Models\Employee;
 use App\Models\History;
 use App\Models\Audit;
 use App\Models\Category;
+use App\Models\Department;
 use App\Services\SnipeService;
 
 class AssetManagementForm extends Component
@@ -73,6 +74,9 @@ class AssetManagementForm extends Component
 
     public $newHolder;
     public $newCondition;
+
+    public $farms = ['BFC', 'BDL', 'PFC', 'RH'];
+    public $departments = [];
 
     // RULES FOR VALIDATIOn
     protected $rules = [
@@ -163,6 +167,8 @@ class AssetManagementForm extends Component
         }
 
         $this->employees = Employee::select('id','employee_name','farm','department')->get()->toArray();
+        // Get unique farms and departments for dropdowns
+        $this->departments = Department::pluck('name')->toArray();
         $this->categoryCodeImage = Category::all()->keyBy('code');
     }
 

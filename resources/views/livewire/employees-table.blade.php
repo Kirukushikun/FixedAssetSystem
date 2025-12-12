@@ -64,6 +64,14 @@
                                 @php
                                     $displayedFlags = $employee->flags->take(3);
                                     $remainingCount = $employee->flags_count - 3;
+
+                                    $flagColors = [
+                                        'Under Investigation' => 'text-blue-500',
+                                        'Pending Clearances' => 'text-purple-500',
+                                        'Lost Asset' => 'text-red-500',
+                                        'Unreturned Asset' => 'text-orange-500',
+                                        'Damaged Asset' => 'text-yellow-500',
+                                    ];
                                 @endphp
                                 
                                 @foreach($displayedFlags as $flag)

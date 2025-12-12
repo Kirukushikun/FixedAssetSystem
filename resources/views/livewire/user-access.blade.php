@@ -15,6 +15,9 @@
                 <tr class="border-b border-gray-200">
                     <td>{{ $user['id'] }}</td>
                     <td>
+                        @if($dbUsers->has($user['id']))
+                            @if($dbUsers->get($user['id'])->is_admin)<i class="fa-solid fa-user-tie text-yellow-500 py-2"></i>@endif
+                        @endif
                         {{ $user['first_name'] }} {{ $user['last_name'] }}
                     </td>
                     <td>{{ $user['email'] }}</td>
@@ -47,6 +50,14 @@
                                 >
                                     REVOKE ACCESS
                                 </button>
+                                @if(!$dbUsers->get($user['id'])->is_admin)
+                                    <button 
+                                        @click="modalTemplate = 'admin'; showModal = true; $wire.set('selectedUserId', '{{ $user['id'] }}'); $wire.set('selectedUserName', '{{ $user['first_name'] }} {{ $user['last_name'] }}');"
+                                        class="bg-yellow-500 text-white rounded-md text-xs py-2 px-4 hover:bg-yellow-600 transition"
+                                    >
+                                        MAKE ADMIN
+                                    </button>
+                                @endif
                             </div>
                         @else
                             <button 
@@ -114,6 +125,22 @@
                     <button 
                         @click="$wire.confirmRevokeAccess(); showModal = false" 
                         class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800"
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Make Admin Modal -->
+            <div class="flex flex-col gap-5" x-show="modalTemplate === 'admin'">
+                <h2 class="text-xl font-semibold -mb-2">Make Admin</h2>
+                <p>Are you sure you want to grant admin privileges to <strong>{{ $selectedUserName ?? '' }}</strong>?</p>
+
+                <div class="flex justify-end gap-3">
+                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+                    <button 
+                        @click="$wire.confirmMakeAdmin(); showModal = false" 
+                        class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                     >
                         Confirm
                     </button>

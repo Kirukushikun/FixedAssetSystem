@@ -23,6 +23,7 @@ class User extends Authenticatable
         'farm',
         'department',
         'email',
+        'is_admin',
         'password',
 
     ];

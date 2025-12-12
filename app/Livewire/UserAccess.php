@@ -78,6 +78,11 @@ class UserAccess extends Component
         $this->revokeAccess($this->selectedUserId, $this->selectedUserName);
     }
 
+    public function confirmMakeAdmin()
+    {
+        $this->makeAdmin($this->selectedUserId, $this->selectedUserName);
+    }
+
     public function openEditModal($userId)
     {
         if (!$this->dbUsers->has($userId)) {
@@ -175,6 +180,38 @@ class UserAccess extends Component
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Revoke Access Failed', 'Failed to revoke access: ' . $e->getMessage());
             Log::error('Revoke access error: ' . $e->getMessage());
+        }
+    }
+
+    private function makeAdmin($userId, $name)
+    {
+        try {
+            $user = User::find($userId);
+            
+            if (!$user) {
+                $this->noreloadNotif('failed', 'User Not Found', 'User not found in system.');
+                return;
+            }
+
+            // Check if user is already an admin
+            if ($user->is_admin) {
+                $this->noreloadNotif('failed', 'Already Admin', $name . ' is already an admin.');
+                return;
+            }
+
+            $user->update([
+                'is_admin' => true,
+            ]);
+
+            // Update the dbUsers collection
+            $this->dbUsers->put($userId, $user);
+
+            $this->noreloadNotif('success', 'Admin Granted', $name . ' is now an admin.');
+            Log::info('User made admin: ' . $user->email);
+            
+        } catch (\Exception $e) {
+            $this->noreloadNotif('failed', 'Make Admin Failed', 'Failed to make admin: ' . $e->getMessage());
+            Log::error('Make admin error: ' . $e->getMessage());
         }
     }
 

@@ -39,7 +39,7 @@
         <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Pending Clearances</p>
-                <h1 class="text-lg font-bold">0</h1>
+                <h1 class="text-lg font-bold">{{$pending_clearances->count()}}</h1>
             </div>
             <div class="card-icon p-2 rounded-xl bg-[#4FD1C5] text-xl">
                 <i class="fa-solid fa-file-circle-exclamation text-white"></i>

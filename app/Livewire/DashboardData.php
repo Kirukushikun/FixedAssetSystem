@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Asset;
 use App\Models\Employee;
+use App\Models\Flag;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -120,6 +121,7 @@ class DashboardData extends Component
         $total_assets = Asset::where('is_deleted', false)->get();
         $assigned_assets = Asset::where('is_deleted', false)->whereNotNull('assigned_id')->get();
         $total_employees = Employee::where('is_deleted', false)->get();
+        $pending_clearances = Flag::where('flag_type', 'Pending Clearances');
 
         // ASSET STATUS OVERVIEW DATA =========
         // Get counts for each condition
@@ -180,6 +182,7 @@ class DashboardData extends Component
             'total_assets' => $total_assets,
             'assigned_assets' => $assigned_assets,
             'total_employees' => $total_employees,
+            'pending_clearances' => $pending_clearances,
             
             'conditions' => $conditions,
             'maxCondition' => $maxCondition,

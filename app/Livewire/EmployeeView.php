@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\Flag;
+use App\Models\Category;
 use Illuminate\Support\Facades\Log;
 use Livewire\WithPagination;
 
@@ -77,7 +78,10 @@ class EmployeeView extends Component
         $assets = Asset::where('is_deleted', false)->where('assigned_id', $this->employee->id)->latest()->paginate(10);
         $flags = Flag::where('target_id', $this->employee->id)->get();
 
-        return view('livewire.employee-view', compact('assets', 'flags'));
+        // Get categories as array with code as key
+        $categoryCodeImage = Category::all()->keyBy('code');
+
+        return view('livewire.employee-view', compact('assets', 'flags', 'categoryCodeImage'));
     }
 
     private function noreloadNotif($type, $header, $message)
