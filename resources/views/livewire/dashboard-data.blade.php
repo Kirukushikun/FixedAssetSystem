@@ -225,24 +225,64 @@
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'employee'"><i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee</button>
                         <!-- <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button> -->
                         
-                        <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
+                        <!-- Import Assets -->
+                        <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
                             @csrf
                             <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
                             <button id="import-button" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button>
                         </form>
 
-                        <script>
-                            document.getElementById('import-button').addEventListener('click', () => {
-                                document.getElementById('import-file').click();
-                            });
+                        <!-- Loading Modal Backdrop -->
+                        <div 
+                                id="import-loading-backdrop"
+                                class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+                        >
+                                <div class="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center gap-4 min-w-[300px]">
+                                    <!-- Spinner -->
+                                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-teal-500"></div>
+                                    
+                                    <!-- Text -->
+                                    <div class="text-center">
+                                        <h3 class="text-lg font-semibold text-gray-800 mb-1">Importing Assets</h3>
+                                        <p class="text-sm text-gray-500">Please wait while we process your file...</p>
+                                    </div>
+                                </div>
+                        </div>
 
-                            document.getElementById('import-file').addEventListener('change', () => {
-                                document.getElementById('import-form').submit();
-                            });
+                        <script>
+                                const importButton = document.getElementById('import-button');
+                                const importFile = document.getElementById('import-file');
+                                const importForm = document.getElementById('import-form');
+                                const loadingBackdrop = document.getElementById('import-loading-backdrop');
+
+                                // Trigger file input when button is clicked
+                                importButton.addEventListener('click', () => {
+                                    importFile.click();
+                                });
+
+                                // Handle file selection and show loading
+                                importFile.addEventListener('change', () => {
+                                    if (importFile.files.length > 0) {
+                                        // Show loading modal
+                                        loadingBackdrop.classList.remove('hidden');
+                                        
+                                        // Submit the form
+                                        importForm.submit();
+                                    }
+                                });
+
+                                // Optional: Hide loading if user navigates back (for better UX)
+                                window.addEventListener('pageshow', (event) => {
+                                    if (event.persisted) {
+                                        loadingBackdrop.classList.add('hidden');
+                                    }
+                                });
                         </script>
 
-                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/employees/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Assets</button>
-
+                        <!-- Export Assets -->
+                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/assets/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Assets</button>
+                               
+                        <!-- Import Employees  -->
                         <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
                             @csrf
                             <input type="file" id="import-employee" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
@@ -258,7 +298,8 @@
                                 document.getElementById('import-form').submit();
                             });
                         </script>
-
+                        
+                        <!-- Export Employees -->
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/employees/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Employees</button>
                     </div>
                 </div>
@@ -267,203 +308,103 @@
     </div>
 
 
-        <!-- Backdrop -->
-        <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40"></div>
+    <!-- Backdrop -->
+    <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40"></div>
 
-        <!-- Modal -->
-        <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" class="fixed inset-0 flex items-center justify-center z-50">
-            <div class="relative bg-white p-10 rounded-lg shadow-lg">
-                <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="showModal = false"><i class="fa-solid fa-xmark"></i></div>
+    <!-- Modal -->
+    <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="relative bg-white p-10 rounded-lg shadow-lg">
+            <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="showModal = false; $wire.clear()"><i class="fa-solid fa-xmark"></i></div>
 
-                <div class="w-[20rem]" x-show="modalTemplate === 'create'">
+               <div class="w-[20rem]" x-show="modalTemplate === 'create'">
                     <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
 
                     <!-- Category List -->
                     <div class="space-y-3">
-                        <!-- IT Equipment -->
-                        <div>
-                            <button 
-                                class="flex items-center justify-between w-full font-semibold"
-                                @click="openCategory === 'it' ? openCategory = '' : openCategory = 'it'"
-                            >
-                                <span class="flex items-center gap-2 font-bold"><img src="{{asset('img/desktop.png')}}" style="width: 23px;" alt="">IT Equipment</span>
-                                <i class="fa-solid fa-chevron-down transition-transform duration-200"
-                                :class="openCategory === 'it' ? 'rotate-180' : ''"></i>
-                            </button>
+                    @foreach($categories as $category)
+                         <div>
+                              <button 
+                                   class="flex items-center justify-between w-full font-semibold"
+                                   wire:click.prevent="toggleCategory({{ $category->id }})"
+                              >
+                                   <span class="flex items-center gap-2 font-bold">
+                                        <img src="{{ asset('img/' . $category->icon . '.png') }}" style="width: 23px;" alt="">
+                                        {{ $category->name }}
+                                   </span>
 
-                            <div x-show="openCategory === 'it'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                <template x-for="item in ['Desktop','Laptop','Router']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=IT&category=it&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                                
-                                <template x-for="item in ['Printer','Photocopy Machine','Digital Camera']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=it&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                            </div>
-                        </div>
+                                   <i 
+                                        class="fa-solid fa-chevron-down transition-transform duration-200"
+                                        style="transform: rotate({{ $openCategory === $category->id ? '180deg' : '0deg' }})"
+                                   ></i>
+                              </button>
 
-                        <!-- Office Furniture -->
-                        <div>
-                            <button 
-                                class="flex items-center justify-between w-full font-semibold"
-                                @click="openCategory === 'office' ? openCategory = '' : openCategory = 'office'"
-                            >
-                                <span class="flex items-center gap-2 font-bold"><img src="{{asset('img/furniture.png')}}" style="width: 23px;" alt="">Office Furniture</span>
-                                <i class="fa-solid fa-chevron-down transition-transform duration-200"
-                                :class="openCategory === 'office' ? 'rotate-180' : ''"></i>
-                            </button>
+                              @if($openCategory === $category->id)
+                                   <div class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
+                                        @foreach($category->subcategories as $sub)
+                                        <a 
+                                             href="{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . $category->code . '&sub_category=' . $sub->name) }}" 
+                                             class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1"
+                                        >
+                                             <span>{{ $sub->name }}</span>
+                                             <i class="fa-solid fa-arrow-right"></i>
+                                        </a>
+                                        @endforeach
+                                   </div>
+                              @endif
+                         </div>
+                    @endforeach
+                    </div>                
+               </div>
 
-                            <div x-show="openCategory === 'office'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                <template x-for="item in ['Table','Office Chair','Office Table','Conference Table','Monoblock Chair']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=office&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                            </div>
-                        </div>
+            <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'employee'">
+                <h2 class="text-xl font-semibold -mb-2">Add New Employee</h2>
 
-                        <!-- Appliances -->
-                        <div>
-                            <button 
-                                class="flex items-center justify-between w-full font-semibold"
-                                @click="openCategory === 'appliances' ? openCategory = '' : openCategory = 'appliances'"
-                            >
-                                <span class="flex items-center gap-2 font-bold"><img src="{{asset('img/appliances.png')}}" style="width: 23px;" alt="">Appliances</span>
-                                <i class="fa-solid fa-chevron-down transition-transform duration-200"
-                                :class="openCategory === 'appliances' ? 'rotate-180' : ''"></i>
-                            </button>
-
-                            <div x-show="openCategory === 'appliances'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                <template x-for="item in ['Aircon','Refrigerator','Water Dispenser','Waching Machine','Wall Fan']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=appliances&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- Audio Equipment -->
-                        <div>
-                            <button 
-                                class="flex items-center justify-between w-full font-semibold"
-                                @click="openCategory === 'audio' ? openCategory = '' : openCategory = 'audio'"
-                            >
-                                <span class="flex items-center gap-2 font-bold"><img src="{{asset('img/speaker.png')}}" style="width: 23px;" alt="">Audio Equipment</span>
-                                <i class="fa-solid fa-chevron-down transition-transform duration-200"
-                                :class="openCategory === 'audio' ? 'rotate-180' : ''"></i>
-                            </button>
-
-                            <div x-show="openCategory === 'audio'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                <template x-for="item in ['Amplifier','Mixer','Speaker']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=audio&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- Tools & Misc -->
-                        <div>
-                            <button 
-                                class="flex items-center justify-between w-full font-semibold"
-                                @click="openCategory === 'tools' ? openCategory = '' : openCategory = 'tools'"
-                            >
-                                <span class="flex items-center gap-2 font-bold"><img src="{{asset('img/tools.png')}}" style="width: 23px;" alt="">Tools & Misc</span>
-                                <i class="fa-solid fa-chevron-down transition-transform duration-200"
-                                :class="openCategory === 'tools' ? 'rotate-180' : ''"></i>
-                            </button>
-
-                            <div x-show="openCategory === 'tools'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                <template x-for="item in ['Helmet','Radio','Thermistor Temperature','Pipe Wrench','Pliers','Machine']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=tools&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- Kitchen Equipment -->
-                        <div>
-                            <button 
-                                class="flex items-center justify-between w-full font-semibold"
-                                @click="openCategory === 'kitchen' ? openCategory = '' : openCategory = 'kitchen'"
-                            >
-                                <span class="flex items-center gap-2 font-bold"><img src="{{asset('img/kitchen.png')}}" style="width: 23px;" alt="">Kitchen Equipment</span>
-                                <i class="fa-solid fa-chevron-down transition-transform duration-200"
-                                :class="openCategory === 'kitchen' ? 'rotate-180' : ''"></i>
-                            </button>
-
-                            <div x-show="openCategory === 'kitchen'" x-transition class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                <template x-for="item in ['Cooking Pot','Repair Chiller']">
-                                <a class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1" :href="`/assetmanagement/create?category_type=NON-IT&category=kitchen&sub_category=${item}`">
-                                        <span x-text="item"></span>
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                </template>
-                            </div>
-                        </div>
-                    </div> 
+                <div class="input-group">
+                    <label>Employee ID:</label>
+                    <input type="text" wire:model="employee_id" class="border rounded px-2 py-1 w-full" />
                 </div>
 
-                <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'employee'">
-                    <h2 class="text-xl font-semibold -mb-2">Add New Employee</h2>
-
-                    <div class="input-group">
-                        <label>Employee ID:</label>
-                        <input type="text" wire:model="employee_id" class="border rounded px-2 py-1 w-full" />
-                    </div>
-
-                    <div class="input-group">
-                        <label>Employee Name:</label>
-                        <input type="text" wire:model="employee_name" class="border rounded px-2 py-1 w-full" />
-                    </div>
-
-                    <div class="input-group">
-                        <label>Position:</label>
-                        <input type="text" wire:model="position" class="border rounded px-2 py-1 w-full" />
-                    </div>
-
-                    <div class="input-group">
-                        <label>Farm:</label>
-                        <select wire:model="farm">
-                            <option value=""></option>
-                            <option value="BFC">BFC</option>
-                            <option value="BDL">BDL</option>
-                            <option value="BFC">BFC</option>
-                            <option value="RH">RH</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Department/Division:</label>
-                        <input type="text" wire:model="department" class="border rounded px-2 py-1 w-full" />
-                    </div>
-
-                    <div class="flex justify-end gap-3">
-                        <button type="button" @click="showModal = false; $wire.clear()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
-
-                        <button
-                            type="button"
-                            @click="showModal = false; modalTemplate === 'create'; $wire.submit();"
-                            class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800"
-                        >
-                            Confirm
-                        </button>
-                    </div>
+                <div class="input-group">
+                    <label>Employee Name:</label>
+                    <input type="text" wire:model="employee_name" class="border rounded px-2 py-1 w-full" />
                 </div>
 
-                <livewire:farm-assets :farmCode="$targetFarm" :key="$targetFarm"/>
+                <div class="input-group">
+                    <label>Position:</label>
+                    <input type="text" wire:model="position" class="border rounded px-2 py-1 w-full" />
+                </div>
+
+                <div class="input-group">
+                    <label>Farm:</label>
+                    <select wire:model="farm">
+                        <option value=""></option>
+                        <option value="BFC">BFC</option>
+                        <option value="BDL">BDL</option>
+                        <option value="BFC">BFC</option>
+                        <option value="RH">RH</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Department/Division:</label>
+                    <input type="text" wire:model="department" class="border rounded px-2 py-1 w-full" />
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="showModal = false; $wire.clear()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
+
+                    <button
+                        type="button"
+                        @click="showModal = false; modalTemplate === 'create'; $wire.submit();"
+                        class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800"
+                    >
+                        Confirm
+                    </button>
+                </div>
             </div>
+
+            <livewire:farm-assets :farmCode="$targetFarm" :key="$targetFarm"/>
         </div>
+    </div>
 
 </div>

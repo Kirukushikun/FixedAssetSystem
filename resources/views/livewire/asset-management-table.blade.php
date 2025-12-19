@@ -17,7 +17,7 @@
                     @csrf
                     <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
                     <div id="import-button">
-                    <i class="fa-solid fa-file-import cursor-pointer"></i>
+                         <i class="fa-solid fa-file-import cursor-pointer"></i>
                     </div>
                </form>
                

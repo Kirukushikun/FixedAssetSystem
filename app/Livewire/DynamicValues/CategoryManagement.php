@@ -104,6 +104,14 @@ class CategoryManagement extends Component
                 $this->noreloadNotif('failed', 'Not Found', 'Category not found.');
                 return;
             }
+
+            // Check if any assets are using this category code
+            $assetCount = \App\Models\Asset::where('category', $cat->code)->count();
+            
+            if ($assetCount > 0) {
+                $this->noreloadNotif('failed', 'Cannot Edit', "Cannot Edit '{$cat->name}'. It is being used by {$assetCount} asset(s).");
+                return;
+            }
             
             $this->editId = $id;
             $this->editName = $cat->name;

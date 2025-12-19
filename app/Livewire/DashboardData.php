@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\Flag;
+use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -13,6 +14,23 @@ class DashboardData extends Component
 {   
 
     public $targetFarm;
+
+    public $categories;
+    public $openCategory = null;
+
+    public function mount()
+    {   
+        $this->categories = Category::with('subcategories')->get();
+    }
+
+    public function toggleCategory($categoryId)
+    {
+        if ($this->openCategory === $categoryId) {
+            $this->openCategory = null;
+        } else {
+            $this->openCategory = $categoryId;
+        }
+    }
 
     public function setFarm($code)
     {
@@ -30,6 +48,11 @@ class DashboardData extends Component
         'farm' => 'required',
         'department' => 'required',
     ];
+
+    public function clear()
+    {   
+        $this->reset(['employee_id', 'employee_name', 'position', 'farm', 'department']);
+    }
 
     public function submit()
     {
