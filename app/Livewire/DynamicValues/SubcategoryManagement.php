@@ -5,6 +5,7 @@ namespace App\Livewire\DynamicValues;
 use Livewire\Component;
 use App\Models\Category;
 use App\Models\SubCategory;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class SubcategoryManagement extends Component
@@ -46,12 +47,17 @@ class SubcategoryManagement extends Component
                 return;
             }
 
+            $category = Category::find($this->newCategoryId);
+            $categoryName = $category ? $category->name : 'Unknown';
+
             SubCategory::create([
                 'name' => $this->newName,
                 'category_id' => $this->newCategoryId,
                 'category_type' => $this->newCategoryType,
             ]);
 
+            $this->audit("Created subcategory: {$this->newName} under {$categoryName} ({$this->newCategoryType})");
+            
             $this->resetNew();
             $this->loadData();
             
@@ -95,12 +101,22 @@ class SubcategoryManagement extends Component
                 return;
             }
 
+            $subcategory = SubCategory::find($this->editId);
+            $oldName = $subcategory->name;
+            $oldCategory = $subcategory->category->name ?? 'Unknown';
+            $oldType = $subcategory->category_type;
+            
+            $newCategory = Category::find($this->editCategoryId);
+            $newCategoryName = $newCategory ? $newCategory->name : 'Unknown';
+
             SubCategory::where('id', $this->editId)->update([
                 'name' => $this->editName,
                 'category_id' => $this->editCategoryId,
                 'category_type' => $this->editCategoryType,
             ]);
 
+            $this->audit("Updated subcategory from '{$oldName}' ({$oldCategory}, {$oldType}) to '{$this->editName}' ({$newCategoryName}, {$this->editCategoryType})");
+            
             $this->resetEdit();
             $this->loadData();
             
@@ -133,8 +149,14 @@ class SubcategoryManagement extends Component
                 return;
             }
             
+            $subcategoryName = $subcategory->name;
+            $categoryName = $subcategory->category->name ?? 'Unknown';
+            $categoryType = $subcategory->category_type;
+            
             $subcategory->delete();
             $this->loadData();
+            
+            $this->audit("Deleted subcategory: {$subcategoryName} from {$categoryName} ({$categoryType})");
             
             $this->noreloadNotif('success', 'Subcategory Deleted', 'Subcategory has been successfully deleted.');
         } catch (Exception $e) {
@@ -164,5 +186,19 @@ class SubcategoryManagement extends Component
             'header' => $header,
             'message' => $message
         ]);
+    }
+
+    private function audit($action)
+    {
+        try {
+            \App\Models\AuditTrail::create([
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'action' => $action,
+            ]);
+        } catch (Exception $e) {
+            // Log error but don't break the flow
+            \Log::error('Audit trail error: ' . $e->getMessage());
+        }
     }
 }

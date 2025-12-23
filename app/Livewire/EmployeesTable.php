@@ -67,10 +67,12 @@ class EmployeesTable extends Component
                 'department' => $this->department,
             ]);
 
-            $this->clear();
+            
 
             // Audit Trail
             $this->audit('Added Employee: ' . $this->employee_id . ' - ' . $this->employee_name);
+
+            $this->clear();
 
             // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
@@ -100,10 +102,10 @@ class EmployeesTable extends Component
             $employee->department = $this->department;
             $employee->save();
 
-            $this->clear();
-
             // Audit Trail
             $this->audit('Updated Employee: ' . $employee->employee_id . ' - ' . $employee->employee_name);
+
+            $this->clear();
 
             // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Updated', 'Employee ' . $this->employee_name . ' has been successfully updated.');

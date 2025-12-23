@@ -4,6 +4,7 @@ namespace App\Livewire\DynamicValues;
 
 use Livewire\Component;
 use App\Models\Department;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class DepartmentManagement extends Component
@@ -23,7 +24,7 @@ class DepartmentManagement extends Component
         try {
             $this->departments = Department::latest()->get();
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Load Error', 'Failed to load departments: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Load Error', 'Failed to load departments: ' . $e->getMessage());
         }
     }
 
@@ -33,14 +34,14 @@ class DepartmentManagement extends Component
             $dept = Department::find($id);
             
             if (!$dept) {
-                $this->noreloadNotif('Failed', 'Not Found', 'Department not found.');
+                $this->noreloadNotif('failed', 'Not Found', 'Department not found.');
                 return;
             }
             
             $this->editId = $id;
             $this->editName = $dept->name;
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Edit Error', 'Failed to load department: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Edit Error', 'Failed to load department: ' . $e->getMessage());
         }
     }
 
@@ -48,9 +49,12 @@ class DepartmentManagement extends Component
     {
         try {
             if (!$this->editName) {
-                $this->noreloadNotif('Failed', 'Validation Error', 'Department name is required.');
+                $this->noreloadNotif('failed', 'Validation Error', 'Department name is required.');
                 return;
             }
+
+            $department = Department::find($this->editId);
+            $oldName = $department->name;
 
             Department::where('id', $this->editId)
                 ->update(['name' => $this->editName]);
@@ -59,9 +63,10 @@ class DepartmentManagement extends Component
             $this->editName = '';
             $this->loadDepartments();
             
-            $this->noreloadNotif('Success', 'Department Updated', 'Department has been successfully updated.');
+            $this->audit("Updated department from '{$oldName}' to '{$this->editName}'");
+            $this->noreloadNotif('success', 'Department Updated', 'Department has been successfully updated.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Update Error', 'Failed to update department: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Update Error', 'Failed to update department: ' . $e->getMessage());
         }
     }
 
@@ -77,16 +82,18 @@ class DepartmentManagement extends Component
             $department = Department::find($id);
             
             if (!$department) {
-                $this->noreloadNotif('Failed', 'Not Found', 'Department not found.');
+                $this->noreloadNotif('failed', 'Not Found', 'Department not found.');
                 return;
             }
             
+            $departmentName = $department->name;
             $department->delete();
             $this->loadDepartments();
             
-            $this->noreloadNotif('Success', 'Department Deleted', 'Department has been successfully deleted.');
+            $this->audit("Deleted department: {$departmentName}");
+            $this->noreloadNotif('success', 'Department Deleted', 'Department has been successfully deleted.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Delete Error', 'Failed to delete department: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Delete Error', 'Failed to delete department: ' . $e->getMessage());
         }
     }
 
@@ -94,17 +101,20 @@ class DepartmentManagement extends Component
     {
         try {
             if (!$this->newDepartment) {
-                $this->noreloadNotif('Failed', 'Validation Error', 'Department name is required.');
+                $this->noreloadNotif('failed', 'Validation Error', 'Department name is required.');
                 return;
             }
 
             Department::create(['name' => $this->newDepartment]);
+            
+            $this->audit("Created department: {$this->newDepartment}");
+            
             $this->newDepartment = '';
             $this->loadDepartments();
             
-            $this->noreloadNotif('Success', 'Department Added', 'Department has been successfully created.');
+            $this->noreloadNotif('success', 'Department Added', 'Department has been successfully created.');
         } catch (Exception $e) {
-            $this->noreloadNotif('Failed', 'Add Error', 'Failed to add department: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Add Error', 'Failed to add department: ' . $e->getMessage());
         }
     }
 
@@ -125,5 +135,19 @@ class DepartmentManagement extends Component
             'header' => $header,
             'message' => $message
         ]);
+    }
+
+    private function audit($action)
+    {
+        try {
+            \App\Models\AuditTrail::create([
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'action' => $action,
+            ]);
+        } catch (Exception $e) {
+            // Log error but don't break the flow
+            \Log::error('Audit trail error: ' . $e->getMessage());
+        }
     }
 }

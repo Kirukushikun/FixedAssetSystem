@@ -4,6 +4,7 @@ namespace App\Livewire\DynamicValues;
 
 use Livewire\Component;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class CategoryManagement extends Component
@@ -89,6 +90,7 @@ class CategoryManagement extends Component
             $this->load();
             $this->dispatch('subCategoryRefresh');
             
+            $this->audit('Created category: ' . $this->newName);
             $this->noreloadNotif('success', 'Category Added', 'Category has been successfully created.');
         } catch (Exception $e) {
             $this->noreloadNotif('failed', 'Add Error', 'Failed to add category: ' . $e->getMessage());
@@ -140,6 +142,9 @@ class CategoryManagement extends Component
                 return;
             }
 
+            $category = Category::find($this->editId);
+            $oldName = $category->name;
+
             Category::where('id', $this->editId)->update([
                 'name' => $this->editName,
                 'icon' => $this->editIcon,
@@ -154,6 +159,7 @@ class CategoryManagement extends Component
             $this->load();
             $this->dispatch('subCategoryRefresh');
             
+            $this->audit("Updated category from '{$oldName}' to '{$this->editName}'");
             $this->noreloadNotif('success', 'Category Updated', 'Category has been successfully updated.');
         } catch (Exception $e) {
             $this->noreloadNotif('failed', 'Update Error', 'Failed to update category: ' . $e->getMessage());
@@ -186,10 +192,12 @@ class CategoryManagement extends Component
                 return;
             }
             
+            $categoryName = $category->name;
             $category->delete();
             $this->load();
             $this->dispatch('subCategoryRefresh');
             
+            $this->audit("Deleted category: {$categoryName}");
             $this->noreloadNotif('success', 'Category Deleted', 'Category has been successfully deleted.');
         } catch (Exception $e) {
             $this->noreloadNotif('failed', 'Delete Error', 'Failed to delete category: ' . $e->getMessage());
@@ -213,5 +221,19 @@ class CategoryManagement extends Component
             'header' => $header,
             'message' => $message
         ]);
+    }
+
+    private function audit($action)
+    {
+        try {
+            \App\Models\AuditTrail::create([
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'action' => $action,
+            ]);
+        } catch (Exception $e) {
+            // Log error but don't break the flow
+            \Log::error('Audit trail error: ' . $e->getMessage());
+        }
     }
 }
