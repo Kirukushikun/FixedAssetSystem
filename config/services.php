@@ -41,4 +41,9 @@ return [
         'auth_user_api_key' => env('AUTH_USER_API_KEY'),
     ],
 
+    'snipe' => [
+        'url' => env('SNIPE_URL', 'http://10.10.0.101:8000/api/v1'),
+        'token' => env('SNIPE_TOKEN'),
+    ],
+
 ];

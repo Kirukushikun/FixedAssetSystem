@@ -249,9 +249,9 @@ class AssetManagementForm extends Component
 
             
             // 3. Check if IT category → Sync to Snipe-IT
-            // if ($this->category_type === 'IT') {
-            //     $this->syncToSnipeIT($asset);
-            // }
+            if ($this->category_type === 'IT') {
+                $this->syncToSnipeIT($asset);
+            }
 
             // Audit Trail
             $this->audit('Created Asset: ' . $this->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
@@ -293,9 +293,13 @@ class AssetManagementForm extends Component
                 'technical_data' => json_encode($this->technicaldata),
             ]);
 
+            // 🆕 Sync to Snipe-IT if IT asset and has snipe_id
+            if ($this->category_type === 'IT' && $this->targetAsset->snipe_id) {
+                $this->updateToSnipeIT($this->targetAsset);
+            }
+
             // Audit Trail
             $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category); 
-            
 
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
@@ -427,49 +431,76 @@ class AssetManagementForm extends Component
     public function syncToSnipeIT($asset)
     {
         $data = [
-            "name" => $asset->brand . ' ' . $asset->model,
             "asset_tag" => $asset->ref_id,
-            "serial" => $asset->model ?? null,
-            "model_id" => $asset->id,     
-            "status_id" => 2,   
-            "name" => $asset->brand . ' ' . $asset->model,
-            "purchase_date" => $asset->acquisition_date,
+            "serial" => $asset->model ?? 'N/A',
+            "model_id" => 1,  // TODO: Map this properly to Snipe-IT models
+            "status_id" => 2,  // Assuming 2 is "Ready to Deploy" or similar
+            "name" => "",  // Keep empty like the sample - Snipe-IT will auto-generate from model
+            "purchase_date" => $asset->acquisition_date ? 
+                \Carbon\Carbon::parse($asset->acquisition_date)->format('Y-m-d') : null,
             "purchase_cost" => $asset->item_cost,
+            // Optional but recommended fields:
+            "company_id" => 3,  // "Poultrypure Farms Corporation" - adjust as needed
+            "location_id" => 3,  // "IT Storage Room" - adjust as needed
+            "rtd_location_id" => 3,  // Same as location_id
+            "notes" => "Synced from Asset Management System on " . now()->format('Y-m-d'),
         ];
+
+        Log::info('Sending to Snipe-IT:', $data);
 
         $result = app(\App\Services\SnipeService::class)->createAsset($data);
         
-        $targetAsset = Asset::find($asset->id);    
-
-        $targetAsset->update([
-            'snipe_id' => $result['payload']['id'] ?? null,
-        ]);
-
         Log::info('Snipe-IT Sync Result:', $result);
+
+        if (isset($result['payload']['id'])) {
+            Asset::find($asset->id)->update([
+                'snipe_id' => $result['payload']['id'],
+            ]);
+        }
+
+        return $result;
     }
 
     public function updateToSnipeIT($asset)
     {
         $data = [
             "asset_tag" => $asset->ref_id,
-            "serial" => $asset->model,
-            "name" => $asset->brand . ' ' . $asset->model,
-            "purchase_date" => $asset->acquisition_date,
+            "serial" => $asset->model ?? 'N/A',
+            "name" => "",  // Keep empty - Snipe-IT auto-generates from model
+            "purchase_date" => $asset->acquisition_date ? 
+                \Carbon\Carbon::parse($asset->acquisition_date)->format('Y-m-d') : null,
             "purchase_cost" => $asset->item_cost,
+            "company_id" => 3,
+            "location_id" => 3,
+            "rtd_location_id" => 3,
+            "notes" => "Updated from Asset Management System on " . now()->format('Y-m-d H:i:s'),
         ];
+
+        Log::info('Updating Snipe-IT Asset:', ['snipe_id' => $asset->snipe_id, 'data' => $data]);
 
         $result = app(\App\Services\SnipeService::class)
             ->updateAsset($asset->snipe_id, $data);
 
         Log::info('Snipe-IT Update Result:', $result);
+
+        return $result;
     }
 
     public function deleteFromSnipeIT($asset)
     {
+        Log::info('Deleting from Snipe-IT:', ['snipe_id' => $asset->snipe_id, 'ref_id' => $asset->ref_id]);
+
         $result = app(\App\Services\SnipeService::class)
             ->deleteAsset($asset->snipe_id);
 
         Log::info('Snipe-IT Delete Result:', $result);
+
+        // Optional: Clear the snipe_id from your local asset
+        if (isset($result['status']) && $result['status'] === 'success') {
+            $asset->update(['snipe_id' => null]);
+        }
+
+        return $result;
     }
     
 }

@@ -8,6 +8,7 @@ use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AssetManagementTable extends Component
 {   
@@ -111,6 +112,15 @@ class AssetManagementTable extends Component
     public function delete($targetAsset){
         $asset = Asset::findOrFail($targetAsset);
         if($asset){
+            // 🆕 Delete from Snipe-IT first if IT asset
+            if ($asset->category_type === 'IT' && $asset->snipe_id) {
+                try {
+                    app(\App\Livewire\AssetManagementForm::class)->deleteFromSnipeIT($asset);
+                } catch (\Exception $e) {
+                    Log::error('Snipe-IT deletion failed: ' . $e->getMessage());
+                }
+            }
+
             $asset->is_deleted = true;
             $asset->save();            
         }
@@ -167,5 +177,22 @@ class AssetManagementTable extends Component
             'user_name' => Auth::user()->name,
             'action' => $action,
         ]);
+    }
+
+    public function deleteFromSnipeIT($asset)
+    {
+        Log::info('Deleting from Snipe-IT:', ['snipe_id' => $asset->snipe_id, 'ref_id' => $asset->ref_id]);
+
+        $result = app(\App\Services\SnipeService::class)
+            ->deleteAsset($asset->snipe_id);
+
+        Log::info('Snipe-IT Delete Result:', $result);
+
+        // Optional: Clear the snipe_id from your local asset
+        if (isset($result['status']) && $result['status'] === 'success') {
+            $asset->update(['snipe_id' => null]);
+        }
+
+        return $result;
     }
 }
