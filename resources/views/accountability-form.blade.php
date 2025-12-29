@@ -31,7 +31,6 @@
 </head>
 <body class="bg-gray-100 py-12 px-4">
 
-
     <div class="max-w-4xl mx-auto bg-white shadow-2xl print-clean relative" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05);">
     
     <div class="no-print absolute top-4 -right-[120px] z-50 flex flex-col gap-4">
@@ -41,12 +40,7 @@
             onclick="window.print()"
             aria-label="Print document"
             title="Print">
-            <!-- simple print icon (SVG) -->
             <i class="fa-solid fa-print"></i>
-            <path d="M6 9V2h12v7" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="6" y="13" width="12" height="8" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6 18H4a2 2 0 0 1-2-2V10" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
             Print
         </button> 
         
@@ -54,19 +48,12 @@
             type="button"
             class="px-4 py-2 rounded shadow hover:brightness-95 focus:outline-none flex items-center gap-2"
             onclick="history.back()"
-            aria-label="Print document"
-            title="Print">
-            <!-- simple print icon (SVG) -->
+            aria-label="Go back"
+            title="Go Back">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            <path d="M6 9V2h12v7" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="6" y="13" width="12" height="8" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6 18H4a2 2 0 0 1-2-2V10" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
             Back
         </button>         
     </div>
-    
-  
     
     <!-- Header Section -->
         <div class="px-12 pt-10 pb-6 flex flex-col items-center gap-3">
@@ -99,7 +86,7 @@
                 </p>
             </div>
 
-            <!-- Items Table -->
+            <!-- Items Table with Grouped Quantities -->
             <div class="mb-8">
                 <table class="w-full border-2 border-gray-400">
                     <thead>
@@ -109,10 +96,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($assets as $asset)
+                        @php
+                            // Group assets by brand and model
+                            $groupedAssets = $assets->groupBy(function($asset) {
+                                return $asset->brand . ' ' . $asset->model;
+                            })->map(function($group) {
+                                return [
+                                    'name' => $group->first()->brand . ' ' . $group->first()->model,
+                                    'quantity' => $group->count(),
+                                    'assets' => $group
+                                ];
+                            });
+                        @endphp
+                        
+                        @foreach($groupedAssets as $item)
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-400">{{$asset->brand}} {{$asset->model}}</td>
-                                <td class="px-4 py-3 text-sm text-center text-gray-900 font-semibold">1</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-400">{{ $item['name'] }}</td>
+                                <td class="px-4 py-3 text-sm text-center text-gray-900 font-semibold">{{ $item['quantity'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>

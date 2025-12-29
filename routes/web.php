@@ -66,7 +66,17 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/accountability-form', function (Request $request) {
         $employee = Employee::find($request->targetID);
-        $assets = Asset::where('assigned_id', $employee->id)->get();
+        
+        // Add error handling
+        if (!$employee) {
+            return redirect('/employees')->with('error', 'Employee not found');
+        }
+        
+        // Use relationship instead of direct query
+        $assets = $employee->assets()
+            ->where('is_deleted', false)
+            ->get();
+        
         return view('accountability-form', compact('employee', 'assets'));
     });
 

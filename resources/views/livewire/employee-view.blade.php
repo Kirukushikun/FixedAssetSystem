@@ -1,6 +1,7 @@
 <div class="flex flex-1 flex-col gap-5" x-data="{
     showModal: false,
     modalTemplate: '',
+    selectedFlagId: null,
 }">
     <div class="card flex items-center justify-between">
         <div>
@@ -8,12 +9,7 @@
             <h1 class="text-lg font-bold">{{$employee->employee_name}}</h1>
             <p class="text-sm text-gray-400">{{$employee->position}} | {{$employee->farm}} | {{$employee->department}}</p>
         </div>
-        <!-- <div class="flex gap-3">
-            <button class="px-5 py-2 bg-red-500 rounded-lg font-bold text-white text-xs hover:bg-red-600" @click="showModal = true; modalTemplate = 'delete'">DELETE</button>
-            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" @click="showModal = true; modalTemplate = 'create'">EDIT</button>
-        </div> -->
     </div>
-
 
     <div class="card flex flex-col gap-4">
         <div class="flex items-center justify-between">
@@ -32,18 +28,25 @@
         @endphp
 
         <!-- Flexible flag list -->
-        <div class="flex flex-wrap gap-4 text-sm">
+        <div class="flex flex-col gap-3 text-sm">
             @forelse($flags as $flag)
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"></i>
-                    <span>{{ $flag->flag_type }} - {{ $flag->asset }}</span>
+                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"></i>
+                        <span>{{ $flag->flag_type }} - {{ $flag->asset }}</span>
+                    </div>
+                    <button 
+                        class="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition"
+                        @click="showModal = true; modalTemplate = 'resolve'; selectedFlagId = {{ $flag->id }}"
+                    >
+                        <i class="fa-solid fa-check mr-1"></i>RESOLVE
+                    </button>
                 </div>
             @empty
                 <div class="text-gray-400">
                     No flags yet
                 </div>
             @endforelse
-            
         </div>
 
         <div class="flex gap-3">
@@ -58,8 +61,6 @@
                 </button>
             @endif
         </div>
-            
-        
     </div>
 
     <div class="card content flex-1 flex flex-col">
@@ -126,7 +127,6 @@
         <x-pagination :paginator="$assets" />
     </div>
 
-
     <!-- Backdrop -->
     <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40"></div>
 
@@ -174,7 +174,10 @@
 
                 <div class="flex justify-end gap-3">
                     <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-                    <button @click="showModal = false" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800" wire:click="submitFlag()">Confirm</button>
+                    <button @click="showModal = false; $wire.call('submitFlag')" 
+                            class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">
+                        Confirm
+                    </button>
                 </div>
             </div>
 
@@ -187,8 +190,7 @@
                     <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">
                         Cancel
                     </button>
-                    <button @click="showModal = false" 
-                            wire:click="resolveFlag()" 
+                    <button @click="showModal = false; $wire.call('resolveFlag', selectedFlagId)" 
                             class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">
                         Confirm
                     </button>
@@ -204,8 +206,7 @@
                     <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">
                         Cancel
                     </button>
-                    <button @click="showModal = false" 
-                            wire:click="resolveAllFlags()" 
+                    <button @click="showModal = false; $wire.call('resolveAllFlags')" 
                             class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">
                         Confirm
                     </button>

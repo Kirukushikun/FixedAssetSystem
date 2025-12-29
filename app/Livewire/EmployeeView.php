@@ -19,7 +19,7 @@ class EmployeeView extends Component
 
     public $employee;
 
-    public $flag_type, $asset;
+    public $flag_type, $asset, $selectedFlagId;
 
     public function goToPage($page)
     {
@@ -48,8 +48,26 @@ class EmployeeView extends Component
             Log::error('Flag creation failed: ' . $e->getMessage());
             $this->noreloadNotif('failed', 'Flag Creation Failed', 'Unable to create flag. Please try again.');
         }
+    }
 
+    public function resolveFlag($flagId)
+    {
+        try {
+            $flag = Flag::find($flagId);
 
+            if (!$flag) {
+                $this->noreloadNotif('failed', 'Flag Not Found', 'The flag could not be found.');
+                return;
+            }
+
+            $flag->delete();
+
+            $this->noreloadNotif('success', 'Flag Resolved', 'The flag has been successfully resolved.');
+
+        } catch (\Exception $e) {
+            Log::error('Resolve flag failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Resolution Failed', 'Unable to resolve flag. Please try again.');
+        }
     }
 
     public function resolveAllFlags()
@@ -62,9 +80,8 @@ class EmployeeView extends Component
                 return;
             }
 
-            Flag::where('target_id', $this->employee->id)->delete(); // or update status
+            Flag::where('target_id', $this->employee->id)->delete();
 
-            // Use NORELOAD - stays on same page, flags list refreshes
             $this->noreloadNotif('success', 'All Flags Resolved', $flagCount . ' flag(s) have been successfully resolved.');
 
         } catch (\Exception $e) {
