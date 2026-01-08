@@ -429,7 +429,19 @@ class AssetManagementForm extends Component
     }
 
     public function syncToSnipeIT($asset)
-    {
+    {   
+        // Check if ANY admin has enabled sync (system-wide setting)
+        $syncEnabled = cache()->remember('snipe_sync_enabled', 3600, function () {
+            return \App\Models\User::where('is_admin', true)
+                ->where('enable_sync', true)
+                ->exists();
+        });
+
+        if (!$syncEnabled) {
+            Log::info('Snipe-IT Sync Skipped: No admin has enabled sync.');
+            return null;
+        }
+
         $data = [
             "asset_tag" => $asset->ref_id,
             "serial" => $asset->model ?? 'N/A',
@@ -448,17 +460,26 @@ class AssetManagementForm extends Component
 
         Log::info('Sending to Snipe-IT:', $data);
 
-        $result = app(\App\Services\SnipeService::class)->createAsset($data);
-        
-        Log::info('Snipe-IT Sync Result:', $result);
+        try {
+            $result = app(\App\Services\SnipeService::class)->createAsset($data);
+            
+            Log::info('Snipe-IT Sync Result:', $result);
 
-        if (isset($result['payload']['id'])) {
-            Asset::find($asset->id)->update([
-                'snipe_id' => $result['payload']['id'],
+            if (isset($result['payload']['id'])) {
+                // Use the existing $asset object instead of querying again
+                $asset->update([
+                    'snipe_id' => $result['payload']['id'],
+                ]);
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('Snipe-IT Sync Failed:', [
+                'asset_id' => $asset->id,
+                'error' => $e->getMessage()
             ]);
+            return null;
         }
-
-        return $result;
     }
 
     public function updateToSnipeIT($asset)

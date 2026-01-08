@@ -4,9 +4,7 @@
 <div class="card">
      <div class="flex items-center justify-between mb-2">
           <h1 class="text-lg font-bold">Profile Information</h1>
-          <div class="flex gap-3">
-               <button class="px-5 py-2 bg-red-500 rounded-lg font-bold text-white text-xs hover:bg-red-600" onclick="window.location.href='/logout'">LOGOUT</button>
-          </div>
+          <livewire:settings-action />
      </div>
      
      <div class="flex flex-col gap-2">
