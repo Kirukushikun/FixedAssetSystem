@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class SettingsAction extends Component
 {
@@ -12,7 +13,10 @@ class SettingsAction extends Component
 
     public function mount()
     {
-        $this->enableSync = Auth::user()->enable_sync ?? false;
+        // Check if ANY admin has sync enabled (system-wide check)
+        $this->enableSync = User::where('is_admin', true)
+            ->where('enable_sync', true)
+            ->exists();
     }
 
     public function toggleSync()
@@ -28,25 +32,31 @@ class SettingsAction extends Component
 
     public function confirmEnable()
     {
-        $user = Auth::user();
-        $user->enable_sync = true;
-        $user->save();
+        // Enable sync for ALL admins (unified setting)
+        User::where('is_admin', true)->update([
+            'enable_sync' => true
+        ]);
 
         $this->enableSync = true;
         $this->showModal = false;
 
-        session()->flash('message', 'Snipe Sync enabled successfully!');
+        cache()->forget('snipe_sync_enabled');
+
+        session()->flash('message', 'Snipe Sync enabled successfully for all admins!');
     }
 
     public function disableSync()
     {
-        $user = Auth::user();
-        $user->enable_sync = false;
-        $user->save();
+        // Disable sync for ALL admins (unified setting)
+        User::where('is_admin', true)->update([
+            'enable_sync' => false
+        ]);
 
         $this->enableSync = false;
 
-        session()->flash('message', 'Snipe Sync disabled successfully!');
+        cache()->forget('snipe_sync_enabled');
+
+        session()->flash('message', 'Snipe Sync disabled successfully for all admins!');
     }
 
     public function closeModal()
