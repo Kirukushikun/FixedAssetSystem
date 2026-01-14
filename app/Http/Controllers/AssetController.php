@@ -6,6 +6,7 @@ use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Exports\AssetExport;
 use App\Imports\AssetImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -47,13 +48,17 @@ class AssetController extends Controller
     /**
      * Get all assets
      * Returns a JSON array of all assets
+     * Cached for 60 minutes
      */
     public function index(): JsonResponse
     {
         try {
-            $assets = Asset::where('is_deleted', false)
-                ->where('is_archived', false)
-                ->get();
+            // Cache for 1 hour (3600 seconds)
+            $assets = Cache::remember('api.assets.index', 3600, function () {
+                return Asset::where('is_deleted', false)
+                    ->where('is_archived', false)
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -72,11 +77,15 @@ class AssetController extends Controller
 
     /**
      * Get a single asset by ID
+     * Cached for 60 minutes
      */
     public function show($id): JsonResponse
     {
         try {
-            $asset = Asset::find($id);
+            // Cache individual asset for 1 hour
+            $asset = Cache::remember("api.assets.show.{$id}", 3600, function () use ($id) {
+                return Asset::find($id);
+            });
 
             if (!$asset) {
                 return response()->json([

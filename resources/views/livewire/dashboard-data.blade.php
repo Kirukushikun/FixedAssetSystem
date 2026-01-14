@@ -1,5 +1,5 @@
 <div
-    class="content flex-1 flex flex-col"
+    class="content flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden pr-5"
     x-data="{
         showModal: false,
         modalTemplate: '',
@@ -9,7 +9,7 @@
 >
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 text-[#2d3748]">
-        <div class="px-6 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
+        <div class="px-6 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Total Assets</p>
                 <h1 class="text-lg font-bold">{{$total_assets->count()}}</h1>
@@ -18,7 +18,7 @@
                 <i class="fa-solid fa-boxes-stacked text-white"></i>
             </div>
         </div>
-        <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
+        <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Assigned Assets</p>
                 <h1 class="text-lg font-bold">{{$assigned_assets->count()}}</h1>
@@ -27,7 +27,7 @@
                 <i class="fa-solid fa-box text-white"></i>
             </div>
         </div>
-        <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
+        <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Total Employees</p>
                 <h1 class="text-lg font-bold">{{$total_employees->count()}}</h1>
@@ -36,7 +36,7 @@
                 <i class="fa-solid fa-users text-white"></i>
             </div>
         </div>
-        <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:-translate-y-2 hover:shadow-lg">
+        <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Pending Clearances</p>
                 <h1 class="text-lg font-bold">{{$pending_clearances->count()}}</h1>
@@ -50,7 +50,8 @@
     <br />
 
     <!-- Main Cards -->
-    <div class="main-cards h-full grid-cols-1 lg:grid-cols-[calc(35%-10px)_calc(65%-10px)]">
+    <div class="main-cards h-full grid-cols-1 gap-7 lg:grid lg:grid-cols-[calc(35%-10px)_calc(65%-10px)]">
+
         <div class="card flex flex-col gap-5">
             <!-- Condition Chart -->
             <div class="graph">

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -260,6 +261,9 @@ class AssetManagementForm extends Component
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
             $this->redirect('/assetmanagement');
 
+            // Clear API cache
+            Cache::forget('api.assets.index');
+
         } catch (\Exception $e) {
             Log::error('Asset creation failed: ' . $e->getMessage());
             // Use NORELOAD notification to show error without redirect
@@ -304,6 +308,9 @@ class AssetManagementForm extends Component
             // Use RELOAD notification because we're redirecting
             $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
             $this->redirect('/assetmanagement');
+
+            // Clear API cache
+            Cache::forget('api.assets.index');
 
         } catch (\Exception $e) {
             Log::error('Asset update failed: ' . $e->getMessage());
@@ -350,6 +357,9 @@ class AssetManagementForm extends Component
             // Use NORELOAD notification - stays on same page to see updated data
             $this->noreloadNotif('success', 'Asset Transferred', 'Asset has been successfully transferred to ' . $assignee->employee_name . '.');
 
+            // Clear API cache
+            Cache::forget('api.assets.index');
+
         } catch (\Exception $e) {
             Log::error('Asset transfer failed: ' . $e->getMessage());
             $this->noreloadNotif('failed', 'Transfer Failed', 'Unable to transfer asset. Please try again.');
@@ -395,6 +405,9 @@ class AssetManagementForm extends Component
 
             // Use NORELOAD notification - stays on same page to see updated data
             $this->noreloadNotif('success', 'Asset Assigned', 'Asset has been successfully assigned to ' . $assignee->employee_name . '.');
+
+            // Clear API cache
+            Cache::forget('api.assets.index');
 
         } catch (\Exception $e) {
             Log::error('Asset assignment failed: ' . $e->getMessage());

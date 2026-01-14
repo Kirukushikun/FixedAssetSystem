@@ -133,12 +133,12 @@ nav.collapsed .logo button {
     box-shadow: 0 0 10px rgba(151, 165, 161, 0.3);
 }
 
-.main-cards {
+/* .main-cards {
     display: grid;
     gap: 30px;
     grid-template-columns: calc(35% - 10px) calc(65% - 10px);
     height: 100%;
-}
+} */
 /* ========== Global Theme Variables ========== */
 :root {
     --text-color: #1c1c1c;
