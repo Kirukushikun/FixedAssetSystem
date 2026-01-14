@@ -138,7 +138,7 @@ class AssetController extends Controller
         try {
             // Cache individual asset for 1 hour
             $asset = Cache::remember("api.assets.show.{$id}", 3600, function () use ($id) {
-                return Asset::find($id);
+                return Asset::where("ref_id", $id)->first();
             });
 
             if (!$asset) {

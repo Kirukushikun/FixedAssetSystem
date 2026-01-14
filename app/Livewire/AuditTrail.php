@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\AuditTrail as AuditModel;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Cache;
 
 class AuditTrail extends Component
 {   
@@ -21,7 +22,14 @@ class AuditTrail extends Component
 
     public function render()
     {   
-        $audits = AuditModel::latest()->paginate(10);
+        // Create unique cache key based on current page
+        $cacheKey = 'audit_trail_' . $this->getPage();
+
+        // Cache the audit trail for 5 minutes (300 seconds)
+        $audits = Cache::remember($cacheKey, 300, function () {
+            return AuditModel::latest()->paginate(10);
+        });
+
         return view('livewire.audit-trail', compact('audits'));
     }
 }

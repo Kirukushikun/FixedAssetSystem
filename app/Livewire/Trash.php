@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Asset;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class Trash extends Component
 {
@@ -21,6 +22,9 @@ class Trash extends Component
             // Restore the asset by setting is_deleted to false
             $asset->is_deleted = false;
             $asset->save();
+
+            // Clear all relevant caches after restore
+            $this->clearAllAssetCaches();
 
             $this->noreloadNotif('success', 'Asset Restored', 'Asset ' . $asset->ref_id . ' has been restored successfully.');
             Log::info('Asset restored: ' . $asset->ref_id);
@@ -46,6 +50,9 @@ class Trash extends Component
             // Permanently delete the asset from database
             $asset->delete();
 
+            // Clear all relevant caches after permanent deletion
+            $this->clearAllAssetCaches();
+
             $this->noreloadNotif('success', 'Asset Deleted', 'Asset ' . $refId . ' has been permanently deleted.');
             Log::info('Asset permanently deleted: ' . $refId);
             
@@ -55,6 +62,18 @@ class Trash extends Component
         }
     }
 
+    private function clearAllAssetCaches()
+    {
+        // Clear trash cache
+        Cache::forget('trash_deleted_assets');
+        
+        // Clear asset table caches
+        Cache::forget('asset_table_query');
+        
+        // Clear API caches
+        Cache::forget('api.assets.index');
+    }
+
     private function noreloadNotif($type, $header, $message)
     {
         $this->dispatch('notif', type: $type, header: $header, message: $message);
@@ -62,8 +81,10 @@ class Trash extends Component
 
     public function render()
     {   
-        // Collect Assets marked as deleted
-        $deletedAssets = Asset::where('is_deleted', true)->get();
+        // Cache deleted assets for 10 minutes
+        $deletedAssets = Cache::remember('trash_deleted_assets', 600, function () {
+            return Asset::where('is_deleted', true)->get();
+        });
 
         return view('livewire.trash', compact('deletedAssets'));
     }

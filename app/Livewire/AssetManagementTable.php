@@ -128,6 +128,8 @@ class AssetManagementTable extends Component
             
             // Clear table cache after deletion
             Cache::forget('asset_table_query');
+            // Clear trash cache
+            Cache::forget('trash_deleted_assets');
         }
 
         $this->audit('Deleted Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);

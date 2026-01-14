@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class UserAccess extends Component
 {   
@@ -30,41 +31,48 @@ class UserAccess extends Component
     {
         $this->fetchUsers();
         
-        // Get all registered users keyed by id (not employee_id)
-        $this->dbUsers = User::all()->keyBy('id');
+        // Cache database users for 10 minutes
+        $this->dbUsers = Cache::remember('user_access_db_users', 600, function () {
+            return User::all()->keyBy('id');
+        });
 
         $this->departments = Department::all();
     }
 
     public function fetchUsers()
     {
-        $response = Http::withHeaders([
-            'x-api-key' => '123456789bgc'
-        ])
-        ->withOptions([
-            'verify' => storage_path('cacert.pem'),
-        ])
-        ->post('https://bfcgroup.ph/api/v1/users');
+        // Cache API users for 5 minutes since this is external data
+        $this->users = Cache::remember('user_access_api_users', 300, function () {
+            $response = Http::withHeaders([
+                'x-api-key' => '123456789bgc'
+            ])
+            ->withOptions([
+                'verify' => storage_path('cacert.pem'),
+            ])
+            ->post('https://bfcgroup.ph/api/v1/users');
 
-        if ($response->successful()) {
-            $json = $response->json();
-            $users = $json['data'] ?? $json;
-            
-            // Decrypt the user IDs
-            $this->users = array_map(function($user) {
-                try {
-                    $user['id'] = Crypt::decryptString($user['id']);
-                } catch (\Exception $e) {
-                    Log::error('Failed to decrypt user ID for: ' . $user['first_name'] . ' ' . $user['last_name']);
-                }
-                return $user;
-            }, $users);
+            if ($response->successful()) {
+                $json = $response->json();
+                $users = $json['data'] ?? $json;
+                
+                // Decrypt the user IDs
+                return array_map(function($user) {
+                    try {
+                        $user['id'] = Crypt::decryptString($user['id']);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to decrypt user ID for: ' . $user['first_name'] . ' ' . $user['last_name']);
+                    }
+                    return $user;
+                }, $users);
+            } else {
+                session()->flash('error', 'Failed to fetch users. Status: ' . $response->status());
+                Log::info('API Error: ' . $response->status());
+                return [];
+            }
+        });
 
+        if (!empty($this->users)) {
             Log::info('Fetched Users:', $this->users);
-        } else {
-            $this->users = [];
-            session()->flash('error', 'Failed to fetch users. Status: ' . $response->status());
-            Log::info('API Error: ' . $response->status());
         }
     }
 
@@ -113,6 +121,9 @@ class UserAccess extends Component
                 'department' => $this->editDepartment,
             ]);
 
+            // Clear cache after update
+            Cache::forget('user_access_db_users');
+            
             // Update the dbUsers collection
             $this->dbUsers->put($this->editUserId, $user);
 
@@ -147,6 +158,9 @@ class UserAccess extends Component
                 'department' => null,
             ]);
 
+            // Clear cache after creating user
+            Cache::forget('user_access_db_users');
+            
             // Update the dbUsers collection with the new user
             $this->dbUsers->put($userId, $user);
 
@@ -170,6 +184,9 @@ class UserAccess extends Component
             }
 
             $user->delete();
+            
+            // Clear cache after deletion
+            Cache::forget('user_access_db_users');
             
             // Remove from dbUsers collection
             $this->dbUsers->forget($userId);
@@ -203,6 +220,9 @@ class UserAccess extends Component
                 'is_admin' => true,
             ]);
 
+            // Clear cache after update
+            Cache::forget('user_access_db_users');
+            
             // Update the dbUsers collection
             $this->dbUsers->put($userId, $user);
 

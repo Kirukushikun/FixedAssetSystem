@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Employee;
 use App\Models\Department;
 
@@ -67,7 +68,8 @@ class EmployeesTable extends Component
                 'department' => $this->department,
             ]);
 
-            
+            // Clear cache after creating
+            $this->clearEmployeeCache();
 
             // Audit Trail
             $this->audit('Added Employee: ' . $this->employee_id . ' - ' . $this->employee_name);
@@ -102,6 +104,9 @@ class EmployeesTable extends Component
             $employee->department = $this->department;
             $employee->save();
 
+            // Clear cache after updating
+            $this->clearEmployeeCache();
+
             // Audit Trail
             $this->audit('Updated Employee: ' . $employee->employee_id . ' - ' . $employee->employee_name);
 
@@ -131,6 +136,9 @@ class EmployeesTable extends Component
             $employee->is_deleted = true;
             $employee->save();
             
+            // Clear cache after deleting
+            $this->clearEmployeeCache();
+
             $this->clear();
 
             // Audit Trail
@@ -150,25 +158,42 @@ class EmployeesTable extends Component
         $this->reset(['target', 'employee_id', 'employee_name', 'position', 'farm', 'department']);
     }
 
+    private function clearEmployeeCache()
+    {
+        // Clear all employee table cache (starts with 'employee_table_')
+        Cache::flush(); // Simple approach - clears all cache
+        
+        // OR use this for more targeted clearing (if you want to keep other caches):
+        // Cache::forget('employee_table_query');
+    }
 
     public function render()
     {   
         $departments = Department::all();
 
-        $employees = Employee::where('is_deleted', false)
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('employee_id', 'like', '%' . $this->search . '%')
-                        ->orWhere('employee_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('position', 'like', '%' . $this->search . '%')
-                        ->orWhere('farm', 'like', '%' . $this->search . '%')
-                        ->orWhere('department', 'like', '%' . $this->search . '%');
-                });
-            })
-            ->with(['flags'])
-            ->withCount(['assets', 'flags'])
-            ->latest()
-            ->paginate(10);
+        // Create unique cache key based on search and page
+        $cacheKey = 'employee_table_' . md5(json_encode([
+            'search' => $this->search,
+            'page' => $this->getPage()
+        ]));
+
+        // Cache the query results for 10 minutes
+        $employees = Cache::remember($cacheKey, 600, function () {
+            return Employee::where('is_deleted', false)
+                ->when($this->search, function ($query) {
+                    $query->where(function ($q) {
+                        $q->where('employee_id', 'like', '%' . $this->search . '%')
+                            ->orWhere('employee_name', 'like', '%' . $this->search . '%')
+                            ->orWhere('position', 'like', '%' . $this->search . '%')
+                            ->orWhere('farm', 'like', '%' . $this->search . '%')
+                            ->orWhere('department', 'like', '%' . $this->search . '%');
+                    });
+                })
+                ->with(['flags'])
+                ->withCount(['assets', 'flags'])
+                ->latest()
+                ->paginate(10);
+        });
             
         return view('livewire.employees-table', compact('employees', 'departments'));
     }
