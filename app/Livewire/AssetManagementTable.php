@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class AssetManagementTable extends Component
 {   
@@ -46,6 +47,7 @@ class AssetManagementTable extends Component
             $this->openCategory = $categoryId;
         }
     }
+    
     public function updatedFilterCategory($value)
     {
         // Reset subcategory when category changes
@@ -122,7 +124,10 @@ class AssetManagementTable extends Component
             }
 
             $asset->is_deleted = true;
-            $asset->save();            
+            $asset->save();
+            
+            // Clear table cache after deletion
+            Cache::forget('asset_table_query');
         }
 
         $this->audit('Deleted Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
@@ -132,37 +137,58 @@ class AssetManagementTable extends Component
     
     public function render()
     {
-        $query = Asset::query()
-            ->where('is_deleted', false)
-            ->where('is_archived', false);
+        // Create a unique cache key based on current filters and page
+        $cacheKey = 'asset_table_' . md5(json_encode([
+            'search' => $this->search,
+            'filterCategoryType' => $this->filterCategoryType,
+            'filterCategory' => $this->filterCategory,
+            'filterSubCategory' => $this->filterSubCategory,
+            'filterFarm' => $this->filterFarm,
+            'filterDepartment' => $this->filterDepartment,
+            'filterAssignedTo' => $this->filterAssignedTo,
+            'filterStatus' => $this->filterStatus,
+            'filterCondition' => $this->filterCondition,
+            'filterDateFrom' => $this->filterDateFrom,
+            'filterDateTo' => $this->filterDateTo,
+            'filterCostMin' => $this->filterCostMin,
+            'filterCostMax' => $this->filterCostMax,
+            'page' => $this->getPage()
+        ]));
 
-        if ($this->search) {
-            $search = '%' . $this->search . '%';
-            $query->whereRaw("
-                CONCAT(
-                    ref_id, ' ', category_type, ' ', category, ' ', sub_category, ' ',
-                    brand, ' ', model, ' ', status, ' ', `condition`, ' ',
-                    item_cost, ' ', farm
-                ) LIKE ?
-            ", [$search]);
-        }
+        // Cache the query results for 10 minutes
+        $assets = Cache::remember($cacheKey, 600, function () {
+            $query = Asset::query()
+                ->where('is_deleted', false)
+                ->where('is_archived', false);
 
-        $query->when($this->filterCategoryType, fn ($q) => $q->where('category_type', $this->filterCategoryType));
-        $query->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory));
-        $query->when($this->filterSubCategory, fn ($q) => $q->where('sub_category', $this->filterSubCategory));
-        $query->when($this->filterFarm, fn ($q) => $q->where('farm', $this->filterFarm));
-        $query->when($this->filterDepartment, fn ($q) => $q->where('department', $this->filterDepartment));
-        $query->when($this->filterAssignedTo, fn ($q) => $q->where('assigned_name', $this->filterAssignedTo));
-        $query->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus));
-        $query->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition));
+            if ($this->search) {
+                $search = '%' . $this->search . '%';
+                $query->whereRaw("
+                    CONCAT(
+                        ref_id, ' ', category_type, ' ', category, ' ', sub_category, ' ',
+                        brand, ' ', model, ' ', status, ' ', `condition`, ' ',
+                        item_cost, ' ', farm
+                    ) LIKE ?
+                ", [$search]);
+            }
 
-        $query->when($this->filterDateFrom, fn ($q) => $q->whereDate('acquisition_date', '>=', $this->filterDateFrom));
-        $query->when($this->filterDateTo, fn ($q) => $q->whereDate('acquisition_date', '<=', $this->filterDateTo));
+            $query->when($this->filterCategoryType, fn ($q) => $q->where('category_type', $this->filterCategoryType));
+            $query->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory));
+            $query->when($this->filterSubCategory, fn ($q) => $q->where('sub_category', $this->filterSubCategory));
+            $query->when($this->filterFarm, fn ($q) => $q->where('farm', $this->filterFarm));
+            $query->when($this->filterDepartment, fn ($q) => $q->where('department', $this->filterDepartment));
+            $query->when($this->filterAssignedTo, fn ($q) => $q->where('assigned_name', $this->filterAssignedTo));
+            $query->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus));
+            $query->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition));
 
-        $query->when($this->filterCostMin, fn ($q) => $q->where('item_cost', '>=', $this->filterCostMin));
-        $query->when($this->filterCostMax, fn ($q) => $q->where('item_cost', '<=', $this->filterCostMax));
+            $query->when($this->filterDateFrom, fn ($q) => $q->whereDate('acquisition_date', '>=', $this->filterDateFrom));
+            $query->when($this->filterDateTo, fn ($q) => $q->whereDate('acquisition_date', '<=', $this->filterDateTo));
 
-        $assets = $query->latest()->paginate(10);
+            $query->when($this->filterCostMin, fn ($q) => $q->where('item_cost', '>=', $this->filterCostMin));
+            $query->when($this->filterCostMax, fn ($q) => $q->where('item_cost', '<=', $this->filterCostMax));
+
+            return $query->latest()->paginate(10);
+        });
 
         // Get categories as array with code as key
         $categoryCodeImage = Category::all()->keyBy('code');
