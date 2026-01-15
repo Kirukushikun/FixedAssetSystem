@@ -166,7 +166,7 @@
             <!-- EMPLOYEE SELECT -->
             <div class="input-group">
                 <label>Assigned To:</label>
-                @if($mode == 'view' && $targetAsset->assigned_name)
+                @if($mode == 'edit' || $mode == 'view' && $targetAsset->assigned_name)
                     <input type="text" value="{{$targetAsset->assigned_name}}" readonly>
                 @else 
                     <select wire:model.live="selectedEmployee" {{ $mode == 'view' ? 'disabled' : '' }}>
@@ -181,7 +181,7 @@
             <!-- FARM -->
             <div class="input-group">
                 <label>Farm:</label>
-                @if($selectedEmployee || $mode == 'view')
+                @if($selectedEmployee || $mode == 'view' || $mode == 'edit')
                     <input type="text" wire:model="farm" readonly>
                 @else
                     <select wire:model="farm" {{ $mode == 'view' ? 'disabled' : '' }}>
@@ -196,7 +196,7 @@
             <!-- DEPARTMENT -->
             <div class="input-group">
                 <label>Department/Division:</label>
-                @if($selectedEmployee || $mode == 'view')
+                @if($selectedEmployee || $mode == 'view' || $mode == 'edit')
                     <input type="text" wire:model="department" readonly>
                 @else
                     <select wire:model="department" {{ $mode == 'view' ? 'disabled' : '' }}>

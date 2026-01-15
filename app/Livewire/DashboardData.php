@@ -12,15 +12,82 @@ use Illuminate\Support\Facades\Log;
 
 class DashboardData extends Component
 {   
-
     public $targetFarm;
-
     public $categories;
     public $openCategory = null;
+
+    // Data properties
+    public $conditions;
+    public $maxCondition;
+    public $statuses;
+    public $statusPercentages;
+    public $totalAssets;
+    public $farmDistribution;
+
+    public $employee_id, $employee_name, $position, $farm, $department;
+
+    protected $rules = [
+        'employee_id' => 'required',
+        'employee_name' => 'required',
+        'position' => 'required',
+        'farm' => 'required',
+        'department' => 'required',
+    ];
 
     public function mount()
     {   
         $this->categories = Category::with('subcategories')->get();
+        $this->loadDashboardData();
+    }
+
+    private function loadDashboardData()
+    {
+        // ASSET STATUS OVERVIEW DATA
+        $this->conditions = [
+            'good' => Asset::where('is_deleted', false)->where('condition', 'Good')->count(),
+            'defective' => Asset::where('is_deleted', false)->where('condition', 'Defective')->count(),
+            'repair' => Asset::where('is_deleted', false)->where('condition', 'Repair')->count(),
+            'replace' => Asset::where('is_deleted', false)->where('condition', 'Replace')->count(),
+        ];
+        
+        $this->statuses = [
+            'available' => Asset::where('is_deleted', false)->where('status', 'Available')->count(),
+            'issued' => Asset::where('is_deleted', false)->where('status', 'Issued')->count(),
+            'transferred' => Asset::where('is_deleted', false)->where('status', 'Transferred')->count(),
+            'for_disposal' => Asset::where('is_deleted', false)->where('status', 'For disposal')->count(),
+            'disposed' => Asset::where('is_deleted', false)->where('status', 'Disposed')->count(),
+            'lost' => Asset::where('is_deleted', false)->where('status', 'Lost')->count(),
+        ];
+
+        $this->totalAssets = Asset::where('is_deleted', false)->count();
+        $this->maxCondition = max($this->conditions) ?: 1;
+
+        // Calculate percentage for each status
+        $this->statusPercentages = [];
+        foreach ($this->statuses as $key => $count) {
+            $this->statusPercentages[$key] = $this->totalAssets > 0 ? ($count / $this->totalAssets) * 100 : 0;
+        }
+
+        // FARM DISTRIBUTION DATA
+        $farms = [
+            'BFC' => 'BROOKSIDE FARMS',
+            'BDL' => 'BROOKDALE FARMS',
+            'PFC' => 'POULTRYPURE FARMS',
+            'RH' => 'RH FARMS',
+        ];
+
+        $this->farmDistribution = [];
+        foreach ($farms as $code => $name) {
+            $count = Asset::where('is_deleted', false)->where('farm', $code)->count();
+            $percentage = $this->totalAssets > 0 ? round(($count / $this->totalAssets) * 100, 1) : 0;
+            
+            $this->farmDistribution[] = [
+                'code' => $code,
+                'name' => $name,
+                'count' => $count,
+                'percentage' => $percentage
+            ];
+        }
     }
 
     public function toggleCategory($categoryId)
@@ -37,17 +104,6 @@ class DashboardData extends Component
         $this->targetFarm = $code;
         Log::info('Target farm set to: ' . $this->targetFarm);
     }
-
-    public $employee_id, $employee_name, $position, $farm, $department;
-
-
-    protected $rules = [
-        'employee_id' => 'required',
-        'employee_name' => 'required',
-        'position' => 'required',
-        'farm' => 'required',
-        'department' => 'required',
-    ];
 
     public function clear()
     {   
@@ -68,8 +124,6 @@ class DashboardData extends Component
             ]);
 
             $this->reset(['employee_id', 'employee_name', 'position', 'farm', 'department']);
-
-            // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
 
         } catch (\Exception $e) {
@@ -109,7 +163,7 @@ class DashboardData extends Component
             ];
         }
 
-        // Alert 3: Employees with unreturned items (deleted employees)
+        // Alert 3: Employees with unreturned items
         $unreturnedCount = Asset::whereNotNull('assigned_id')
             ->whereHas('assignedEmployee', function($query) {
                 $query->where('is_deleted', true);
@@ -140,85 +194,21 @@ class DashboardData extends Component
 
     public function render()
     {   
-        // MAIN CONTAINERS
+        // Only fetch data that changes frequently or needs to be real-time
         $total_assets = Asset::where('is_deleted', false)->get();
         $assigned_assets = Asset::where('is_deleted', false)->whereNotNull('assigned_id')->get();
         $total_employees = Employee::where('is_deleted', false)->get();
         $pending_clearances = Flag::where('flag_type', 'Pending Clearances');
-
-        // ASSET STATUS OVERVIEW DATA =========
-        // Get counts for each condition
-        $conditions = [
-            'good' => Asset::where('is_deleted', false)->where('condition', 'Good')->count(),
-            'defective' => Asset::where('is_deleted', false)->where('condition', 'Defective')->count(),
-            'repair' => Asset::where('is_deleted', false)->where('condition', 'Repair')->count(),
-            'replace' => Asset::where('is_deleted', false)->where('condition', 'Replace')->count(),
-        ];
-        
-        // Get counts for each status
-        $statuses = [
-            'available' => Asset::where('is_deleted', false)->where('status', 'Available')->count(),
-            'issued' => Asset::where('is_deleted', false)->where('status', 'Issued')->count(),
-            'transferred' => Asset::where('is_deleted', false)->where('status', 'Transferred')->count(),
-            'for_disposal' => Asset::where('is_deleted', false)->where('status', 'For disposal')->count(),
-            'disposed' => Asset::where('is_deleted', false)->where('status', 'Disposed')->count(),
-            'lost' => Asset::where('is_deleted', false)->where('status', 'Lost')->count(),
-        ];
-
-        // Calculate totals and percentages
-        $totalAssets = Asset::where('is_deleted', false)->count();
-        $maxCondition = max($conditions) ?: 1;
-
-        // Calculate percentage for each status
-        $statusPercentages = [];
-        foreach ($statuses as $key => $count) {
-            $statusPercentages[$key] = $totalAssets > 0 ? ($count / $totalAssets) * 100 : 0;
-        }
-
-        // ========
-
-        // FARM DISTRIBUTION DATA
-        $farms = [
-            'BFC' => 'BROOKSIDE FARMS',
-            'BDL' => 'BROOKDALE FARMS',
-            'PFC' => 'POULTRYPURE FARMS',
-            'RH' => 'RH FARMS',
-        ];
-
-        $farmDistribution = [];
-
-        foreach ($farms as $code => $name) {
-            $count = Asset::where('is_deleted', false)->where('farm', $code)->count();
-            $percentage = $totalAssets > 0 ? round(($count / $totalAssets) * 100, 1) : 0;
-            
-            $farmDistribution[] = [
-                'code' => $code,
-                'name' => $name,
-                'count' => $count,
-                'percentage' => $percentage
-            ];
-        }
-
-        // ========
 
         return view('livewire.dashboard-data', [
             'total_assets' => $total_assets,
             'assigned_assets' => $assigned_assets,
             'total_employees' => $total_employees,
             'pending_clearances' => $pending_clearances,
-            
-            'conditions' => $conditions,
-            'maxCondition' => $maxCondition,
-            'statuses' => $statuses,
-            'statusPercentages' => $statusPercentages,
-            'totalAssets' => $totalAssets,
-
-            'farmDistribution' => $farmDistribution
         ]);
     }
 
     private function noreloadNotif($type, $header, $message){
         $this->dispatch('notif', type: $type, header: $header, message: $message);
     }
-
 }

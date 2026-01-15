@@ -14,8 +14,6 @@ use App\Models\Department;
 class EmployeesTable extends Component
 {   
     use WithPagination;
-
-    use WithPagination;
     
     protected $paginationTheme = 'tailwind';
 

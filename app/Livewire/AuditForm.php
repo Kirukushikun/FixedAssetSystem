@@ -6,6 +6,8 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Asset;
 use App\Models\Audit;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AuditForm extends Component
 {   
@@ -42,41 +44,59 @@ class AuditForm extends Component
     }
 
     public function submit(){
-        $attachmentPath = null;
-        $attachmentName = null;
-        
-        if ($this->attachment) {
-            $attachmentPath = $this->attachment->store('attachments', 'public');
-            $attachmentName = $this->attachment->getClientOriginalName();
+
+        try{
+            $attachmentPath = null;
+            $attachmentName = null;
+            
+            if ($this->attachment) {
+                $attachmentPath = $this->attachment->store('attachments', 'public');
+                $attachmentName = $this->attachment->getClientOriginalName();
+            }
+
+            // Create audit record
+            Audit::create([
+                'asset_id' => $this->targetAsset->id,
+                'location' => $this->location,
+                'next_audit_date' => $this->next_audit,
+                'notes' => $this->notes,
+                'attachment_path' => $attachmentPath,
+                'attachment_name' => $attachmentName,
+                'audited_at' => now(),
+                'audited_by' => 61,
+            ]);
+
+            // Update asset location
+            $this->targetAsset->update([
+                'location' => $this->location,
+                'last_audit_date' => now(),
+                'next_audit_date' => $this->next_audit,
+            ]);
+
+            session()->flash('success', 'Asset audited successfully!');
+            
+            $this->redirect('/assetmanagement');
+            session()->flash('notif', [
+                'type' => 'success',
+                'header' => 'Audit Saved',
+                'message' => 'The audit entry has been successfully added to the asset’s audit records'
+            ]);
+
+            Cache::forget('api.assets.index');
+            Cache::forget('asset_table_query');
+            Cache::forget('trash_deleted_assets');
+
+        } catch (\Exception $e) {
+            Log::error('Audit failed: ' . $e->getMessage());
+            $this->redirect('/assetmanagement');
+            session()->flash('notif', [
+                'type' => 'failed',
+                'header' => 'Audit Failed',
+                'message' => 'Unable to audit asset. Please try again.'
+            ]);
         }
 
-        // Create audit record
-        Audit::create([
-            'asset_id' => $this->targetAsset->id,
-            'location' => $this->location,
-            'next_audit_date' => $this->next_audit,
-            'notes' => $this->notes,
-            'attachment_path' => $attachmentPath,
-            'attachment_name' => $attachmentName,
-            'audited_at' => now(),
-            'audited_by' => 61,
-        ]);
-
-        // Update asset location
-        $this->targetAsset->update([
-            'location' => $this->location,
-            'last_audit_date' => now(),
-            'next_audit_date' => $this->next_audit,
-        ]);
-
-        session()->flash('success', 'Asset audited successfully!');
-        
-        $this->redirect('/assetmanagement');
-        session()->flash('notif', [
-            'type' => 'success',
-            'header' => 'Audit Saved',
-            'message' => 'The audit entry has been successfully added to the asset’s audit records'
-        ]);
+ 
     }
 
     public function render()

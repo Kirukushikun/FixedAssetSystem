@@ -28,6 +28,7 @@ class Trash extends Component
 
             $this->noreloadNotif('success', 'Asset Restored', 'Asset ' . $asset->ref_id . ' has been restored successfully.');
             Log::info('Asset restored: ' . $asset->ref_id);
+
             
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Restore Failed', 'Failed to restore asset: ' . $e->getMessage());
@@ -55,6 +56,7 @@ class Trash extends Component
 
             $this->noreloadNotif('success', 'Asset Deleted', 'Asset ' . $refId . ' has been permanently deleted.');
             Log::info('Asset permanently deleted: ' . $refId);
+
             
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Delete Failed', 'Failed to permanently delete asset: ' . $e->getMessage());

@@ -262,8 +262,7 @@ class AssetManagementForm extends Component
             $this->redirect('/assetmanagement');
 
             // Clear API cache
-            Cache::forget('api.assets.index');
-
+            $this->clearAllAssetCaches();
         } catch (\Exception $e) {
             Log::error('Asset creation failed: ' . $e->getMessage());
             // Use NORELOAD notification to show error without redirect
@@ -309,8 +308,8 @@ class AssetManagementForm extends Component
             $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
             $this->redirect('/assetmanagement');
 
-            // Clear API cache
-            Cache::forget('api.assets.index');
+            // Clear all relevant caches after update
+            $this->clearAllAssetCaches();
 
         } catch (\Exception $e) {
             Log::error('Asset update failed: ' . $e->getMessage());
@@ -357,8 +356,8 @@ class AssetManagementForm extends Component
             // Use NORELOAD notification - stays on same page to see updated data
             $this->noreloadNotif('success', 'Asset Transferred', 'Asset has been successfully transferred to ' . $assignee->employee_name . '.');
 
-            // Clear API cache
-            Cache::forget('api.assets.index');
+            // Clear all relevant caches after update
+            $this->clearAllAssetCaches();
 
         } catch (\Exception $e) {
             Log::error('Asset transfer failed: ' . $e->getMessage());
@@ -406,8 +405,8 @@ class AssetManagementForm extends Component
             // Use NORELOAD notification - stays on same page to see updated data
             $this->noreloadNotif('success', 'Asset Assigned', 'Asset has been successfully assigned to ' . $assignee->employee_name . '.');
 
-            // Clear API cache
-            Cache::forget('api.assets.index');
+            // Clear all relevant caches after update
+            $this->clearAllAssetCaches();
 
         } catch (\Exception $e) {
             Log::error('Asset assignment failed: ' . $e->getMessage());
@@ -535,6 +534,13 @@ class AssetManagementForm extends Component
         }
 
         return $result;
+    }
+
+    public function clearAllAssetCaches()
+    {
+        Cache::forget('api.assets.index');
+        Cache::forget('asset_table_query');
+        Cache::forget('trash_deleted_assets');
     }
     
 }
