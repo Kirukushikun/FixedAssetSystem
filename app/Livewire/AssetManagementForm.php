@@ -79,7 +79,7 @@ class AssetManagementForm extends Component
     public $farms = ['BFC', 'BDL', 'PFC', 'RH'];
     public $departments = [];
 
-    // RULES FOR VALIDATIOn
+    // RULES FOR VALIDATION
     protected $rules = [
         'ref_id' => 'required',
         'category_type' => 'required',
@@ -99,78 +99,107 @@ class AssetManagementForm extends Component
         'attachment' => 'nullable|file|mimes:pdf|max:5120'
     ];
 
-    public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null){
-        // Set Mode
+    public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null)
+    {
         $this->mode = $mode;
 
         if($mode == 'create'){
-            // Prefill initial info for creation
-            // Get the next ref_id based on the last one
-            $year = now()->year;
-
-            $lastRefId = DB::table('assets')
-                ->where('ref_id', 'LIKE', "FA-{$year}-%")
-                ->orderByRaw('CAST(SUBSTRING(ref_id, 9) AS UNSIGNED) DESC')
-                ->value('ref_id');
-
-            if ($lastRefId) {
-                $lastNumber = (int) substr($lastRefId, 8);
-                $nextNumber = $lastNumber + 1;
-            } else {
-                $nextNumber = 1;
-            }
-
-            $this->ref_id = 'FA-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $this->ref_id = $this->generateNextRefId();
             $this->category_type = $category_type;
             $this->category = $category;
             $this->sub_category = $sub_category;            
-        }else{
-            // Prefill inputs of a specific asset on edit or viewing
-            $this->targetAsset = Asset::findOrFail($targetID);
-            $this->fill([
-                'ref_id'            => $this->targetAsset->ref_id,
-                'category_type'     => $this->targetAsset->category_type,
-                'category'          => $this->targetAsset->category,
-                'sub_category'      => $this->targetAsset->sub_category,
-                
-                'brand' => $this->targetAsset->brand,
-                'model' => $this->targetAsset->model,
-                'status' => $this->targetAsset->status,
-                'condition' => $this->targetAsset->condition,
-
-                'acquisition_date' => $this->targetAsset->acquisition_date,
-                'item_cost' => $this->targetAsset->item_cost,
-                'depreciated_value' => $this->targetAsset->depreciated_value,
-                'usable_life' => $this->targetAsset->usable_life,
-
-                'selectedEmployee' => $this->targetAsset->assigned_id,  
-                'farm' => $this->targetAsset->farm,
-                'department' => $this->targetAsset->department,
-
-                'remarks' => $this->remarks
-            ]); 
-
-            $this->qr_code = $this->targetAsset->qr_code;
-            $this->attachment = $this->targetAsset->attachment;
-            $this->attachment_name = $this->targetAsset->attachment_name;
-
-            //Prefill technical data
-            if($this->targetAsset->category_type == 'IT'){
-                $this->technicaldata = json_decode($this->targetAsset->technical_data) ?? $this->technicaldata;
-            }
-
-            // History
-            $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
-
-            // Audits
-            $this->audits = Audit::where('asset_id', $this->targetAsset->id)->latest()->get();
-            
+        } else {
+            $this->loadAssetData($targetID);
         }
 
-        $this->employees = Employee::select('id','employee_name','farm','department')->get()->toArray();
-        // Get unique farms and departments for dropdowns
-        $this->departments = Department::pluck('name')->toArray();
-        $this->categoryCodeImage = Category::all()->keyBy('code');
+        // Optimized: Cache static data + select only needed columns
+        $this->employees = Cache::remember('employees_dropdown', 3600, function() {
+            return Employee::select('id', 'employee_name', 'farm', 'department')
+                ->orderBy('employee_name')
+                ->get()
+                ->toArray();
+        });
+
+        $this->departments = Cache::remember('departments_list', 3600, function() {
+            return Department::pluck('name')->toArray();
+        });
+
+        $this->categoryCodeImage = Cache::remember('categories_by_code', 3600, function() {
+            return Category::all()->keyBy('code');
+        });
+    }
+
+    /**
+     * Generate next reference ID
+     */
+    private function generateNextRefId(): string
+    {
+        $year = now()->year;
+
+        $lastRefId = DB::table('assets')
+            ->where('ref_id', 'LIKE', "FA-{$year}-%")
+            ->orderByRaw('CAST(SUBSTRING(ref_id, 9) AS UNSIGNED) DESC')
+            ->value('ref_id');
+
+        if ($lastRefId) {
+            $lastNumber = (int) substr($lastRefId, 8);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return 'FA-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Load existing asset data for edit/view mode
+     */
+    private function loadAssetData($targetID): void
+    {
+        $this->targetAsset = Asset::findOrFail($targetID);
+        
+        $this->fill([
+            'ref_id'            => $this->targetAsset->ref_id,
+            'category_type'     => $this->targetAsset->category_type,
+            'category'          => $this->targetAsset->category,
+            'sub_category'      => $this->targetAsset->sub_category,
+            
+            'brand' => $this->targetAsset->brand,
+            'model' => $this->targetAsset->model,
+            'status' => $this->targetAsset->status,
+            'condition' => $this->targetAsset->condition,
+
+            'acquisition_date' => $this->targetAsset->acquisition_date,
+            'item_cost' => $this->targetAsset->item_cost,
+            'depreciated_value' => $this->targetAsset->depreciated_value,
+            'usable_life' => $this->targetAsset->usable_life,
+
+            'selectedEmployee' => $this->targetAsset->assigned_id,  
+            'farm' => $this->targetAsset->farm,
+            'department' => $this->targetAsset->department,
+
+            'remarks' => $this->remarks
+        ]); 
+
+        $this->qr_code = $this->targetAsset->qr_code;
+        $this->attachment = $this->targetAsset->attachment;
+        $this->attachment_name = $this->targetAsset->attachment_name;
+
+        // Prefill technical data
+        if($this->targetAsset->category_type == 'IT'){
+            $this->technicaldata = json_decode($this->targetAsset->technical_data, true) ?? $this->technicaldata;
+        }
+
+        // Optimized: Limit history records and load only recent ones
+        $this->history = History::where('asset_id', $this->targetAsset->id)
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        $this->audits = Audit::where('asset_id', $this->targetAsset->id)
+            ->latest()
+            ->limit(50)
+            ->get();
     }
 
     public function updatedSelectedEmployee($value)
@@ -184,17 +213,21 @@ class AssetManagementForm extends Component
         }
     }
 
-    // This function will validate before showing modal
     public function trySubmit()
     {
         $this->validate();
-        $this->showConfirmModal = true; // show modal only when valid
+        $this->showConfirmModal = true;
     }
     
-    public function submit(){
-        try{
-            // Final validation upon submit
+    public function submit()
+    {
+        DB::beginTransaction();
+        
+        try {
             $this->validate();
+
+            $path = null;
+            $originalName = null;
 
             if ($this->attachment) {
                 $path = $this->attachment->store('attachment', 'public');
@@ -224,32 +257,19 @@ class AssetManagementForm extends Component
                 'farm' => $this->farm ?? null,
                 'department' => $this->department ?? null,
 
-                'attachment' => $path ?? null,
-                'attachment_name' => $originalName ?? null
+                'attachment' => $path,
+                'attachment_name' => $originalName
             ]);
 
-            // Ensure ref_id is set to an incremental unique value based on the created id
+            // Update ref_id to use actual database ID
             $finalRefId = 'FA-' . now()->year . '-' . str_pad($asset->id, 4, '0', STR_PAD_LEFT);
             $asset->update(['ref_id' => $finalRefId]);
-
-            // Update the form state for accurate notifications
             $this->ref_id = $finalRefId;
 
-            // -------- SAVE QR CODE FILE ----------
-            $url = url('/assetmanagement/view?targetID=' . $asset->id);
-            $qrFileName = 'qr_' . $asset->id . '.svg';
+            // Generate QR Code
+            $this->generateQrCodeForAsset($asset);
 
-            QrCode::format('svg')
-                ->size(300)
-                ->generate($url, storage_path('app/public/qrcodes/' . $qrFileName));
-
-            $asset->update([
-                'qr_code' => 'qrcodes/' . $qrFileName
-            ]);
-            // -------------------------------------
-
-            
-            // 3. Check if IT category → Sync to Snipe-IT
+            // Sync to Snipe-IT if needed
             if ($this->category_type === 'IT') {
                 $this->syncToSnipeIT($asset);
             }
@@ -257,26 +277,33 @@ class AssetManagementForm extends Component
             // Audit Trail
             $this->audit('Created Asset: ' . $this->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
 
-            // Use RELOAD notification because we're redirecting
+            DB::commit();
+
+            $this->clearAllAssetCaches();
+            
             $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
             $this->redirect('/assetmanagement');
 
-            // Clear API cache
-            $this->clearAllAssetCaches();
         } catch (\Exception $e) {
-            Log::error('Asset creation failed: ' . $e->getMessage());
-            // Use NORELOAD notification to show error without redirect
+            DB::rollBack();
+            
+            Log::error('Asset creation failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'ref_id' => $this->ref_id
+            ]);
+            
             $this->noreloadNotif('failed', 'Create Failed', 'Unable to create asset. Please try again.');
         }
     }
 
     public function update()
     {
+        DB::beginTransaction();
+        
         try {
-            // Validate input before updating
             $this->validate();
 
-            // Update the asset fields
             $this->targetAsset->update([
                 'ref_id' => $this->ref_id,
                 'category_type' => $this->category_type,
@@ -296,7 +323,7 @@ class AssetManagementForm extends Component
                 'technical_data' => json_encode($this->technicaldata),
             ]);
 
-            // 🆕 Sync to Snipe-IT if IT asset and has snipe_id
+            // Sync to Snipe-IT if IT asset and has snipe_id
             if ($this->category_type === 'IT' && $this->targetAsset->snipe_id) {
                 $this->updateToSnipeIT($this->targetAsset);
             }
@@ -304,23 +331,30 @@ class AssetManagementForm extends Component
             // Audit Trail
             $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category); 
 
-            // Use RELOAD notification because we're redirecting
+            DB::commit();
+
+            $this->clearAllAssetCaches();
+
             $this->reloadNotif('success', 'Asset Updated', 'Asset ' . $this->ref_id . ' has been successfully updated.');
             $this->redirect('/assetmanagement');
 
-            // Clear all relevant caches after update
-            $this->clearAllAssetCaches();
-
         } catch (\Exception $e) {
-            Log::error('Asset update failed: ' . $e->getMessage());
-            // Use NORELOAD notification to show error without redirect
+            DB::rollBack();
+            
+            Log::error('Asset update failed', [
+                'error' => $e->getMessage(),
+                'asset_id' => $this->targetAsset->id,
+                'user_id' => auth()->id()
+            ]);
+            
             $this->noreloadNotif('failed', 'Update Failed', 'Unable to update asset. Please try again.');
         }
     }
 
-    // --- TRANSFER ASSET ---
     public function transferAsset()
     {   
+        DB::beginTransaction();
+        
         try {
             $assignee = Employee::find($this->newHolder);
 
@@ -329,7 +363,7 @@ class AssetManagementForm extends Component
                 return;
             }
 
-            // 1. Save history (old data first)
+            // Save history
             History::create([
                 'asset_id'      => $this->targetAsset->id,
                 'assignee_id'   => $assignee->employee_id,
@@ -341,7 +375,7 @@ class AssetManagementForm extends Component
                 'action'        => 'Transfer',
             ]);
 
-            // 2. Update asset (new holder + new condition)
+            // Update asset
             $this->targetAsset->update([
                 'assigned_id'   => $assignee->id,
                 'assigned_name' => $assignee->employee_name,
@@ -350,24 +384,36 @@ class AssetManagementForm extends Component
                 'condition' => $this->newCondition,
             ]);
 
+            DB::commit();
+
             // Refresh history after transfer
-            $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
+            $this->history = History::where('asset_id', $this->targetAsset->id)
+                ->latest()
+                ->limit(50)
+                ->get();
 
-            // Use NORELOAD notification - stays on same page to see updated data
-            $this->noreloadNotif('success', 'Asset Transferred', 'Asset has been successfully transferred to ' . $assignee->employee_name . '.');
-
-            // Clear all relevant caches after update
             $this->clearAllAssetCaches();
 
+            $this->noreloadNotif('success', 'Asset Transferred', 'Asset has been successfully transferred to ' . $assignee->employee_name . '.');
+
         } catch (\Exception $e) {
-            Log::error('Asset transfer failed: ' . $e->getMessage());
+            DB::rollBack();
+            
+            Log::error('Asset transfer failed', [
+                'error' => $e->getMessage(),
+                'asset_id' => $this->targetAsset->id,
+                'new_holder' => $this->newHolder,
+                'user_id' => auth()->id()
+            ]);
+            
             $this->noreloadNotif('failed', 'Transfer Failed', 'Unable to transfer asset. Please try again.');
         }
     }
 
-    // --- ASSIGN ASSET ---
     public function assignAsset()
     {   
+        DB::beginTransaction();
+        
         try {
             $assignee = Employee::find($this->newHolder);
 
@@ -376,7 +422,7 @@ class AssetManagementForm extends Component
                 return;
             }
 
-            // 1. Save history
+            // Save history
             History::create([
                 'asset_id'      => $this->targetAsset->id,
                 'assignee_id'   => $assignee->id,
@@ -388,7 +434,7 @@ class AssetManagementForm extends Component
                 'action'        => 'Assign',
             ]);
 
-            // 2. Update asset (assign new holder)
+            // Update asset
             $this->targetAsset->update([
                 'assigned_id'   => $assignee->id,
                 'assigned_name' => $assignee->employee_name,
@@ -397,21 +443,47 @@ class AssetManagementForm extends Component
                 'condition' => $this->targetAsset->condition,
             ]);
 
+            DB::commit();
+
             $this->reset(['newHolder']);
 
             // Refresh history after assignment
-            $this->history = History::where('asset_id', $this->targetAsset->id)->latest()->get();
+            $this->history = History::where('asset_id', $this->targetAsset->id)
+                ->latest()
+                ->limit(50)
+                ->get();
 
-            // Use NORELOAD notification - stays on same page to see updated data
-            $this->noreloadNotif('success', 'Asset Assigned', 'Asset has been successfully assigned to ' . $assignee->employee_name . '.');
-
-            // Clear all relevant caches after update
             $this->clearAllAssetCaches();
 
+            $this->noreloadNotif('success', 'Asset Assigned', 'Asset has been successfully assigned to ' . $assignee->employee_name . '.');
+
         } catch (\Exception $e) {
-            Log::error('Asset assignment failed: ' . $e->getMessage());
+            DB::rollBack();
+            
+            Log::error('Asset assignment failed', [
+                'error' => $e->getMessage(),
+                'asset_id' => $this->targetAsset->id,
+                'new_holder' => $this->newHolder,
+                'user_id' => auth()->id()
+            ]);
+            
             $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to assign asset. Please try again.');
         }
+    }
+
+    /**
+     * Generate QR code for asset
+     */
+    private function generateQrCodeForAsset(Asset $asset): void
+    {
+        $url = url('/assetmanagement/view?targetID=' . $asset->id);
+        $qrFileName = 'qr_' . $asset->id . '.svg';
+
+        QrCode::format('svg')
+            ->size(300)
+            ->generate($url, storage_path('app/public/qrcodes/' . $qrFileName));
+
+        $asset->update(['qr_code' => 'qrcodes/' . $qrFileName]);
     }
     
     public function render()
@@ -419,11 +491,13 @@ class AssetManagementForm extends Component
         return view('livewire.assetmanagement-form');
     }
 
-    private function noreloadNotif($type, $header, $message){
+    private function noreloadNotif($type, $header, $message)
+    {
         $this->dispatch('notif', type: $type, header: $header, message: $message);
     }
 
-    private function reloadNotif($type, $header, $message){
+    private function reloadNotif($type, $header, $message)
+    {
         session()->flash('notif', [
             'type' => $type,
             'header' => $header,
@@ -431,8 +505,8 @@ class AssetManagementForm extends Component
         ]);
     }
 
-    private function audit($action){
-        $user = auth()->user();
+    private function audit($action)
+    {
         \App\Models\AuditTrail::create([
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->name,
@@ -442,8 +516,7 @@ class AssetManagementForm extends Component
 
     public function syncToSnipeIT($asset)
     {   
-        // Check if ANY admin has enabled sync (system-wide setting)
-        $syncEnabled = cache()->remember('snipe_sync_enabled', 3600, function () {
+        $syncEnabled = Cache::remember('snipe_sync_enabled', 3600, function () {
             return \App\Models\User::where('is_admin', true)
                 ->where('enable_sync', true)
                 ->exists();
@@ -457,36 +530,32 @@ class AssetManagementForm extends Component
         $data = [
             "asset_tag" => $asset->ref_id,
             "serial" => $asset->model ?? 'N/A',
-            "model_id" => 1,  // TODO: Map this properly to Snipe-IT models
-            "status_id" => 2,  // Assuming 2 is "Ready to Deploy" or similar
-            "name" => "",  // Keep empty like the sample - Snipe-IT will auto-generate from model
+            "model_id" => 1,
+            "status_id" => 2,
+            "name" => "",
             "purchase_date" => $asset->acquisition_date ? 
                 \Carbon\Carbon::parse($asset->acquisition_date)->format('Y-m-d') : null,
             "purchase_cost" => $asset->item_cost,
-            // Optional but recommended fields:
-            "company_id" => 3,  // "Poultrypure Farms Corporation" - adjust as needed
-            "location_id" => 3,  // "IT Storage Room" - adjust as needed
-            "rtd_location_id" => 3,  // Same as location_id
+            "company_id" => 3,
+            "location_id" => 3,
+            "rtd_location_id" => 3,
             "notes" => "Synced from Asset Management System on " . now()->format('Y-m-d'),
         ];
 
-        Log::info('Sending to Snipe-IT:', $data);
+        Log::info('Sending to Snipe-IT', ['asset_id' => $asset->id, 'data' => $data]);
 
         try {
-            $result = app(\App\Services\SnipeService::class)->createAsset($data);
+            $result = app(SnipeService::class)->createAsset($data);
             
-            Log::info('Snipe-IT Sync Result:', $result);
+            Log::info('Snipe-IT Sync Result', $result);
 
             if (isset($result['payload']['id'])) {
-                // Use the existing $asset object instead of querying again
-                $asset->update([
-                    'snipe_id' => $result['payload']['id'],
-                ]);
+                $asset->update(['snipe_id' => $result['payload']['id']]);
             }
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('Snipe-IT Sync Failed:', [
+            Log::error('Snipe-IT Sync Failed', [
                 'asset_id' => $asset->id,
                 'error' => $e->getMessage()
             ]);
@@ -499,7 +568,7 @@ class AssetManagementForm extends Component
         $data = [
             "asset_tag" => $asset->ref_id,
             "serial" => $asset->model ?? 'N/A',
-            "name" => "",  // Keep empty - Snipe-IT auto-generates from model
+            "name" => "",
             "purchase_date" => $asset->acquisition_date ? 
                 \Carbon\Carbon::parse($asset->acquisition_date)->format('Y-m-d') : null,
             "purchase_cost" => $asset->item_cost,
@@ -509,26 +578,23 @@ class AssetManagementForm extends Component
             "notes" => "Updated from Asset Management System on " . now()->format('Y-m-d H:i:s'),
         ];
 
-        Log::info('Updating Snipe-IT Asset:', ['snipe_id' => $asset->snipe_id, 'data' => $data]);
+        Log::info('Updating Snipe-IT Asset', ['snipe_id' => $asset->snipe_id, 'data' => $data]);
 
-        $result = app(\App\Services\SnipeService::class)
-            ->updateAsset($asset->snipe_id, $data);
+        $result = app(SnipeService::class)->updateAsset($asset->snipe_id, $data);
 
-        Log::info('Snipe-IT Update Result:', $result);
+        Log::info('Snipe-IT Update Result', $result);
 
         return $result;
     }
 
     public function deleteFromSnipeIT($asset)
     {
-        Log::info('Deleting from Snipe-IT:', ['snipe_id' => $asset->snipe_id, 'ref_id' => $asset->ref_id]);
+        Log::info('Deleting from Snipe-IT', ['snipe_id' => $asset->snipe_id, 'ref_id' => $asset->ref_id]);
 
-        $result = app(\App\Services\SnipeService::class)
-            ->deleteAsset($asset->snipe_id);
+        $result = app(SnipeService::class)->deleteAsset($asset->snipe_id);
 
-        Log::info('Snipe-IT Delete Result:', $result);
+        Log::info('Snipe-IT Delete Result', $result);
 
-        // Optional: Clear the snipe_id from your local asset
         if (isset($result['status']) && $result['status'] === 'success') {
             $asset->update(['snipe_id' => null]);
         }
@@ -541,6 +607,8 @@ class AssetManagementForm extends Component
         Cache::forget('api.assets.index');
         Cache::forget('asset_table_query');
         Cache::forget('trash_deleted_assets');
+        Cache::forget('employees_dropdown');
+        Cache::forget('departments_list');
+        Cache::forget('categories_by_code');
     }
-    
 }
