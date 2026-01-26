@@ -126,11 +126,10 @@ class AssetManagementTable extends Component
             $asset->is_deleted = true;
             $asset->save();
             
-            Cache::forget('api.assets.index');
-            Cache::forget("api.assets.show.{$asset->id}");
+            // Clear table cache after deletion
             Cache::forget('asset_table_query');
+            // Clear trash cache
             Cache::forget('trash_deleted_assets');
-            
         }
 
         $this->audit('Deleted Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
@@ -140,12 +139,29 @@ class AssetManagementTable extends Component
     
     public function render()
     {
+        // Create a unique cache key based on current filters and page
+        $cacheKey = 'asset_table_' . md5(json_encode([
+            'search' => $this->search,
+            'filterCategoryType' => $this->filterCategoryType,
+            'filterCategory' => $this->filterCategory,
+            'filterSubCategory' => $this->filterSubCategory,
+            'filterFarm' => $this->filterFarm,
+            'filterDepartment' => $this->filterDepartment,
+            'filterAssignedTo' => $this->filterAssignedTo,
+            'filterStatus' => $this->filterStatus,
+            'filterCondition' => $this->filterCondition,
+            'filterDateFrom' => $this->filterDateFrom,
+            'filterDateTo' => $this->filterDateTo,
+            'filterCostMin' => $this->filterCostMin,
+            'filterCostMax' => $this->filterCostMax,
+            'page' => $this->getPage()
+        ]));
+
         // Cache the query results for 10 minutes
-        $assets = Cache::remember('asset_table_query', 600, function () {
+        $assets = Cache::remember($cacheKey, 600, function () {
             $query = Asset::query()
                 ->where('is_deleted', false)
-                ->where('is_archived', false)
-                ->latest();
+                ->where('is_archived', false);
 
             if ($this->search) {
                 $search = '%' . $this->search . '%';
