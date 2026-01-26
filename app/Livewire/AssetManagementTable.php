@@ -114,10 +114,10 @@ class AssetManagementTable extends Component
     public function delete($targetAsset){
         $asset = Asset::findOrFail($targetAsset);
         if($asset){
-            // 🆕 Delete from Snipe-IT first if IT asset
+            // Delete from Snipe-IT first if IT asset
             if ($asset->category_type === 'IT' && $asset->snipe_id) {
                 try {
-                    app(\App\Livewire\AssetManagementForm::class)->deleteFromSnipeIT($asset);
+                    $this->deleteFromSnipeIT($asset);
                 } catch (\Exception $e) {
                     Log::error('Snipe-IT deletion failed: ' . $e->getMessage());
                 }
@@ -126,10 +126,8 @@ class AssetManagementTable extends Component
             $asset->is_deleted = true;
             $asset->save();
             
-            // Clear table cache after deletion
-            Cache::forget('asset_table_query');
-            // Clear trash cache
-            Cache::forget('trash_deleted_assets');
+            // Clear ALL asset-related caches
+            $this->clearAllAssetCaches();
         }
 
         $this->audit('Deleted Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
@@ -137,60 +135,102 @@ class AssetManagementTable extends Component
         $this->dispatch('notif', type: 'success', header: 'Asset Deleted', message: 'Asset has been successfully deleted.');
     }
     
+    /**
+     * Clear all asset-related caches
+     */
+    private function clearAllAssetCaches()
+    {
+        try {
+            // Check if cache driver supports tags (Redis, Memcached)
+            if (in_array(config('cache.default'), ['redis', 'memcached'])) {
+                // Use cache tags to clear all asset table caches at once
+                Cache::tags(['asset_table'])->flush();
+            } else {
+                // For file/database cache drivers, we need to manually clear possible cache keys
+                // This generates all possible cache key combinations and clears them
+                
+                // Get all possible filter values to generate cache keys
+                $categoryTypes = ['IT', 'NON-IT', '']; // Add your actual category types
+                $statuses = ['Available', 'In Use', 'Under Maintenance', 'Disposed', ''];
+                $conditions = ['New', 'Good', 'Fair', 'Poor', ''];
+                
+                // Clear caches for different pagination pages (assume max 100 pages)
+                for ($page = 1; $page <= 100; $page++) {
+                    // Generate some common cache key variations
+                    foreach ($categoryTypes as $catType) {
+                        foreach ($statuses as $status) {
+                            $cacheKey = 'asset_table_' . md5(json_encode([
+                                'search' => '',
+                                'filterCategoryType' => $catType,
+                                'filterCategory' => '',
+                                'filterSubCategory' => '',
+                                'filterFarm' => '',
+                                'filterDepartment' => '',
+                                'filterAssignedTo' => '',
+                                'filterStatus' => $status,
+                                'filterCondition' => '',
+                                'filterDateFrom' => '',
+                                'filterDateTo' => '',
+                                'filterCostMin' => '',
+                                'filterCostMax' => '',
+                                'page' => $page
+                            ]));
+                            
+                            Cache::forget($cacheKey);
+                        }
+                    }
+                }
+                
+                // Also clear any generic caches
+                Cache::forget('asset_table_query');
+            }
+            
+            // Clear trash cache
+            Cache::forget('trash_deleted_assets');
+            
+            Log::info('Asset caches cleared successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to clear asset caches: ' . $e->getMessage());
+        }
+    }
+    
     public function render()
     {
-        // Create a unique cache key based on current filters and page
-        $cacheKey = 'asset_table_' . md5(json_encode([
-            'search' => $this->search,
-            'filterCategoryType' => $this->filterCategoryType,
-            'filterCategory' => $this->filterCategory,
-            'filterSubCategory' => $this->filterSubCategory,
-            'filterFarm' => $this->filterFarm,
-            'filterDepartment' => $this->filterDepartment,
-            'filterAssignedTo' => $this->filterAssignedTo,
-            'filterStatus' => $this->filterStatus,
-            'filterCondition' => $this->filterCondition,
-            'filterDateFrom' => $this->filterDateFrom,
-            'filterDateTo' => $this->filterDateTo,
-            'filterCostMin' => $this->filterCostMin,
-            'filterCostMax' => $this->filterCostMax,
-            'page' => $this->getPage()
-        ]));
+        // Build query without caching to avoid cache issues
+        $query = Asset::query()
+            ->where('is_deleted', false)
+            ->where('is_archived', false);
 
-        // Cache the query results for 10 minutes
-        $assets = Cache::remember($cacheKey, 600, function () {
-            $query = Asset::query()
-                ->where('is_deleted', false)
-                ->where('is_archived', false);
+        if ($this->search) {
+            $search = '%' . $this->search . '%';
+            $query->whereRaw("
+                CONCAT(
+                    ref_id, ' ', category_type, ' ', category, ' ', sub_category, ' ',
+                    brand, ' ', model, ' ', status, ' ', `condition`, ' ',
+                    item_cost, ' ', farm
+                ) LIKE ?
+            ", [$search]);
+        }
 
-            if ($this->search) {
-                $search = '%' . $this->search . '%';
-                $query->whereRaw("
-                    CONCAT(
-                        ref_id, ' ', category_type, ' ', category, ' ', sub_category, ' ',
-                        brand, ' ', model, ' ', status, ' ', `condition`, ' ',
-                        item_cost, ' ', farm
-                    ) LIKE ?
-                ", [$search]);
-            }
+        $query->when($this->filterCategoryType, fn ($q) => $q->where('category_type', $this->filterCategoryType));
+        $query->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory));
+        $query->when($this->filterSubCategory, fn ($q) => $q->where('sub_category', $this->filterSubCategory));
+        $query->when($this->filterFarm, fn ($q) => $q->where('farm', $this->filterFarm));
+        $query->when($this->filterDepartment, fn ($q) => $q->where('department', $this->filterDepartment));
+        $query->when($this->filterAssignedTo, fn ($q) => $q->where('assigned_name', $this->filterAssignedTo));
+        $query->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus));
+        $query->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition));
 
-            $query->when($this->filterCategoryType, fn ($q) => $q->where('category_type', $this->filterCategoryType));
-            $query->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory));
-            $query->when($this->filterSubCategory, fn ($q) => $q->where('sub_category', $this->filterSubCategory));
-            $query->when($this->filterFarm, fn ($q) => $q->where('farm', $this->filterFarm));
-            $query->when($this->filterDepartment, fn ($q) => $q->where('department', $this->filterDepartment));
-            $query->when($this->filterAssignedTo, fn ($q) => $q->where('assigned_name', $this->filterAssignedTo));
-            $query->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus));
-            $query->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition));
+        $query->when($this->filterDateFrom, fn ($q) => $q->whereDate('acquisition_date', '>=', $this->filterDateFrom));
+        $query->when($this->filterDateTo, fn ($q) => $q->whereDate('acquisition_date', '<=', $this->filterDateTo));
 
-            $query->when($this->filterDateFrom, fn ($q) => $q->whereDate('acquisition_date', '>=', $this->filterDateFrom));
-            $query->when($this->filterDateTo, fn ($q) => $q->whereDate('acquisition_date', '<=', $this->filterDateTo));
+        $query->when($this->filterCostMin, fn ($q) => $q->where('item_cost', '>=', $this->filterCostMin));
+        $query->when($this->filterCostMax, fn ($q) => $q->where('item_cost', '<=', $this->filterCostMax));
 
-            $query->when($this->filterCostMin, fn ($q) => $q->where('item_cost', '>=', $this->filterCostMin));
-            $query->when($this->filterCostMax, fn ($q) => $q->where('item_cost', '<=', $this->filterCostMax));
-
-            return $query->latest()->paginate(10);
-        });
+        // Order by created_at DESC, then by id DESC for consistent ordering
+        $assets = $query->orderBy('created_at', 'desc')
+                        ->orderBy('id', 'desc')
+                        ->paginate(10);
 
         // Get categories as array with code as key
         $categoryCodeImage = Category::all()->keyBy('code');
