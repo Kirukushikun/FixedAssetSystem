@@ -11,15 +11,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\History;
 use App\Models\Audit;
 use App\Models\Category;
 use App\Models\Department;
-use App\Services\SnipeService;
+
+// Import the new jobs
+use App\Jobs\GenerateAssetQrCode;
+use App\Jobs\SyncAssetToSnipeIT;
 
 class AssetManagementForm extends Component
 {   
@@ -153,10 +154,21 @@ class AssetManagementForm extends Component
 
     /**
      * Load existing asset data for edit/view mode
+     * OPTIMIZED: Uses eager loading to prevent N+1 queries
      */
     private function loadAssetData($targetID): void
     {
-        $this->targetAsset = Asset::findOrFail($targetID);
+        // Eager load all relationships in one query
+        $this->targetAsset = Asset::with([
+            'history' => function ($query) {
+                $query->latest()->limit(50);
+            },
+            'audits' => function ($query) {
+                $query->latest()->limit(50);
+            },
+            'assignedEmployee:id,employee_name,farm,department',
+            'categoryDetails:code,name'
+        ])->findOrFail($targetID);
         
         $this->fill([
             'ref_id'            => $this->targetAsset->ref_id,
@@ -190,16 +202,9 @@ class AssetManagementForm extends Component
             $this->technicaldata = json_decode($this->targetAsset->technical_data, true) ?? $this->technicaldata;
         }
 
-        // Optimized: Limit history records and load only recent ones
-        $this->history = History::where('asset_id', $this->targetAsset->id)
-            ->latest()
-            ->limit(50)
-            ->get();
-
-        $this->audits = Audit::where('asset_id', $this->targetAsset->id)
-            ->latest()
-            ->limit(50)
-            ->get();
+        // Access eager-loaded relationships
+        $this->history = $this->targetAsset->history;
+        $this->audits = $this->targetAsset->audits;
     }
 
     public function updatedSelectedEmployee($value)
@@ -219,6 +224,9 @@ class AssetManagementForm extends Component
         $this->showConfirmModal = true;
     }
     
+    /**
+     * OPTIMIZED: QR generation and Snipe-IT sync moved to background jobs
+     */
     public function submit()
     {
         DB::beginTransaction();
@@ -266,12 +274,12 @@ class AssetManagementForm extends Component
             $asset->update(['ref_id' => $finalRefId]);
             $this->ref_id = $finalRefId;
 
-            // Generate QR Code
-            $this->generateQrCodeForAsset($asset);
+            // OPTIMIZED: Dispatch QR generation to background queue
+            GenerateAssetQrCode::dispatch($asset);
 
-            // Sync to Snipe-IT if needed
+            // OPTIMIZED: Dispatch Snipe-IT sync to background queue
             if ($this->category_type === 'IT') {
-                $this->syncToSnipeIT($asset);
+                SyncAssetToSnipeIT::dispatch($asset, 'create');
             }
 
             // Audit Trail
@@ -281,7 +289,7 @@ class AssetManagementForm extends Component
 
             $this->clearAllAssetCaches();
             
-            $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created.');
+            $this->reloadNotif('success', 'Asset Created', 'Asset ' . $this->ref_id . ' has been successfully created. QR code and sync are being processed.');
             $this->redirect('/assetmanagement');
 
         } catch (\Exception $e) {
@@ -297,6 +305,9 @@ class AssetManagementForm extends Component
         }
     }
 
+    /**
+     * OPTIMIZED: Snipe-IT update moved to background job
+     */
     public function update()
     {
         DB::beginTransaction();
@@ -323,9 +334,9 @@ class AssetManagementForm extends Component
                 'technical_data' => json_encode($this->technicaldata),
             ]);
 
-            // Sync to Snipe-IT if IT asset and has snipe_id
+            // OPTIMIZED: Dispatch Snipe-IT update to background queue
             if ($this->category_type === 'IT' && $this->targetAsset->snipe_id) {
-                $this->updateToSnipeIT($this->targetAsset);
+                SyncAssetToSnipeIT::dispatch($this->targetAsset, 'update');
             }
 
             // Audit Trail
@@ -351,6 +362,9 @@ class AssetManagementForm extends Component
         }
     }
 
+    /**
+     * OPTIMIZED: Uses eager loading when refreshing history
+     */
     public function transferAsset()
     {   
         DB::beginTransaction();
@@ -386,11 +400,11 @@ class AssetManagementForm extends Component
 
             DB::commit();
 
-            // Refresh history after transfer
-            $this->history = History::where('asset_id', $this->targetAsset->id)
-                ->latest()
-                ->limit(50)
-                ->get();
+            // Refresh history after transfer using relationship
+            $this->targetAsset->load(['history' => function ($query) {
+                $query->latest()->limit(50);
+            }]);
+            $this->history = $this->targetAsset->history;
 
             $this->clearAllAssetCaches();
 
@@ -410,6 +424,9 @@ class AssetManagementForm extends Component
         }
     }
 
+    /**
+     * OPTIMIZED: Uses eager loading when refreshing history
+     */
     public function assignAsset()
     {   
         DB::beginTransaction();
@@ -447,11 +464,11 @@ class AssetManagementForm extends Component
 
             $this->reset(['newHolder']);
 
-            // Refresh history after assignment
-            $this->history = History::where('asset_id', $this->targetAsset->id)
-                ->latest()
-                ->limit(50)
-                ->get();
+            // Refresh history after assignment using relationship
+            $this->targetAsset->load(['history' => function ($query) {
+                $query->latest()->limit(50);
+            }]);
+            $this->history = $this->targetAsset->history;
 
             $this->clearAllAssetCaches();
 
@@ -469,21 +486,6 @@ class AssetManagementForm extends Component
             
             $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to assign asset. Please try again.');
         }
-    }
-
-    /**
-     * Generate QR code for asset
-     */
-    private function generateQrCodeForAsset(Asset $asset): void
-    {
-        $url = url('/assetmanagement/view?targetID=' . $asset->id);
-        $qrFileName = 'qr_' . $asset->id . '.svg';
-
-        QrCode::format('svg')
-            ->size(300)
-            ->generate($url, storage_path('app/public/qrcodes/' . $qrFileName));
-
-        $asset->update(['qr_code' => 'qrcodes/' . $qrFileName]);
     }
     
     public function render()
@@ -512,94 +514,6 @@ class AssetManagementForm extends Component
             'user_name' => Auth::user()->name,
             'action' => $action,
         ]);
-    }
-
-    public function syncToSnipeIT($asset)
-    {   
-        $syncEnabled = Cache::remember('snipe_sync_enabled', 3600, function () {
-            return \App\Models\User::where('is_admin', true)
-                ->where('enable_sync', true)
-                ->exists();
-        });
-
-        if (!$syncEnabled) {
-            Log::info('Snipe-IT Sync Skipped: No admin has enabled sync.');
-            return null;
-        }
-
-        $data = [
-            "asset_tag" => $asset->ref_id,
-            "serial" => $asset->model ?? 'N/A',
-            "model_id" => 1,
-            "status_id" => 2,
-            "name" => "",
-            "purchase_date" => $asset->acquisition_date ? 
-                \Carbon\Carbon::parse($asset->acquisition_date)->format('Y-m-d') : null,
-            "purchase_cost" => $asset->item_cost,
-            "company_id" => 3,
-            "location_id" => 3,
-            "rtd_location_id" => 3,
-            "notes" => "Synced from Asset Management System on " . now()->format('Y-m-d'),
-        ];
-
-        Log::info('Sending to Snipe-IT', ['asset_id' => $asset->id, 'data' => $data]);
-
-        try {
-            $result = app(SnipeService::class)->createAsset($data);
-            
-            Log::info('Snipe-IT Sync Result', $result);
-
-            if (isset($result['payload']['id'])) {
-                $asset->update(['snipe_id' => $result['payload']['id']]);
-            }
-
-            return $result;
-        } catch (\Exception $e) {
-            Log::error('Snipe-IT Sync Failed', [
-                'asset_id' => $asset->id,
-                'error' => $e->getMessage()
-            ]);
-            return null;
-        }
-    }
-
-    public function updateToSnipeIT($asset)
-    {
-        $data = [
-            "asset_tag" => $asset->ref_id,
-            "serial" => $asset->model ?? 'N/A',
-            "name" => "",
-            "purchase_date" => $asset->acquisition_date ? 
-                \Carbon\Carbon::parse($asset->acquisition_date)->format('Y-m-d') : null,
-            "purchase_cost" => $asset->item_cost,
-            "company_id" => 3,
-            "location_id" => 3,
-            "rtd_location_id" => 3,
-            "notes" => "Updated from Asset Management System on " . now()->format('Y-m-d H:i:s'),
-        ];
-
-        Log::info('Updating Snipe-IT Asset', ['snipe_id' => $asset->snipe_id, 'data' => $data]);
-
-        $result = app(SnipeService::class)->updateAsset($asset->snipe_id, $data);
-
-        Log::info('Snipe-IT Update Result', $result);
-
-        return $result;
-    }
-
-    public function deleteFromSnipeIT($asset)
-    {
-        Log::info('Deleting from Snipe-IT', ['snipe_id' => $asset->snipe_id, 'ref_id' => $asset->ref_id]);
-
-        $result = app(SnipeService::class)->deleteAsset($asset->snipe_id);
-
-        Log::info('Snipe-IT Delete Result', $result);
-
-        if (isset($result['status']) && $result['status'] === 'success') {
-            $asset->update(['snipe_id' => null]);
-        }
-
-        return $result;
     }
 
     public function clearAllAssetCaches()

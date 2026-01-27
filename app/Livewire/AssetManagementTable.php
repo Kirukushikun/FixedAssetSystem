@@ -10,10 +10,14 @@ use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+
+// Import the job
+use App\Jobs\SyncAssetToSnipeIT;
 
 class AssetManagementTable extends Component
 {   
-
     use WithPagination;
     
     protected $paginationTheme = 'tailwind';
@@ -74,8 +78,14 @@ class AssetManagementTable extends Component
 
     public function mount()
     {   
-        $this->categories = Category::with('subcategories')->get();
-        $this->departments = Department::all();
+        // OPTIMIZED: Cache categories with subcategories
+        $this->categories = Cache::remember('categories_with_subcategories', 3600, function() {
+            return Category::with('subcategories')->get();
+        });
+        
+        $this->departments = Cache::remember('departments_list', 3600, function() {
+            return Department::all();
+        });
     }
 
     // Reset pagination when filters change
@@ -111,107 +121,106 @@ class AssetManagementTable extends Component
         $this->resetPage();
     }
 
-    public function delete($targetAsset){
-        $asset = Asset::findOrFail($targetAsset);
-        if($asset){
-            // Delete from Snipe-IT first if IT asset
+    /**
+     * OPTIMIZED: Snipe-IT deletion moved to background job
+     */
+    public function delete($targetAsset)
+    {
+        DB::beginTransaction();
+        
+        try {
+            $asset = Asset::findOrFail($targetAsset);
+            
+            // OPTIMIZED: Dispatch Snipe-IT deletion to background queue
             if ($asset->category_type === 'IT' && $asset->snipe_id) {
-                try {
-                    $this->deleteFromSnipeIT($asset);
-                } catch (\Exception $e) {
-                    Log::error('Snipe-IT deletion failed: ' . $e->getMessage());
-                }
+                SyncAssetToSnipeIT::dispatch($asset, 'delete');
             }
 
             $asset->is_deleted = true;
             $asset->save();
             
-            // Clear ALL asset-related caches
+            // Audit Trail
+            $this->audit('Deleted Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
+
+            DB::commit();
+
+            // Clear caches
             $this->clearAllAssetCaches();
+
+            $this->dispatch('notif', type: 'success', header: 'Asset Deleted', message: 'Asset has been successfully deleted.');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Asset deletion failed', [
+                'error' => $e->getMessage(),
+                'asset_id' => $targetAsset,
+                'user_id' => auth()->id()
+            ]);
+            
+            $this->dispatch('notif', type: 'error', header: 'Delete Failed', message: 'Unable to delete asset. Please try again.');
         }
-
-        $this->audit('Deleted Asset: ' . $asset->ref_id . ' - ' . $asset->category_type . ' / ' . $asset->category . ' / ' . $asset->sub_category);
-
-        $this->dispatch('notif', type: 'success', header: 'Asset Deleted', message: 'Asset has been successfully deleted.');
     }
     
     /**
-     * Clear all asset-related caches
+     * OPTIMIZED: Simplified cache clearing
      */
     private function clearAllAssetCaches()
     {
-        try {
-            // Check if cache driver supports tags (Redis, Memcached)
-            if (in_array(config('cache.default'), ['redis', 'memcached'])) {
-                // Use cache tags to clear all asset table caches at once
-                Cache::tags(['asset_table'])->flush();
-            } else {
-                // For file/database cache drivers, we need to manually clear possible cache keys
-                // This generates all possible cache key combinations and clears them
-                
-                // Get all possible filter values to generate cache keys
-                $categoryTypes = ['IT', 'NON-IT', '']; // Add your actual category types
-                $statuses = ['Available', 'In Use', 'Under Maintenance', 'Disposed', ''];
-                $conditions = ['New', 'Good', 'Fair', 'Poor', ''];
-                
-                // Clear caches for different pagination pages (assume max 100 pages)
-                for ($page = 1; $page <= 100; $page++) {
-                    // Generate some common cache key variations
-                    foreach ($categoryTypes as $catType) {
-                        foreach ($statuses as $status) {
-                            $cacheKey = 'asset_table_' . md5(json_encode([
-                                'search' => '',
-                                'filterCategoryType' => $catType,
-                                'filterCategory' => '',
-                                'filterSubCategory' => '',
-                                'filterFarm' => '',
-                                'filterDepartment' => '',
-                                'filterAssignedTo' => '',
-                                'filterStatus' => $status,
-                                'filterCondition' => '',
-                                'filterDateFrom' => '',
-                                'filterDateTo' => '',
-                                'filterCostMin' => '',
-                                'filterCostMax' => '',
-                                'page' => $page
-                            ]));
-                            
-                            Cache::forget($cacheKey);
-                        }
-                    }
-                }
-                
-                // Also clear any generic caches
-                Cache::forget('asset_table_query');
-            }
-            
-            // Clear trash cache
-            Cache::forget('trash_deleted_assets');
-            
-            Log::info('Asset caches cleared successfully');
-        } catch (\Exception $e) {
-            Log::error('Failed to clear asset caches: ' . $e->getMessage());
+        $cachesToForget = [
+            'api.assets.index',
+            'asset_table_query',
+            'trash_deleted_assets',
+            'categories_with_subcategories',
+            'departments_list',
+            'employees_dropdown',
+            'categories_by_code',
+        ];
+
+        foreach ($cachesToForget as $cacheKey) {
+            Cache::forget($cacheKey);
         }
+
+        // If using Redis/Memcached with tags support
+        if (in_array(config('cache.default'), ['redis', 'memcached'])) {
+            try {
+                Cache::tags(['asset_table'])->flush();
+            } catch (\Exception $e) {
+                Log::warning('Cache tag flush failed: ' . $e->getMessage());
+            }
+        }
+        
+        Log::info('Asset caches cleared successfully');
     }
     
+    /**
+     * OPTIMIZED: Added select() to limit columns and improve query performance
+     */
     public function render()
     {
-        // Build query without caching to avoid cache issues
-        $query = Asset::query()
-            ->where('is_deleted', false)
-            ->where('is_archived', false);
+        // Build query - select only needed columns
+        $query = Asset::select([
+            'id', 'ref_id', 'category_type', 'category', 'sub_category',
+            'brand', 'model', 'status', 'condition', 'item_cost', 
+            'farm', 'department', 'assigned_name', 'acquisition_date',
+            'qr_code', 'created_at', 'updated_at'
+        ])
+        ->where('is_deleted', false)
+        ->where('is_archived', false);
 
+        // Search filter
         if ($this->search) {
             $search = '%' . $this->search . '%';
             $query->whereRaw("
                 CONCAT(
                     ref_id, ' ', category_type, ' ', category, ' ', sub_category, ' ',
                     brand, ' ', model, ' ', status, ' ', `condition`, ' ',
-                    item_cost, ' ', farm
+                    COALESCE(item_cost, ''), ' ', COALESCE(farm, '')
                 ) LIKE ?
             ", [$search]);
         }
 
+        // Apply filters
         $query->when($this->filterCategoryType, fn ($q) => $q->where('category_type', $this->filterCategoryType));
         $query->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory));
         $query->when($this->filterSubCategory, fn ($q) => $q->where('sub_category', $this->filterSubCategory));
@@ -232,35 +241,20 @@ class AssetManagementTable extends Component
                         ->orderBy('id', 'desc')
                         ->paginate(10);
 
-        // Get categories as array with code as key
-        $categoryCodeImage = Category::all()->keyBy('code');
+        // Get categories as array with code as key (cached)
+        $categoryCodeImage = Cache::remember('categories_by_code', 3600, function() {
+            return Category::all()->keyBy('code');
+        });
 
         return view('livewire.asset-management-table', compact('assets', 'categoryCodeImage'));
     }
 
-    private function audit($action){
-        $user = auth()->user();
+    private function audit($action)
+    {
         \App\Models\AuditTrail::create([
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->name,
             'action' => $action,
         ]);
-    }
-
-    public function deleteFromSnipeIT($asset)
-    {
-        Log::info('Deleting from Snipe-IT:', ['snipe_id' => $asset->snipe_id, 'ref_id' => $asset->ref_id]);
-
-        $result = app(\App\Services\SnipeService::class)
-            ->deleteAsset($asset->snipe_id);
-
-        Log::info('Snipe-IT Delete Result:', $result);
-
-        // Optional: Clear the snipe_id from your local asset
-        if (isset($result['status']) && $result['status'] === 'success') {
-            $asset->update(['snipe_id' => null]);
-        }
-
-        return $result;
     }
 }

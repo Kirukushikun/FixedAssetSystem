@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\Audit;
+use App\Models\Employee;
+use App\Models\History;
 
 class Asset extends Model
 {
@@ -93,5 +96,20 @@ class Asset extends Model
     public function assignedEmployee()
     {
         return $this->belongsTo(Employee::class, 'assigned_id');
+    }
+    /**
+     * Get the history records for the asset
+     */
+    public function history()
+    {
+        return $this->hasMany(History::class, 'asset_id');
+    }
+
+    /**
+     * Get the category details
+     */
+    public function categoryDetails()
+    {
+        return $this->belongsTo(Category::class, 'category', 'code');
     }
 }
