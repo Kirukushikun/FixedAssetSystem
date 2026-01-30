@@ -53,6 +53,14 @@ class DepartmentManagement extends Component
                 return;
             }
 
+            // Check if any assets are using this department
+            $assetCount = \App\Models\Asset::where('department', $this->editName)->count();
+            
+            if ($assetCount > 0) {
+                $this->noreloadNotif('failed', 'Cannot Update', "Cannot update '{$this->editName}'. It is being used by {$assetCount} asset(s).");
+                return;
+            }
+
             $department = Department::find($this->editId);
             $oldName = $department->name;
 
@@ -83,6 +91,13 @@ class DepartmentManagement extends Component
             
             if (!$department) {
                 $this->noreloadNotif('failed', 'Not Found', 'Department not found.');
+                return;
+            }
+
+            // Check if any assets are using this department
+            $assetCount = \App\Models\Asset::where('department', $department->name)->count();
+            if ($assetCount > 0) {
+                $this->noreloadNotif('failed', 'Cannot Delete', "Cannot delete '{$department->name}'. It is being used by {$assetCount} asset(s).");
                 return;
             }
             

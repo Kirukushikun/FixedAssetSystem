@@ -38,6 +38,7 @@ class Asset extends Model
         'assigned_id',
         'farm',
         'department',
+        'location',
 
         'qr_code',
         'attachment',

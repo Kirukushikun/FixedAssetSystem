@@ -16,6 +16,7 @@ class History extends Model
         'condition',
         'farm',
         'department',
+        'location',
         'action',
     ];
 }

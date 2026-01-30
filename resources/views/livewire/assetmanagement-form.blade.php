@@ -51,7 +51,12 @@
 
             <div class="input-group">
                 <label for="brand">Brand: @error('brand')<span>This field is required</span>@enderror</label>
-                <input type="text" id="brand" class="{{ $errors->has('brand') ? '!border-red-400' : '' }}" wire:model="brand" {{$mode == 'view' ? 'readonly' : ''}}>
+                <select id="brand" class="{{ $errors->has('brand') ? '!border-red-400' : '' }}" wire:model="brand" {{$mode == 'view' ? 'disabled' : ''}}>
+                    <option value=""></option>
+                    @foreach($brands as $brandOption)
+                        <option value="{{ $brandOption }}">{{ $brandOption }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="input-group">
                 <label for="model">Model: @error('model')<span>This field is required</span>@enderror</label>
@@ -111,29 +116,29 @@
                 </div>
                 <div class="input-group">
                     <label for="processor">Processor:</label>
-                    <input type="text" id="processor" wire:model="technicaldata.processor" {{$mode == 'view' ? 'readonly' : ''}}>
+                    <select id="processor" wire:model="technicaldata.processor" {{$mode == 'view' ? 'disabled' : ''}}>
+                        <option value=""></option>
+                        @foreach($processors as $processorOption)
+                            <option value="{{ $processorOption }}">{{ $processorOption }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="ram">RAM:</label>
                     <select id="ram" wire:model="technicaldata.ram" {{$mode == 'view' ? 'disabled' : ''}}>
                         <option value=""></option>
-                        <option value="4GB">4GB</option>
-                        <option value="8GB">8GB</option>
-                        <option value="16GB">16GB</option>
-                        <option value="32GB">32GB</option>
-                        <option value="64GB">64GB</option>
+                        @foreach($rams as $ramOption)
+                            <option value="{{ $ramOption }}">{{ $ramOption }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="input-group">
                     <label for="storage">Storage:</label>
                     <select id="storage" wire:model="technicaldata.storage" {{$mode == 'view' ? 'disabled' : ''}}>
                         <option value=""></option>
-                        <option value="32GB">32GB</option>
-                        <option value="64GB">64GB</option>
-                        <option value="128GB">128GB</option>
-                        <option value="256GB">256GB</option>
-                        <option value="512GB">512GB</option>
-                        <option value="1TB">1TB</option>
+                        @foreach($storages as $storageOption)
+                            <option value="{{ $storageOption }}">{{ $storageOption }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="input-group">
@@ -162,7 +167,7 @@
 
         <h1 class="text-lg font-bold">Assignment Details</h1>
         <p class="text-gray-400 text-sm mb-5">Information on where this asset is currently assigned, including the responsible employee and location.</p>
-        <div class="grid grid-cols-3 gap-5">
+        <div class="grid grid-cols-4 gap-5">
             <!-- EMPLOYEE SELECT -->
             <div class="input-group">
                 <label>Assigned To:</label>
@@ -175,6 +180,16 @@
                             <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
                         @endforeach
                     </select>
+                @endif
+            </div>
+
+            <!-- LOCATION -->
+            <div class="input-group">
+                <label>Location:</label>
+                @if($mode == 'view' || $mode == 'edit')
+                    <input type="text" wire:model="location" readonly>
+                @else
+                    <input type="text" wire:model="location">
                 @endif
             </div>
 

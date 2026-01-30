@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('condition')->nullable();
             $table->string('farm')->nullable();
             $table->string('department')->nullable();
+            $table->string('location')->nullable();
             $table->string('action')->nullable();
             $table->timestamps();
         });

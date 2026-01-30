@@ -84,6 +84,14 @@ class SubcategoryManagement extends Component
                 return;
             }
             
+            // Check if any assets are using this subcategory
+            $assetCount = \App\Models\Asset::where('sub_category', $sub->name)->count();
+            
+            if ($assetCount > 0) {
+                $this->noreloadNotif('failed', 'Cannot Edit', "Cannot edit '{$sub->name}'. It is being used by {$assetCount} asset(s).");
+                return;
+            }
+            
             $this->editId = $id;
             $this->editName = $sub->name;
             $this->editCategoryId = $sub->category_id;
@@ -146,6 +154,14 @@ class SubcategoryManagement extends Component
             
             if (!$subcategory) {
                 $this->noreloadNotif('failed', 'Not Found', 'Subcategory not found.');
+                return;
+            }
+            
+            // Check if any assets are using this subcategory
+            $assetCount = \App\Models\Asset::where('sub_category', $subcategory->name)->count();
+            
+            if ($assetCount > 0) {
+                $this->noreloadNotif('failed', 'Cannot Delete', "Cannot delete '{$subcategory->name}'. It is being used by {$assetCount} asset(s).");
                 return;
             }
             

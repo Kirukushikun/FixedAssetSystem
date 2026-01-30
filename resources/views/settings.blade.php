@@ -15,11 +15,19 @@
      </div>
 </div>
 
-<div class="flex-1 flex gap-5 overflow-hidden">
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto">
      <livewire:dynamic-values.department-management />
 
      <livewire:dynamic-values.category-management />
 
      <livewire:dynamic-values.subcategory-management />
+
+     <livewire:dynamic-values.input-management inputType="brand" />
+
+     <livewire:dynamic-values.input-management inputType="processor" />
+
+     <livewire:dynamic-values.input-management inputType="RAM" />
+
+     <livewire:dynamic-values.input-management inputType="Storage" />
 </div>
 @endsection

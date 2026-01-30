@@ -25,7 +25,7 @@
     <hr>
 
     {{-- Subcategory List --}}
-    <div class="flex flex-col gap-4 overflow-y-auto pr-3 minimal-scroll">
+    <div class="flex flex-col gap-4 overflow-y-auto pr-3 minimal-scroll " style="max-height: 400px;">
         @foreach($subcategories as $sub)
             <div class="flex items-center justify-between gap-3">
 

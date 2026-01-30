@@ -17,6 +17,7 @@ use App\Models\History;
 use App\Models\Audit;
 use App\Models\Category;
 use App\Models\Department;
+use App\Models\DynamicField;
 
 // Import the new jobs
 use App\Jobs\GenerateAssetQrCode;
@@ -79,6 +80,7 @@ class AssetManagementForm extends Component
 
     public $farms = ['BFC', 'BDL', 'PFC', 'RH'];
     public $departments = [];
+    public $location;
 
     // RULES FOR VALIDATION
     protected $rules = [
@@ -99,6 +101,13 @@ class AssetManagementForm extends Component
 
         'attachment' => 'nullable|file|mimes:pdf|max:5120'
     ];
+
+    // Dynamic values 
+    public $brands;
+    public $processors;
+    public $rams;
+    public $storages;
+
 
     public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null)
     {
@@ -121,6 +130,22 @@ class AssetManagementForm extends Component
                 ->toArray();
         });
 
+        $this->brands = Cache::remember('brand_list', 3600, function() {
+            return DynamicField::where('field', 'brand')->pluck('value')->toArray();
+        });
+
+        $this->processors = Cache::remember('processor_list', 3600, function() {
+            return DynamicField::where('field', 'processor')->pluck('value')->toArray();
+        });
+
+        $this->rams = Cache::remember('ram_list', 3600, function() {
+            return DynamicField::where('field', 'RAM')->pluck('value')->toArray();
+        });
+
+        $this->storages = Cache::remember('storage_list', 3600, function() {
+            return DynamicField::where('field', 'Storage')->pluck('value')->toArray();
+        });
+
         $this->departments = Cache::remember('departments_list', 3600, function() {
             return Department::pluck('name')->toArray();
         });
@@ -128,6 +153,8 @@ class AssetManagementForm extends Component
         $this->categoryCodeImage = Cache::remember('categories_by_code', 3600, function() {
             return Category::all()->keyBy('code');
         });
+
+
     }
 
     /**
@@ -189,6 +216,7 @@ class AssetManagementForm extends Component
             'selectedEmployee' => $this->targetAsset->assigned_id,  
             'farm' => $this->targetAsset->farm,
             'department' => $this->targetAsset->department,
+            'location' => $this->targetAsset->location,
 
             'remarks' => $this->remarks
         ]); 
@@ -215,6 +243,7 @@ class AssetManagementForm extends Component
             $this->selectedEmployeeName = $data['employee_name'];
             $this->farm = $data['farm'];
             $this->department = $data['department'];
+            $this->location = $data['location'];
         }
     }
 
@@ -264,6 +293,7 @@ class AssetManagementForm extends Component
                 'assigned_id' => $this->selectedEmployee ?? null,
                 'farm' => $this->farm ?? null,
                 'department' => $this->department ?? null,
+                'location' => $this->location ?? null,
 
                 'attachment' => $path,
                 'attachment_name' => $originalName
@@ -386,6 +416,7 @@ class AssetManagementForm extends Component
                 'condition'     => $this->newCondition,
                 'farm'          => $assignee->farm,
                 'department'    => $assignee->department,
+                'location'      => $this->location,
                 'action'        => 'Transfer',
             ]);
 
@@ -395,6 +426,7 @@ class AssetManagementForm extends Component
                 'assigned_name' => $assignee->employee_name,
                 'farm' => $assignee->farm,
                 'department' => $assignee->department,
+                'location' => $this->location,
                 'condition' => $this->newCondition,
             ]);
 
@@ -427,8 +459,7 @@ class AssetManagementForm extends Component
     /**
      * OPTIMIZED: Uses eager loading when refreshing history
      */
-    public function assignAsset()
-    {   
+    public function assignAsset(){   
         DB::beginTransaction();
         
         try {
@@ -448,6 +479,7 @@ class AssetManagementForm extends Component
                 'condition'     => $this->targetAsset->condition,
                 'farm'          => $assignee->farm,
                 'department'    => $assignee->department,
+                'location'      => $this->location,
                 'action'        => 'Assign',
             ]);
 
@@ -457,6 +489,7 @@ class AssetManagementForm extends Component
                 'assigned_name' => $assignee->employee_name,
                 'farm' => $assignee->farm,
                 'department' => $assignee->department,
+                'location' => $this->location,
                 'condition' => $this->targetAsset->condition,
             ]);
 
@@ -493,13 +526,11 @@ class AssetManagementForm extends Component
         return view('livewire.assetmanagement-form');
     }
 
-    private function noreloadNotif($type, $header, $message)
-    {
+    private function noreloadNotif($type, $header, $message){
         $this->dispatch('notif', type: $type, header: $header, message: $message);
     }
 
-    private function reloadNotif($type, $header, $message)
-    {
+    private function reloadNotif($type, $header, $message){
         session()->flash('notif', [
             'type' => $type,
             'header' => $header,
@@ -507,8 +538,7 @@ class AssetManagementForm extends Component
         ]);
     }
 
-    private function audit($action)
-    {
+    private function audit($action){
         \App\Models\AuditTrail::create([
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->name,

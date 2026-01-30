@@ -49,6 +49,7 @@ return new class extends Migration
             $table->string('assigned_id')->nullable();
             $table->string('farm')->nullable();
             $table->string('department')->nullable();
+            $table->string('location')->nullable();
 
             $table->text('qr_code')->nullable();
             $table->string('attachment')->nullable();
