@@ -46,6 +46,10 @@ class DatabaseSeeder extends Seeder
                     'Desktop', 'Laptop', 'Router', 'Switch',
                     'Firewall', 'Server', 'Monitor', 'Keyboard'
                 ],
+
+                'computerequip' => [
+                    'Equipment'
+                ],
             ],
             'NON-IT' => [
                 'itequipment' => [
@@ -71,6 +75,54 @@ class DatabaseSeeder extends Seeder
                 'kitchenequipment' => [
                     'Stove', 'Oven', 'Mixer', 'Toaster', 'Blender',
                     'Fryer', 'Rice Cooker', 'Steamer'
+                ],
+                
+                'landimprovement' => [
+                    'Land Improvements'
+                ],
+
+                'building' => [
+                    'New Building'
+                ],
+
+                'Feedmill Plant' => [
+                    'Plant', 'Equipment', 'Tools'
+                ],
+
+                'biogasequip' => [
+                    'Equipment', 'Tools'
+                ],
+
+                'swinehousing' => [
+                    'New Building'
+                ],
+
+                'poultryhousing' => [
+                    'New Building'
+                ],
+
+                'deliveryequip' => [
+                    'Vehicles'
+                ],
+
+                'transportequip' => [
+                    'Vehicles'
+                ],
+
+                'furniturefixtures' => [
+                    'Fixture & Fixtures',
+                ],
+
+                'communicationequip' => [
+                    'Equipment'
+                ],
+
+                'softwareapp' => [
+                    'Software and Apps'
+                ],
+
+                'Farm Tools' => [
+                    'Tools'
                 ],
             ],
         ];
@@ -215,6 +267,121 @@ class DatabaseSeeder extends Seeder
                 'subcategories' => [
                     ['name' => 'Cooking Pot', 'category_type' => 'NON-IT'],
                     ['name' => 'Repair Chiller', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Land Improvements' => [
+                'code' => 'landimprovement',
+                'icon' => 'land',
+                'subcategories' => [
+                    ['name' => 'Land Improvements', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Building' => [
+                'code' => 'building',
+                'icon' => 'building',
+                'subcategories' => [
+                    ['name' => 'New Building', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Department Equipment' => [
+                'code' => 'departmentequip',
+                'icon' => 'folder',
+                'subcategories' => [
+                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Feedmill Plant' => [
+                'code' => 'feedmillplant',
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Plant', 'category_type' => 'NON-IT'],
+                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
+                    ['name' => 'Tools', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Biogas Equipment' => [
+                'code' => 'biogasequip',
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
+                    ['name' => 'Tools', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Swine Housing' => [
+                'code' => 'swinehousing',
+                'icon' => 'building',
+                'subcategories' => [
+                    ['name' => 'New Building', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Poultry Housing' => [
+                'code' => 'poultryhousing',
+                'icon' => 'building',
+                'subcategories' => [
+                    ['name' => 'New Building', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Delivery Equipment' => [
+                'code' => 'deliveryequip',
+                'icon' => 'vehicle',
+                'subcategories' => [
+                    ['name' => 'Vehicles', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Transport Equipment' => [
+                'code' => 'transportequip',
+                'icon' => 'vehicle',
+                'subcategories' => [
+                    ['name' => 'Vehicles', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Computer Equipment' => [
+                'code' => 'computerequip',
+                'icon' => 'desktop',
+                'subcategories' => [
+                    ['name' => 'Equipment', 'category_type' => 'IT'],
+                ],
+            ],
+
+            'Furniture & Fixtures' => [
+                'code' => 'furniturefixtures',
+                'icon' => 'hammer',
+                'subcategories' => [
+                    ['name' => 'Fixture & Fixtures', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Communication Equipment' => [
+                'code' => 'communicationequip',
+                'icon' => 'desktop',
+                'subcategories' => [
+                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Software & Apps' => [
+                'code' => 'softwareapp',
+                'icon' => 'folder',
+                'subcategories' => [
+                    ['name' => 'Software and Apps', 'category_type' => 'NON-IT'],
+                ],
+            ],
+
+            'Farm Tools' => [
+                'code' => 'farmtools',
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Tools', 'category_type' => 'NON-IT'],
                 ],
             ],
         ];

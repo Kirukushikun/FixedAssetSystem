@@ -84,7 +84,7 @@ class AssetManagementTable extends Component
         });
         
         $this->departments = Cache::remember('departments_list', 3600, function() {
-            return Department::all();
+            return Department::pluck('name')->toArray();
         });
     }
 

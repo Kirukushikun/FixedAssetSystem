@@ -142,8 +142,8 @@
 
                                         <select wire:model.live="filterDepartment">
                                              <option value="">Department</option>
-                                             @foreach($departments as $department)
-                                                  <option value="{{ $department->name }}">{{ $department->name }}</option>
+                                             @foreach($departments as $deptOption)
+                                                  <option value="{{ $deptOption }}">{{ $deptOption }}</option>
                                              @endforeach
                                         </select>
                                    </div>
@@ -322,18 +322,18 @@
           <div class="relative bg-white p-10 rounded-lg shadow-lg">
                <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="showModal = false"><i class="fa-solid fa-xmark"></i></div>
                
-               <div class="w-[20rem]" x-show="modalTemplate === 'create'">
+               <div class="w-[35rem]" x-show="modalTemplate === 'create'">
                     <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
 
                     <!-- Category List -->
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                     @foreach($categories as $category)
                          <div>
                               <button 
                                    class="flex items-center justify-between w-full font-semibold"
                                    wire:click.prevent="toggleCategory({{ $category->id }})"
                               >
-                                   <span class="flex items-center gap-2 font-bold">
+                                   <span class="flex items-center gap-2 font-bold whitespace-nowrap">
                                         <img src="{{ asset('img/' . $category->icon . '.png') }}" style="width: 23px;" alt="">
                                         {{ $category->name }}
                                    </span>
