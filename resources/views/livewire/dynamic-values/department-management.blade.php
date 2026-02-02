@@ -7,10 +7,12 @@
             wire:model="newDepartment"
             class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="Add department..."
+            title="Enter Department Name"
         >
         <button 
             wire:click="add" 
             class="text-indigo-500 hover:scale-105"
+            title="Add New Department"
         >
             Add
         </button>
@@ -20,7 +22,7 @@
 
     {{-- List --}}
     <div class="flex flex-col gap-4 overflow-y-auto minimal-scroll">
-        @foreach($departments as $dept)
+        @forelse($departments as $dept)
             <div class="flex items-center justify-between gap-3">
 
                 {{-- If Editing --}}
@@ -32,8 +34,8 @@
                     >
 
                     <div class="flex gap-2">
-                        <button wire:click="saveEdit" class="text-green-600">Save</button>
-                        <button wire:click="cancelEdit" class="text-gray-500">Cancel</button>
+                        <button wire:click="saveEdit" class="text-green-600" title="Save Department">Save</button>
+                        <button wire:click="cancelEdit" class="text-gray-500" title="Cancel Editing">Cancel</button>
                     </div>
 
                 @else
@@ -43,6 +45,7 @@
                         <button 
                             wire:click="startEdit({{ $dept->id }})"
                             class="text-indigo-500 hover:scale-105"
+                            title="Edit Department"
                         >
                             Edit
                         </button>
@@ -50,6 +53,7 @@
                         <button 
                             wire:click="delete({{ $dept->id }})"
                             class="text-red-500 hover:scale-105"
+                            title="Delete Department"
                         >
                             Delete
                         </button>
@@ -57,7 +61,11 @@
                 @endif
 
             </div>
-        @endforeach        
+        @empty
+            <div class="flex-1 flex items-center justify-center">
+                <p class="text-gray-500 italic">No departments found.</p>
+            </div>
+        @endforelse        
     </div>
 
 </div>

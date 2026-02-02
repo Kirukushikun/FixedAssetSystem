@@ -3,30 +3,34 @@
 
     {{-- Add New Subcategory --}}
     <div class="flex gap-3 items-center">
-        <select wire:model="newCategoryType" class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 w-1/6">
+        <!-- Select -->
+        <select wire:model="newCategoryType" class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 w-1/6" title="Select Category Type">
             <option value="NON-IT">NON-IT</option>
             <option value="IT">IT</option>
         </select>
-        <select wire:model="newCategoryId" class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 w-1/3">
+        <!-- Select -->
+        <select wire:model="newCategoryId" class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 w-1/3" title="Select Category">
             <option value="">Select Category</option>
             @foreach($categories as $cat)
                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
             @endforeach
         </select>
+        <!-- Input -->
         <input 
             type="text" 
             wire:model="newName" 
             placeholder="Add subcategory..."
             class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            title="Enter Subcategory Name"
         >
-        <button wire:click="add" class="text-indigo-600">Add</button>
+        <button wire:click="add" class="text-indigo-600" title="Add Subcategory">Add</button>
     </div>
 
     <hr>
 
     {{-- Subcategory List --}}
-    <div class="flex flex-col gap-4 overflow-y-auto pr-3 minimal-scroll " style="max-height: 400px;">
-        @foreach($subcategories as $sub)
+    <div class="flex flex-col gap-4 overflow-y-auto pr-3 minimal-scroll " style="height: 400px;">
+        @forelse($subcategories as $sub)
             <div class="flex items-center justify-between gap-3">
 
                 {{-- Edit Mode --}}
@@ -35,6 +39,7 @@
                         type="text" 
                         wire:model="editName" 
                         class="border rounded px-2 py-1 w-1/3 focus:border-indigo-600"
+                        title="Edit Subcategory Name"
                     >
 
                     <select wire:model="editCategoryId" class="border rounded px-2 py-1 w-1/3">
@@ -69,11 +74,15 @@
                     </div>
 
                     <div class="flex gap-3">
-                        <button wire:click="startEdit({{ $sub->id }})" class="text-indigo-600">Edit</button>
-                        <button wire:click="delete({{ $sub->id }})" class="text-red-500">Delete</button>
+                        <button wire:click="startEdit({{ $sub->id }})" class="text-indigo-600" title="Edit Subcategory">Edit</button>
+                        <button wire:click="delete({{ $sub->id }})" class="text-red-500" title="Delete Subcategory">Delete</button>
                     </div>
                 @endif
             </div>
-        @endforeach
+        @empty
+            <div class="flex-1 flex items-center justify-center">
+                <p class="text-gray-500 italic">No subcategories found.</p>
+            </div>
+        @endforelse
     </div>
 </div>

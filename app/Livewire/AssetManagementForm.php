@@ -361,6 +361,12 @@ class AssetManagementForm extends Component
                 'depreciated_value' => $this->depreciated_value,
                 'usable_life' => $this->usable_life,
 
+                // Save assignment details
+                'assigned_id' => $this->selectedEmployee,
+                'assigned_name' => $this->selectedEmployeeName,
+                'farm' => $this->farm,
+                'department' => $this->department,
+
                 'technical_data' => json_encode($this->technicaldata),
             ]);
 
@@ -459,9 +465,8 @@ class AssetManagementForm extends Component
     /**
      * OPTIMIZED: Uses eager loading when refreshing history
      */
-    public function assignAsset(){   
-        DB::beginTransaction();
-        
+    public function assignAsset()
+    {   
         try {
             $assignee = Employee::find($this->newHolder);
 
@@ -470,54 +475,27 @@ class AssetManagementForm extends Component
                 return;
             }
 
-            // Save history
-            History::create([
-                'asset_id'      => $this->targetAsset->id,
-                'assignee_id'   => $assignee->id,
-                'assignee_name' => $assignee->employee_name,
-                'status'        => $this->targetAsset->status,
-                'condition'     => $this->targetAsset->condition,
-                'farm'          => $assignee->farm,
-                'department'    => $assignee->department,
-                'location'      => $this->location,
-                'action'        => 'Assign',
-            ]);
-
-            // Update asset
-            $this->targetAsset->update([
-                'assigned_id'   => $assignee->id,
-                'assigned_name' => $assignee->employee_name,
-                'farm' => $assignee->farm,
-                'department' => $assignee->department,
-                'location' => $this->location,
-                'condition' => $this->targetAsset->condition,
-            ]);
-
-            DB::commit();
-
+            // Update form fields to preview the assignment (NOT saved to DB yet)
+            $this->selectedEmployee = $assignee->id;
+            $this->selectedEmployeeName = $assignee->employee_name;
+            $this->targetAsset->assigned_name = $assignee->employee_name;
+            $this->farm = $assignee->farm;
+            $this->department = $assignee->department;
+            
+            // Reset the modal field
             $this->reset(['newHolder']);
 
-            // Refresh history after assignment using relationship
-            $this->targetAsset->load(['history' => function ($query) {
-                $query->latest()->limit(50);
-            }]);
-            $this->history = $this->targetAsset->history;
-
             $this->clearAllAssetCaches();
-
-            $this->noreloadNotif('success', 'Asset Assigned', 'Asset has been successfully assigned to ' . $assignee->employee_name . '.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
             
-            Log::error('Asset assignment failed', [
+        } catch (\Exception $e) {
+            Log::error('Asset assignment preview failed', [
                 'error' => $e->getMessage(),
-                'asset_id' => $this->targetAsset->id,
+                'asset_id' => $this->targetAsset->id ?? null,
                 'new_holder' => $this->newHolder,
                 'user_id' => auth()->id()
             ]);
             
-            $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to assign asset. Please try again.');
+            $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to preview asset assignment. Please try again.');
         }
     }
     

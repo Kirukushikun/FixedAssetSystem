@@ -121,7 +121,7 @@ class DatabaseSeeder extends Seeder
                     'Software and Apps'
                 ],
 
-                'Farm Tools' => [
+                'farmtools' => [
                     'Tools'
                 ],
             ],

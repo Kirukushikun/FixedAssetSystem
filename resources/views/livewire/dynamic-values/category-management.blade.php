@@ -8,6 +8,7 @@
                 @click="modalTemplate = 'icon'; showModal = true"
                 class="px-2 py-1 border rounded cursor-pointer hover:bg-gray-100
                     {{ $newIcon ? 'bg-indigo-100 border-indigo-500' : '' }}"
+                title="Select Icon"
             >
                 <img 
                     src="{{ asset('img/' . $newIcon . '.png') }}" 
@@ -19,11 +20,13 @@
                 wire:model="newName"
                 class="w-full py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 placeholder="Add category..."
+                title="Enter Category Name"
             >
 
             <button 
                 wire:click="add" 
                 class="text-indigo-600"
+                title="Add New Category"
             >
                 Add
             </button>
@@ -33,8 +36,8 @@
     <hr>
 
     {{-- List --}}    
-    <div class="flex flex-col gap-4 overflow-y-auto pr-3 minimal-scroll">
-        @foreach($categories as $cat)
+    <div class="flex flex-col gap-4 overflow-y-auto pr-3 minimal-scroll" style="height: 400px;">
+        @forelse($categories as $cat)
             <div class="flex items-center justify-between gap-3">
 
                 {{-- Editing --}}
@@ -48,8 +51,8 @@
                                 class="border rounded w-full p-1 focus:border-indigo-600"
                             >
 
-                            <button wire:click="saveEdit" class="text-green-600">Save</button>
-                            <button wire:click="cancelEdit" class="text-gray-500">Cancel</button>
+                            <button wire:click="saveEdit" class="text-green-600" title="Save Category">Save</button>
+                            <button wire:click="cancelEdit" class="text-gray-500" title="Cancel Editing">Cancel</button>
                         </div>
 
                         {{-- Icon Picker --}}
@@ -80,13 +83,17 @@
                     </div>
 
                     <div class="flex gap-3">
-                        <button wire:click="startEdit({{ $cat->id }})" class="text-indigo-600">Edit</button>
-                        <button wire:click="delete({{ $cat->id }})" class="text-red-500">Delete</button>
+                        <button wire:click="startEdit({{ $cat->id }})" class="text-indigo-600" title="Edit Category">Edit</button>
+                        <button wire:click="delete({{ $cat->id }})" class="text-red-500" title="Delete Category">Delete</button>
                     </div>
                 @endif
 
             </div>
-        @endforeach
+        @empty
+            <div class="flex-1 flex items-center justify-center">
+                <p class="text-gray-500 italic">No categories found.</p>
+            </div>
+        @endforelse
     </div>
 
     <!-- Backdrop -->

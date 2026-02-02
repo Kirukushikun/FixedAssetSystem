@@ -12,6 +12,7 @@
         <button 
             wire:click="add" 
             class="text-indigo-500 hover:scale-105"
+            title="Add New {{ $fieldName }}"
         >
             Add
         </button>
@@ -20,8 +21,8 @@
     <hr>
 
     {{-- List --}}
-    <div class="flex flex-col gap-4 overflow-y-auto minimal-scroll">
-        @foreach($items as $item)
+    <div class="flex flex-col gap-4 overflow-y-auto minimal-scroll" style="height: 400px;">
+        @forelse($items as $item)
             <div class="flex items-center justify-between gap-3">
 
                 {{-- If Editing --}}
@@ -58,7 +59,11 @@
                 @endif
 
             </div>
-        @endforeach        
+        @empty
+        <div class="flex-1 flex items-center justify-center">
+            <p class="text-gray-500 italic">No {{ strtolower($fieldName) }} found.</p>
+        </div>
+        @endforelse        
     </div>
 
 </div>

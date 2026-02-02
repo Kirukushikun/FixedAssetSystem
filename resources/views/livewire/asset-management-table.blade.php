@@ -7,16 +7,16 @@
      <div class="table-header flex justify-between items-center">
           <h1 class="text-lg font-bold">All Assets</h1>
           <div class="flex items-center gap-3">
-               <div class="border border-2 px-3 py-1 rounded-md border-gray-300">
+               <div class="border border-2 px-3 py-1 rounded-md border-gray-300" title="Search by Reference ID, Brand, Model, Assigned To, etc.">
                     <input class="outline-none text-sm" type="text" wire:model.live="search" placeholder="Search asset...">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                </div>
-               <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="showModal = true; modalTemplate = 'create'">ADD NEW ASSET</button>
+               <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="showModal = true; modalTemplate = 'create'" title="Add New Asset">ADD NEW ASSET</button>
                
                <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
-                    <div id="import-button">
+                    <div id="import-button" title="Import Assets">
                          <i class="fa-solid fa-file-import cursor-pointer"></i>
                     </div>
                </form>
@@ -68,12 +68,12 @@
                     });
                </script>
 
-               <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/assets/export'"></i>
+               <i class="fa-solid fa-file-export cursor-pointer" onclick="window.location.href='/assets/export'" title="Export Assets"></i>
 
                <div x-data="{ filterOpen: false }" class="relative">
                     <!-- Toggle Button -->
                     <button @click="filterOpen = !filterOpen">
-                         <i class="fa-solid fa-ellipsis-vertical cursor-pointer text-gray-600 hover:text-teal-500 transition"></i>
+                         <i class="fa-solid fa-ellipsis-vertical cursor-pointer text-gray-600 hover:text-teal-500 transition" title="Filter Assets"></i>
                     </button>
 
                     <!-- Dropdown Panel -->
