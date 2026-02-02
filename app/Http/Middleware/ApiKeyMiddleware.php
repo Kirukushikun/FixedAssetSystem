@@ -10,7 +10,7 @@ class ApiKeyMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('X-API-Key');
+        $apiKey = $request->header('x-api-key');
         $expectedKey = env('API_KEY');
 
         if (!$apiKey || $apiKey !== $expectedKey) {

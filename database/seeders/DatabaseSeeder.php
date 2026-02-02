@@ -85,7 +85,7 @@ class DatabaseSeeder extends Seeder
                     'New Building'
                 ],
 
-                'Feedmill Plant' => [
+                'feedmillplant' => [
                     'Plant', 'Equipment', 'Tools'
                 ],
 
