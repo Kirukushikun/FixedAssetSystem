@@ -9,6 +9,7 @@ use App\Models\Flag;
 use App\Models\Category;
 use Illuminate\Support\Facades\Log;
 use Livewire\WithPagination;
+use App\Models\History;
 
 class EmployeeView extends Component
 {   
@@ -87,6 +88,94 @@ class EmployeeView extends Component
         } catch (\Exception $e) {
             Log::error('Resolve all flags failed: ' . $e->getMessage());
             $this->noreloadNotif('failed', 'Resolution Failed', 'Unable to resolve all flags. Please try again.');
+        }
+    }
+
+    public function unassignAsset($assetId)
+    {
+        try {
+            $asset = Asset::find($assetId);
+
+            if (!$asset) {
+                $this->noreloadNotif('failed', 'Asset Not Found', 'The asset could not be found.');
+                return;
+            }
+
+            // Save to history before unassigning
+            History::create([
+                'asset_id'      => $asset->id,
+                'assignee_id'   => $this->employee->employee_id,
+                'assignee_name' => $this->employee->employee_name,
+                'status'        => $asset->status,
+                'condition'     => $asset->condition,
+                'farm'          => $asset->farm,
+                'department'    => $asset->department,
+                'location'      => $asset->location,
+                'action'        => 'Unassigned',
+            ]);
+
+            // Clear assignment
+            $asset->update([
+                'assigned_id'   => null,
+                'assigned_name' => null,
+                'farm'          => null,
+                'department'    => null,
+                'location'      => null,
+                'status'        => 'Available', // Change status back to Available
+            ]);
+
+            $this->noreloadNotif('success', 'Asset Unassigned', 'Asset ' . $asset->ref_id . ' has been successfully unassigned.');
+
+        } catch (\Exception $e) {
+            Log::error('Unassign asset failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Unassign Failed', 'Unable to unassign asset. Please try again.');
+        }
+    }
+
+    public function unassignAllAssets()
+    {
+        try {
+            $assets = Asset::where('assigned_id', $this->employee->id)->get();
+
+            if ($assets->isEmpty()) {
+                $this->noreloadNotif('failed', 'No Assets Found', 'This employee has no assigned assets.');
+                return;
+            }
+
+            $count = 0;
+
+            foreach ($assets as $asset) {
+                // Save to history
+                History::create([
+                    'asset_id'      => $asset->id,
+                    'assignee_id'   => $this->employee->employee_id,
+                    'assignee_name' => $this->employee->employee_name,
+                    'status'        => $asset->status,
+                    'condition'     => $asset->condition,
+                    'farm'          => $asset->farm,
+                    'department'    => $asset->department,
+                    'location'      => $asset->location,
+                    'action'        => 'Unassigned (Bulk)',
+                ]);
+
+                // Clear assignment
+                $asset->update([
+                    'assigned_id'   => null,
+                    'assigned_name' => null,
+                    'farm'          => null,
+                    'department'    => null,
+                    'location'      => null,
+                    'status'        => 'Available',
+                ]);
+
+                $count++;
+            }
+
+            $this->noreloadNotif('success', 'All Assets Unassigned', $count . ' asset(s) have been successfully unassigned from ' . $this->employee->employee_name . '.');
+
+        } catch (\Exception $e) {
+            Log::error('Unassign all assets failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Unassign Failed', 'Unable to unassign assets. Please try again.');
         }
     }
 

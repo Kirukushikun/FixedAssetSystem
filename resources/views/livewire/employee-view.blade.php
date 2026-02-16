@@ -2,6 +2,7 @@
     showModal: false,
     modalTemplate: '',
     selectedFlagId: null,
+    selectedAssetId: null,
 }">
     <div class="card flex items-center justify-between">
         <div>
@@ -67,7 +68,17 @@
         <div class="table-header flex justify-between items-center">
             <h1 class="text-lg font-bold">Assigned Assets</h1>
             <div class="flex items-center gap-3">
-                <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" onclick="window.location.href='/accountability-form?targetID={{$employee->id}}'">GENERATE ACCOUNTABILITY FORM</button>
+                @if($assets->total() > 0)
+                    <button 
+                        @click="showModal = true; modalTemplate = 'unassignAll'"
+                        class="px-5 py-2 bg-orange-500 rounded-lg font-bold text-white text-xs hover:bg-orange-600"
+                    >
+                        <i class="fa-solid fa-users-slash mr-1"></i>UNASSIGN ALL
+                    </button>
+                @endif
+                <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" onclick="window.location.href='/accountability-form?targetID={{$employee->id}}'">
+                    <i class="fa-solid fa-file-lines mr-1"></i>GENERATE ACCOUNTABILITY FORM
+                </button>
             </div>
         </div>
 
@@ -82,6 +93,7 @@
                         <th>MODEL</th>
                         <th>STATUS</th>
                         <th>CONDITION</th>
+                        <th>ACTION</th> <!-- ADD THIS -->
                     </tr>
                 </thead>
                 <tbody>
@@ -117,6 +129,14 @@
                                     ]
                                 @endphp 
                                 <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
+                            </td>
+                            <td>
+                                <button 
+                                    @click="showModal = true; modalTemplate = 'unassign'; selectedAssetId = {{ $asset->id }}"
+                                    class="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition"
+                                >
+                                    <i class="fa-solid fa-user-minus mr-1"></i>UNASSIGN
+                                </button>
                             </td>
                         </tr>
                     @endforeach
@@ -167,7 +187,10 @@
                     <select name="" id="" wire:model="asset">
                         <option value="">Select Asset:</option>
                         @foreach($assets as $asset)
-                            <option value="{{$asset->brand}} {{$asset->model}}">{{$asset->brand}} {{$asset->model}}</option>
+                            <!-- UPDATED: Now shows sub_category for more context -->
+                            <option value="{{$asset->brand}} {{$asset->model}} ({{$asset->sub_category}})">
+                                {{$asset->sub_category}} - {{$asset->brand}} {{$asset->model}}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -209,6 +232,47 @@
                     <button @click="showModal = false; $wire.call('resolveAllFlags')" 
                             class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">
                         Confirm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Unassign Single Asset Confirmation -->
+            <div class="flex flex-col gap-5" x-show="modalTemplate === 'unassign'">
+                <h2 class="text-xl font-semibold -mb-2">Unassign Asset</h2>
+                <p>Are you sure you want to unassign this asset from <strong>{{ $employee->employee_name }}</strong>?</p>
+                <p class="text-sm text-gray-500">The asset will be marked as "Available" and removed from this employee's accountability.</p>
+
+                <div class="flex justify-end gap-3">
+                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button @click="showModal = false; $wire.call('unassignAsset', selectedAssetId)" 
+                            class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+                        Confirm Unassign
+                    </button>
+                </div>
+            </div>
+
+            <!-- Unassign All Assets Confirmation -->
+            <div class="flex flex-col gap-5" x-show="modalTemplate === 'unassignAll'">
+                <h2 class="text-xl font-semibold -mb-2">Unassign All Assets</h2>
+                <p>Are you sure you want to unassign <strong>ALL {{ $assets->total() }} asset(s)</strong> from <strong>{{ $employee->employee_name }}</strong>?</p>
+                <p class="text-sm text-gray-500">All assets will be marked as "Available" and history records will be created for tracking.</p>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                    <p class="text-sm text-yellow-700">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                        <strong>Warning:</strong> This action will unassign all assets at once.
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button @click="showModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button @click="showModal = false; $wire.call('unassignAllAssets')" 
+                            class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+                        Confirm Unassign All
                     </button>
                 </div>
             </div>

@@ -36,7 +36,7 @@
     <div class="no-print absolute top-4 -right-[120px] z-50 flex flex-col gap-4">
         <button
             type="button"
-            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:brightness-95 focus:outline-none flex items-center gap-2"
+            class="bg-teal-500 text-white px-4 py-2 rounded shadow hover:brightness-95 focus:outline-none flex items-center gap-2"
             onclick="window.print()"
             aria-label="Print document"
             title="Print">
@@ -111,7 +111,10 @@
                         
                         @foreach($groupedAssets as $item)
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-400">{{ $item['name'] }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-400">
+                                    {{ $item['name'] }}
+                                    <p class="text-xs italic text-gray-500 ">({{ $item['assets']->first()->sub_category }})</p>
+                                </td>
                                 <td class="px-4 py-3 text-sm text-center text-gray-900 font-semibold">{{ $item['quantity'] }}</td>
                             </tr>
                         @endforeach
@@ -173,7 +176,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-end gap-4">
                     <div class="flex-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Issued By:</label>
-                        <div class="border-b-2 border-blue-600 pb-1 min-h-[40px] flex items-end">
+                        <div class="border-b-2 border-teal-500 pb-1 min-h-[40px] flex items-end">
                             <!-- <span class="font-bold text-gray-900">MARK LESTER DELA CRUZ</span> -->
                         </div>
                     </div>
