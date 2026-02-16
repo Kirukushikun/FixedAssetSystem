@@ -102,6 +102,13 @@
                 <input type="text" id="usable_life" wire:model="usable_life" {{$mode == 'view' ? 'readonly' : ''}}>
             </div>
 
+            @if($mode == 'view' && $acquisition_date)
+                <div class="input-group">
+                    <label for="age">Age:</label>
+                    <input type="text" id="age" value="{{ \Carbon\Carbon::parse($acquisition_date)->diffForHumans(null, true) }}" readonly>
+                </div>
+            @endif
+
         </div>
         
         @if($category_type == 'IT')

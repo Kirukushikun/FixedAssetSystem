@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
+use App\Exports\AssetExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 // Import the job
 use App\Jobs\SyncAssetToSnipeIT;
@@ -43,6 +44,15 @@ class AssetManagementTable extends Component
     public $openCategory = null;
     public $departments;
 
+    // Export filter properties
+    public $export_category_type = '';
+    public $export_category = '';
+    public $export_sub_category = '';
+    public $export_farm = '';
+    public $export_department = '';
+    public $export_age_min = '';
+    public $export_age_max = '';
+
     public function toggleCategory($categoryId)
     {
         if ($this->openCategory === $categoryId) {
@@ -64,6 +74,36 @@ class AssetManagementTable extends Component
         } else {
             $this->subCategories = [];
         }
+    }
+
+    public function exportWithFilters()
+    {
+        $filters = [
+            'category_type' => $this->export_category_type,
+            'category' => $this->export_category,
+            'sub_category' => $this->export_sub_category,
+            'farm' => $this->export_farm,
+            'department' => $this->export_department,
+            'age_min' => $this->export_age_min,
+            'age_max' => $this->export_age_max,
+        ];
+
+        $this->clearExportFilters();
+        
+        return Excel::download(new AssetExport($filters), 'assets_filtered_' . now()->format('Y-m-d_His') . '.xlsx');
+    }
+
+    public function clearExportFilters()
+    {
+        $this->reset([
+            'export_category_type',
+            'export_category',
+            'export_sub_category',
+            'export_farm',
+            'export_department',
+            'export_age_min',
+            'export_age_max'
+        ]);
     }
 
     public function goToPage($page)

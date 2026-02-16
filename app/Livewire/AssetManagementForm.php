@@ -207,7 +207,10 @@ class AssetManagementForm extends Component
             'status' => $this->targetAsset->status,
             'condition' => $this->targetAsset->condition,
 
-            'acquisition_date' => $this->targetAsset->acquisition_date,
+            // FIX: Format the date properly for the input field
+            'acquisition_date' => $this->targetAsset->acquisition_date ? 
+                \Carbon\Carbon::parse($this->targetAsset->acquisition_date)->format('Y-m-d') : null,
+            
             'item_cost' => $this->targetAsset->item_cost,
             'depreciated_value' => $this->targetAsset->depreciated_value,
             'usable_life' => $this->targetAsset->usable_life,
