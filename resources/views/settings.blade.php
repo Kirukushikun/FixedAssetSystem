@@ -28,6 +28,6 @@
 
      <livewire:dynamic-values.input-management inputType="RAM" />
 
-     <livewire:dynamic-values.input-management inputType="Storage" />
+     <livewire:dynamic-values.input-management inputType="storage" />
 </div>
 @endsection

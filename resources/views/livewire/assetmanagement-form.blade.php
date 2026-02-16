@@ -168,7 +168,7 @@
         <h1 class="text-lg font-bold">Assignment Details</h1>
         <p class="text-gray-400 text-sm mb-5">Information on where this asset is currently assigned, including the responsible employee and location.</p>
         <div class="grid grid-cols-4 gap-5">
-            <!-- EMPLOYEE SELECT -->
+            <!-- EMPLOYEE SELECT - FIXED: Added selected attribute to preserve value after re-render -->
             <div class="input-group">
                 <label>Assigned To:</label>
                 @if($mode == 'edit' || $mode == 'view' && $targetAsset->assigned_name)
@@ -177,7 +177,9 @@
                     <select wire:model.live="selectedEmployee" {{ $mode == 'view' ? 'disabled' : '' }}>
                         <option value="">Select</option>
                         @foreach ($employees as $emp)
-                            <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
+                            <option value="{{ $emp['id'] }}" {{ $selectedEmployee == $emp['id'] ? 'selected' : '' }}>
+                                {{ $emp['employee_name'] }}
+                            </option>
                         @endforeach
                     </select>
                 @endif

@@ -122,7 +122,6 @@ class AssetManagementForm extends Component
             $this->loadAssetData($targetID);
         }
 
-        // Optimized: Cache static data + select only needed columns
         $this->employees = Cache::remember('employees_dropdown', 3600, function() {
             return Employee::select('id', 'employee_name', 'farm', 'department')
                 ->orderBy('employee_name')
@@ -243,7 +242,6 @@ class AssetManagementForm extends Component
             $this->selectedEmployeeName = $data['employee_name'];
             $this->farm = $data['farm'];
             $this->department = $data['department'];
-            $this->location = $data['location'];
         }
     }
 
@@ -345,6 +343,7 @@ class AssetManagementForm extends Component
         try {
             $this->validate();
 
+            // FIXED: Added 'location' to the update array
             $this->targetAsset->update([
                 'ref_id' => $this->ref_id,
                 'category_type' => $this->category_type,
@@ -366,6 +365,7 @@ class AssetManagementForm extends Component
                 'assigned_name' => $this->selectedEmployeeName,
                 'farm' => $this->farm,
                 'department' => $this->department,
+                'location' => $this->location,
 
                 'technical_data' => json_encode($this->technicaldata),
             ]);
