@@ -94,3 +94,11 @@ Route::get('/testing', function () {
 
     return view('dashboard');
 });
+
+
+Route::get('/viewasset/{targetID}', function (Request $request, $targetID) {
+
+    $targetID = decrypt($targetID);
+    $asset = Asset::find($targetID);
+    return view('view-asset', compact('asset'));
+});
