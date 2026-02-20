@@ -53,6 +53,8 @@ class AssetManagementTable extends Component
     public $export_age_min = '';
     public $export_age_max = '';
 
+    public $export_sub_categories = [];
+
     public function toggleCategory($categoryId)
     {
         if ($this->openCategory === $categoryId) {
@@ -73,6 +75,22 @@ class AssetManagementTable extends Component
             $this->subCategories = $category ? $category->subCategories : [];
         } else {
             $this->subCategories = [];
+        }
+    }
+
+    public function updatedExportCategory($value)
+    {
+        // Reset subcategory when category changes
+        $this->export_sub_category = '';
+        
+        // Load subcategories for selected category
+        if ($value) {
+            $category = Category::where('code', $value)->first();
+            $this->export_sub_categories = $category && $category->subcategories 
+                ? $category->subcategories->pluck('name')->toArray() 
+                : [];
+        } else {
+            $this->export_sub_categories = [];
         }
     }
 

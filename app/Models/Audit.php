@@ -10,6 +10,7 @@ class Audit extends Model
 
     protected $fillable = [
         'asset_id',
+        'farm',
         'location',
         'next_audit_date',
         'notes',
@@ -17,6 +18,7 @@ class Audit extends Model
         'attachment_name',
         'audited_at',
         'audited_by',
+        'audited_by_name',
     ];
 
     protected $casts = [

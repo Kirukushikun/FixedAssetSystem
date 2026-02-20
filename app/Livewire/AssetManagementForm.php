@@ -346,6 +346,11 @@ class AssetManagementForm extends Component
         try {
             $this->validate();
 
+            // Preserve assignment if not changed
+            $assignedId = $this->selectedEmployee ?? $this->targetAsset->assigned_id;
+            $assignedName = $this->selectedEmployeeName ?? $this->targetAsset->assigned_name;
+
+
             // FIXED: Added 'location' to the update array
             $this->targetAsset->update([
                 'ref_id' => $this->ref_id,
@@ -364,8 +369,8 @@ class AssetManagementForm extends Component
                 'usable_life' => $this->usable_life,
 
                 // Save assignment details
-                'assigned_id' => $this->selectedEmployee,
-                'assigned_name' => $this->selectedEmployeeName,
+                'assigned_id' => $assignedId,
+                'assigned_name' => $assignedName,
                 'farm' => $this->farm,
                 'department' => $this->department,
                 'location' => $this->location,

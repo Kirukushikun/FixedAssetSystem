@@ -39,6 +39,7 @@ class DashboardData extends Component
     public $export_department = '';
     public $export_age_min = '';
     public $export_age_max = '';
+    public $export_sub_categories = [];
 
     protected $rules = [
         'employee_id' => 'required',
@@ -63,6 +64,23 @@ class DashboardData extends Component
         $this->clearExportFilters();
         
         return Excel::download(new AssetExport($filters), 'assets_filtered_' . now()->format('Y-m-d_His') . '.xlsx');
+    }
+
+    // Add this method
+    public function updatedExportCategory($value)
+    {
+        // Reset subcategory when category changes
+        $this->export_sub_category = '';
+        
+        // Load subcategories for selected category
+        if ($value) {
+            $category = \App\Models\Category::where('code', $value)->first();
+            $this->export_sub_categories = $category && $category->subcategories 
+                ? $category->subcategories->pluck('name')->toArray() 
+                : [];
+        } else {
+            $this->export_sub_categories = [];
+        }
     }
 
     public function clearExportFilters()

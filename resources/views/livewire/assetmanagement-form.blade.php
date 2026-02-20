@@ -195,7 +195,7 @@
             <!-- LOCATION -->
             <div class="input-group">
                 <label>Location:</label>
-                @if($mode == 'view' || $mode == 'edit')
+                @if($mode == 'view')
                     <input type="text" wire:model="location" readonly>
                 @else
                     <input type="text" wire:model="location">

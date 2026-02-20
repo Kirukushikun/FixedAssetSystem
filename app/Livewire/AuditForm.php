@@ -17,24 +17,38 @@ class AuditForm extends Component
     public $showConfirmModal = false;
     public $attachment;
     
-    // Form fields
+    // Read-only fields (from asset)
+    public $category;
+    public $sub_category;
+    public $brand;
+    public $model;
+    public $farm;
     public $location;
+    public $description;
+    
+    // Editable fields
     public $last_audit;
     public $next_audit;
     public $notes;
 
     public function mount($targetID = null){
-        $this->targetAsset = Asset::findOrFail($targetID);
-        // Prefill location if asset has one
-        $this->location = $this->targetAsset->farm ?? '';
+        $this->targetAsset = Asset::with('categoryDetails')->findOrFail($targetID);
+        
+        // Prefill read-only fields from asset
+        $this->category = $this->targetAsset->categoryDetails->name ?? '';
+        $this->sub_category = $this->targetAsset->sub_category ?? '';
+        $this->brand = $this->targetAsset->brand ?? '';
+        $this->model = $this->targetAsset->model ?? '';
+        $this->farm = $this->targetAsset->farm ?? 'Not assigned';
+        $this->location = $this->targetAsset->location ?? 'Not specified';
+        $this->description = $this->targetAsset->remarks ?? 'No description';
 
-        // Prefill last audit if theres previous one
+        // Prefill last audit if there's previous one
         $this->last_audit = Audit::where('asset_id', $targetID)->orderByDesc('audited_at')->first();
     }
 
     public function trySubmit(){
         $this->validate([
-            'location' => 'required',
             'next_audit' => 'required|date',
             'notes' => 'nullable|string|max:1000',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB max
@@ -44,7 +58,6 @@ class AuditForm extends Component
     }
 
     public function submit(){
-
         try{
             $attachmentPath = null;
             $attachmentName = null;
@@ -57,18 +70,19 @@ class AuditForm extends Component
             // Create audit record
             Audit::create([
                 'asset_id' => $this->targetAsset->id,
-                'location' => $this->location,
+                'farm' => $this->targetAsset->farm ?? 'Not assigned',
+                'location' => $this->targetAsset->location ?? 'Not specified',
                 'next_audit_date' => $this->next_audit,
                 'notes' => $this->notes,
                 'attachment_path' => $attachmentPath,
                 'attachment_name' => $attachmentName,
                 'audited_at' => now(),
-                'audited_by' => 61,
+                'audited_by' => auth()->user()->id,
+                'audited_by_name' => auth()->user()->name,
             ]);
 
-            // Update asset location
+            // Update asset's audit dates
             $this->targetAsset->update([
-                'location' => $this->location,
                 'last_audit_date' => now(),
                 'next_audit_date' => $this->next_audit,
             ]);
@@ -79,13 +93,12 @@ class AuditForm extends Component
             session()->flash('notif', [
                 'type' => 'success',
                 'header' => 'Audit Saved',
-                'message' => 'The audit entry has been successfully added to the asset’s audit records'
+                'message' => 'The audit entry has been successfully added to the asset\'s audit records'
             ]);
 
             Cache::forget('api.assets.index');
             Cache::forget('asset_table_query');
             Cache::forget('trash_deleted_assets');
-
         } catch (\Exception $e) {
             Log::error('Audit failed: ' . $e->getMessage());
             $this->redirect('/assetmanagement');
@@ -95,8 +108,6 @@ class AuditForm extends Component
                 'message' => 'Unable to audit asset. Please try again.'
             ]);
         }
-
- 
     }
 
     public function render()

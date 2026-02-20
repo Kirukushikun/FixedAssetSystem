@@ -409,6 +409,7 @@
                 </div>
             </div>
 
+            <!-- Export Filter Modal -->
             <div class="flex flex-col gap-5 w-[25rem]" x-show="modalTemplate === 'export-filter'">
                 <h2 class="text-xl font-semibold -mb-2">Export Assets - Filters</h2>
                 <p class="text-sm text-gray-500">Select filters to customize your export. Leave blank to export all.</p>
@@ -418,13 +419,13 @@
                     <select wire:model="export_category_type">
                         <option value="">All</option>
                         <option value="IT">IT</option>
-                        <option value="Non-IT">Non-IT</option>
+                        <option value="NON-IT">NON-IT</option>
                     </select>
                 </div>
 
                 <div class="input-group">
                     <label>Category:</label>
-                    <select wire:model="export_category">
+                    <select wire:model.live="export_category">
                         <option value="">All</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->code }}">{{ $cat->name }}</option>
@@ -434,7 +435,12 @@
 
                 <div class="input-group">
                     <label>Sub-category:</label>
-                    <input type="text" wire:model="export_sub_category" placeholder="Enter sub-category">
+                    <select wire:model="export_sub_category">
+                        <option value="">All</option>
+                        @foreach($export_sub_categories ?? [] as $subcat)
+                            <option value="{{ $subcat }}">{{ $subcat }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="input-group">
