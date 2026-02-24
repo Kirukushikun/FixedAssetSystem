@@ -49,8 +49,11 @@ class GenerateAssetQrCode implements ShouldQueue
     public function handle(): void
     {
         try {
-            $url = url('/assetmanagement/view?targetID=' . $this->asset->id);
-            $qrFileName = 'qr_' . $this->asset->id . '.svg';
+            // Use existing public route with encrypted ID
+            $encryptedId = encrypt($this->asset->id);
+            $url = url('/viewasset/' . $encryptedId);
+            
+            $qrFileName = 'qr_' . $this->asset->ref_id . '.svg';
             $qrPath = storage_path('app/public/qrcodes/' . $qrFileName);
 
             // Ensure directory exists
@@ -70,7 +73,8 @@ class GenerateAssetQrCode implements ShouldQueue
             Log::info('QR Code generated successfully', [
                 'asset_id' => $this->asset->id,
                 'ref_id' => $this->asset->ref_id,
-                'qr_path' => $qrFileName
+                'qr_path' => $qrFileName,
+                'public_url' => $url
             ]);
 
         } catch (\Exception $e) {
