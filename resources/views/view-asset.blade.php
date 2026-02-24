@@ -14,7 +14,7 @@
      <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
      <link rel="stylesheet" href="{{asset('css/global.css')}}" />
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="min-h-screen flex items-center justify-center py-6 px-4 sm:py-10 sm:px-6">
         <div class="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 sm:p-8">
             

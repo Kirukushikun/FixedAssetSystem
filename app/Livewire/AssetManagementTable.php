@@ -53,7 +53,9 @@ class AssetManagementTable extends Component
     public $export_age_min = '';
     public $export_age_max = '';
 
+    public $export_categories = []; // ADD THIS
     public $export_sub_categories = [];
+    
 
     public function toggleCategory($categoryId)
     {
@@ -75,6 +77,28 @@ class AssetManagementTable extends Component
             $this->subCategories = $category ? $category->subCategories : [];
         } else {
             $this->subCategories = [];
+        }
+    }
+
+    public function updatedExportCategoryType($value)
+    {
+        // Reset category and subcategory when category type changes
+        $this->export_category = '';
+        $this->export_sub_category = '';
+        $this->export_sub_categories = [];
+        
+        // Load categories based on selected type
+        if ($value === 'IT') {
+            // Only show IT Equipment and Computer Equipment for IT
+            $this->export_categories = Category::whereIn('code', ['itequipment', 'computerequip'])
+                ->get();
+        } elseif ($value === 'NON-IT') {
+            // Show all categories EXCEPT IT Equipment and Computer Equipment
+            $this->export_categories = Category::whereNotIn('code', ['itequipment', 'computerequip'])
+                ->get();
+        } else {
+            // Show all if no type selected
+            $this->export_categories = $this->categories;
         }
     }
 
@@ -120,8 +144,12 @@ class AssetManagementTable extends Component
             'export_farm',
             'export_department',
             'export_age_min',
-            'export_age_max'
+            'export_age_max',
+            'export_sub_categories'
         ]);
+        
+        // Reset to show all categories
+        $this->export_categories = $this->categories;
     }
 
     public function goToPage($page)
@@ -140,6 +168,9 @@ class AssetManagementTable extends Component
         $this->categories = Cache::remember('categories_with_subcategories', 3600, function() {
             return Category::with('subcategories')->get();
         });
+        
+        // Initialize export_categories to all categories
+        $this->export_categories = $this->categories;
         
         $this->departments = Cache::remember('departments_list', 3600, function() {
             return Department::pluck('name')->toArray();

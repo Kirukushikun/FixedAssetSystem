@@ -39,6 +39,7 @@ class DashboardData extends Component
     public $export_department = '';
     public $export_age_min = '';
     public $export_age_max = '';
+    public $export_categories = [];
     public $export_sub_categories = [];
 
     protected $rules = [
@@ -66,7 +67,28 @@ class DashboardData extends Component
         return Excel::download(new AssetExport($filters), 'assets_filtered_' . now()->format('Y-m-d_His') . '.xlsx');
     }
 
-    // Add this method
+    public function updatedExportCategoryType($value)
+    {
+        // Reset category and subcategory when category type changes
+        $this->export_category = '';
+        $this->export_sub_category = '';
+        $this->export_sub_categories = [];
+        
+        // Load categories based on selected type
+        if ($value === 'IT') {
+            // Only show IT Equipment and Computer Equipment for IT
+            $this->export_categories = Category::whereIn('code', ['itequipment', 'computerequip'])
+                ->get();
+        } elseif ($value === 'NON-IT') {
+            // Show all categories EXCEPT IT Equipment and Computer Equipment
+            $this->export_categories = Category::whereNotIn('code', ['itequipment', 'computerequip'])
+                ->get();
+        } else {
+            // Show all if no type selected
+            $this->export_categories = $this->categories;
+        }
+    }
+
     public function updatedExportCategory($value)
     {
         // Reset subcategory when category changes
@@ -92,14 +114,22 @@ class DashboardData extends Component
             'export_farm',
             'export_department',
             'export_age_min',
-            'export_age_max'
+            'export_age_max',
+            'export_sub_categories'
         ]);
+        
+        // Reset to show all categories
+        $this->export_categories = $this->categories;
     }
 
     public function mount()
     {   
         $this->departments = Department::pluck('name')->toArray();
         $this->categories = Category::with('subcategories')->get();
+        
+        // Initialize export_categories to all categories
+        $this->export_categories = $this->categories;
+        
         $this->loadDashboardData();
     }
 

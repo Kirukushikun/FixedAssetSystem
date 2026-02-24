@@ -83,14 +83,6 @@ class InputManagement extends Component
                 return;
             }
             
-            // Check if any assets are using this value
-            $assetCount = \App\Models\Asset::where($this->inputType, $item->value)->count();
-            
-            if ($assetCount > 0) {
-                $this->noreloadNotif('failed', 'Cannot Edit', "Cannot edit '{$item->value}'. It is being used by {$assetCount} asset(s).");
-                return;
-            }
-            
             $this->editId = $id;
             $this->editValue = $item->value;
         } catch (Exception $e) {
@@ -156,14 +148,6 @@ class InputManagement extends Component
             
             if (!$item) {
                 $this->noreloadNotif('failed', 'Not Found', 'Value not found.');
-                return;
-            }
-            
-            // Check if any assets are using this value
-            $assetCount = \App\Models\Asset::where($this->inputType, $item->value)->count();
-            
-            if ($assetCount > 0) {
-                $this->noreloadNotif('failed', 'Cannot Delete', "Cannot delete '{$item->value}'. It is being used by {$assetCount} asset(s).");
                 return;
             }
             

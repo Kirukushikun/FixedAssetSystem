@@ -416,7 +416,7 @@
 
                 <div class="input-group">
                     <label>Category Type:</label>
-                    <select wire:model="export_category_type">
+                    <select wire:model.live="export_category_type">
                         <option value="">All</option>
                         <option value="IT">IT</option>
                         <option value="NON-IT">NON-IT</option>
@@ -427,7 +427,7 @@
                     <label>Category:</label>
                     <select wire:model.live="export_category">
                         <option value="">All</option>
-                        @foreach($categories as $cat)
+                        @foreach($export_categories as $cat)
                             <option value="{{ $cat->code }}">{{ $cat->name }}</option>
                         @endforeach
                     </select>
