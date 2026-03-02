@@ -323,43 +323,47 @@
                <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="showModal = false"><i class="fa-solid fa-xmark"></i></div>
                
                <div class="w-[35rem]" x-show="modalTemplate === 'create'">
-                    <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
+               <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
 
-                    <!-- Category List -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-                    @foreach($categories as $category)
-                         <div>
-                              <button 
-                                   class="flex items-center justify-between w-full font-semibold"
-                                   wire:click.prevent="toggleCategory({{ $category->id }})"
+               <!-- Category List - OPTIMIZED: Use Alpine.js instead of Livewire for instant toggling -->
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8" x-data="{ openCat: null }">
+               @foreach($categories as $category)
+                    <div>
+                         <button 
+                              class="flex items-center justify-between w-full font-semibold"
+                              @click.prevent="openCat = openCat === {{ $category->id }} ? null : {{ $category->id }}"
+                         >
+                              <span class="flex items-center gap-2 font-bold whitespace-nowrap">
+                                   <img src="{{ asset('img/' . $category->icon . '.png') }}" style="width: 23px;" alt="">
+                                   {{ $category->name }}
+                              </span>
+
+                              <i 
+                                   class="fa-solid fa-chevron-down transition-transform duration-200"
+                                   :style="openCat === {{ $category->id }} ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'"
+                              ></i>
+                         </button>
+
+                         <div 
+                              x-show="openCat === {{ $category->id }}"
+                              x-transition:enter="transition ease-out duration-200"
+                              x-transition:enter-start="opacity-0 -translate-y-1"
+                              x-transition:enter-end="opacity-100 translate-y-0"
+                              class="ml-8 mt-2 space-y-1 text-sm text-gray-600"
+                         >
+                              @foreach($category->subcategories as $sub)
+                              <a 
+                                   href="{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . $category->code . '&sub_category=' . $sub->name) }}" 
+                                   class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1 transition-transform"
                               >
-                                   <span class="flex items-center gap-2 font-bold whitespace-nowrap">
-                                        <img src="{{ asset('img/' . $category->icon . '.png') }}" style="width: 23px;" alt="">
-                                        {{ $category->name }}
-                                   </span>
-
-                                   <i 
-                                        class="fa-solid fa-chevron-down transition-transform duration-200"
-                                        style="transform: rotate({{ $openCategory === $category->id ? '180deg' : '0deg' }})"
-                                   ></i>
-                              </button>
-
-                              @if($openCategory === $category->id)
-                                   <div class="ml-8 mt-2 space-y-1 text-sm text-gray-600">
-                                        @foreach($category->subcategories as $sub)
-                                        <a 
-                                             href="{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . $category->code . '&sub_category=' . $sub->name) }}" 
-                                             class="flex justify-between items-center cursor-pointer text-gray-500 font-semibold hover:text-gray-800 hover:translate-x-1"
-                                        >
-                                             <span>{{ $sub->name }}</span>
-                                             <i class="fa-solid fa-arrow-right"></i>
-                                        </a>
-                                        @endforeach
-                                   </div>
-                              @endif
+                                   <span>{{ $sub->name }}</span>
+                                   <i class="fa-solid fa-arrow-right"></i>
+                              </a>
+                              @endforeach
                          </div>
-                    @endforeach
-                    </div>                
+                    </div>
+               @endforeach
+               </div>                
                </div>
                
                <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'delete'">

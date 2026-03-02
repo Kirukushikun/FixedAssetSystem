@@ -41,7 +41,6 @@ class AssetManagementTable extends Component
 
     public $categories;
     public $subCategories = [];
-    public $openCategory = null;
     public $departments;
 
     // Export filter properties
@@ -55,16 +54,6 @@ class AssetManagementTable extends Component
 
     public $export_categories = []; // ADD THIS
     public $export_sub_categories = [];
-    
-
-    public function toggleCategory($categoryId)
-    {
-        if ($this->openCategory === $categoryId) {
-            $this->openCategory = null;
-        } else {
-            $this->openCategory = $categoryId;
-        }
-    }
     
     public function updatedFilterCategory($value)
     {
