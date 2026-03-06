@@ -21,12 +21,17 @@
 
                 <!-- Overlay -->
                 <div class="absolute top-[20px] right-[25px] w-[90px] h-[90px] 
-                            bg-black/40 rounded flex items-center justify-center 
-                            opacity-0 group-hover:opacity-100 transition">
-                    <a href="{{ asset('storage/' . $qr_code) }}" download>
-                        <i class="fa-solid fa-download text-white text-xl"></i>
-                    </a>
-                </div>
+                        bg-black/40 rounded flex items-center justify-center gap-3
+                        opacity-0 group-hover:opacity-100 transition">
+                <!-- View -->
+                <span @click="modalTemplate = 'qr', showModal = true" class="cursor-pointer">
+                    <i class="fa-solid fa-eye text-white text-xl"></i>
+                </span>
+                <!-- Download -->
+                <a href="{{ asset('storage/' . $qr_code) }}" download>
+                    <i class="fa-solid fa-download text-white text-xl"></i>
+                </a>
+            </div>
 
             </div>
         @endif
@@ -487,6 +492,15 @@
                     </div>
 
                     <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer" @click="showModal = false; $wire.assignAsset()">Confirm</button>
+                </div>
+
+                <div class="flex flex-col gap-5 items-center" x-show="modalTemplate === 'qr'">
+                    <h2 class="text-xl font-semibold self-start">QR Code — {{ $ref_id }}</h2>
+                    <img src="{{ asset('storage/' . $qr_code) }}" class="w-64 h-64">
+                    <a href="{{ asset('storage/' . $qr_code) }}" download 
+                    class="w-full text-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer text-sm font-bold">
+                        DOWNLOAD
+                    </a>
                 </div>
             @endif
         </div>

@@ -51,6 +51,7 @@ class GenerateAssetQrCode implements ShouldQueue
         try {
             // Use existing public route with encrypted ID
             $encryptedId = encrypt($this->asset->id);
+            \URL::forceRootUrl(config('app.url'));
             $url = url('/viewasset/' . $encryptedId);
             
             $qrFileName = 'qr_' . $this->asset->ref_id . '.svg';
