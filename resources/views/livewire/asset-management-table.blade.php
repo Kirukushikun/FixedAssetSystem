@@ -287,9 +287,11 @@
                                    <li>
                                         <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='/assetmanagement/edit?targetID={{encrypt($asset->id)}}'">Edit</button>
                                    </li>
-                                   <!-- <li>
+                                   @if(Auth::user()->is_admin)
+                                   <li>
                                         <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100" @click="showModal = true; modalTemplate = 'delete'; targetAsset = {{$asset->id}}">Delete</button>
-                                   </li> -->
+                                   </li>
+                                   @endif
                               </ul>
                               </div>
                          </td>
