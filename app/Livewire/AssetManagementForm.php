@@ -23,6 +23,7 @@ use App\Models\DynamicField;
 use App\Jobs\GenerateAssetQrCode;
 use App\Jobs\SyncAssetToSnipeIT;
 
+
 class AssetManagementForm extends Component
 {   
     use WithFileUploads;
@@ -78,9 +79,11 @@ class AssetManagementForm extends Component
     public $newHolder;
     public $newCondition;
 
-    public $farms = ['BFC', 'BDL', 'PFC', 'RH'];
+    public $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'Hatchery'];
     public $departments = [];
     public $location;
+
+    public $originalAssignedId; // tracks the original before any transfer preview
 
     // RULES FOR VALIDATION
     protected $rules = [
@@ -215,13 +218,15 @@ class AssetManagementForm extends Component
             'depreciated_value' => $this->targetAsset->depreciated_value,
             'usable_life' => $this->targetAsset->usable_life,
 
-            'selectedEmployee' => $this->targetAsset->assigned_id,  
+            'selectedEmployee' => $this->targetAsset->assigned_id,
             'farm' => $this->targetAsset->farm,
             'department' => $this->targetAsset->department,
             'location' => $this->targetAsset->location,
 
             'remarks' => $this->remarks
         ]); 
+
+        $this->originalAssignedId = $this->targetAsset->assigned_id;
 
         $this->qr_code = $this->targetAsset->qr_code;
         $this->attachment = $this->targetAsset->attachment;
@@ -299,6 +304,21 @@ class AssetManagementForm extends Component
                 'attachment' => $path,
                 'attachment_name' => $originalName
             ]);
+
+            //record initial assignment if asset was created with an assignee
+            if ($this->selectedEmployee) {
+                History::create([
+                    'asset_id'      => $asset->id,
+                    'assignee_id'   => $this->selectedEmployee,
+                    'assignee_name' => $this->selectedEmployeeName,
+                    'status'        => $this->status,
+                    'condition'     => $this->condition,
+                    'farm'          => $this->farm,
+                    'department'    => $this->department,
+                    'location'      => $this->location ?? null,
+                    'action'        => 'Initial Assignment',
+                ]);
+            }
 
             // Update ref_id to use actual database ID
             $finalRefId = 'FA-' . now()->year . '-' . str_pad($asset->id, 4, '0', STR_PAD_LEFT);
@@ -383,6 +403,24 @@ class AssetManagementForm extends Component
                 SyncAssetToSnipeIT::dispatch($this->targetAsset, 'update');
             }
 
+            // If assigned employee changed, record it as a transfer history
+            $previousAssignedId = $this->originalAssignedId;
+
+            if ($assignedId && $assignedId != $previousAssignedId) {
+                $assignee = Employee::find($assignedId);
+                History::create([
+                    'asset_id'      => $this->targetAsset->id,
+                    'assignee_id'   => $assignee->employee_id ?? $assignedId,
+                    'assignee_name' => $assignedName,
+                    'status'        => $this->status,
+                    'condition'     => $this->condition,
+                    'farm'          => $this->farm,
+                    'department'    => $this->department,
+                    'location'      => $this->location ?? null,
+                    'action'        => $previousAssignedId ? 'Transfer' : 'Initial Assignment',
+                ]);
+            }
+
             // Audit Trail
             $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category); 
 
@@ -411,8 +449,6 @@ class AssetManagementForm extends Component
      */
     public function transferAsset()
     {   
-        DB::beginTransaction();
-        
         try {
             $assignee = Employee::find($this->newHolder);
 
@@ -421,52 +457,28 @@ class AssetManagementForm extends Component
                 return;
             }
 
-            // Save history
-            History::create([
-                'asset_id'      => $this->targetAsset->id,
-                'assignee_id'   => $assignee->employee_id,
-                'assignee_name' => $assignee->employee_name,
-                'status'        => $this->targetAsset->status,
-                'condition'     => $this->newCondition,
-                'farm'          => $assignee->farm,
-                'department'    => $assignee->department,
-                'location'      => $this->location,
-                'action'        => 'Transfer',
-            ]);
+            // Just preview the transfer - NOT saved to DB yet
+            $this->selectedEmployee = $assignee->id;
+            $this->selectedEmployeeName = $assignee->employee_name;
+            $this->targetAsset->assigned_id = $assignee->id;
+            $this->targetAsset->assigned_name = $assignee->employee_name;
+            $this->farm = $assignee->farm;
+            $this->department = $assignee->department;
+            $this->location = null;
 
-            // Update asset
-            $this->targetAsset->update([
-                'assigned_id'   => $assignee->id,
-                'assigned_name' => $assignee->employee_name,
-                'farm' => $assignee->farm,
-                'department' => $assignee->department,
-                'location' => $this->location,
-                'condition' => $this->newCondition,
-            ]);
+            $this->reset(['newHolder', 'newCondition']);
 
-            DB::commit();
-
-            // Refresh history after transfer using relationship
-            $this->targetAsset->load(['history' => function ($query) {
-                $query->latest()->limit(50);
-            }]);
-            $this->history = $this->targetAsset->history;
-
-            $this->clearAllAssetCaches();
-
-            $this->noreloadNotif('success', 'Asset Transferred', 'Asset has been successfully transferred to ' . $assignee->employee_name . '.');
+            $this->noreloadNotif('success', 'Transfer Preview Ready', 'Review the details and click SAVE to confirm the transfer.');
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            
-            Log::error('Asset transfer failed', [
+            Log::error('Asset transfer preview failed', [
                 'error' => $e->getMessage(),
                 'asset_id' => $this->targetAsset->id,
                 'new_holder' => $this->newHolder,
                 'user_id' => auth()->id()
             ]);
             
-            $this->noreloadNotif('failed', 'Transfer Failed', 'Unable to transfer asset. Please try again.');
+            $this->noreloadNotif('failed', 'Transfer Failed', 'Unable to preview asset transfer. Please try again.');
         }
     }
 
@@ -540,5 +552,8 @@ class AssetManagementForm extends Component
         Cache::forget('employees_dropdown');
         Cache::forget('departments_list');
         Cache::forget('categories_by_code');
+
+        // ADD THIS: bust employee table cache after any asset reassignment
+        Cache::flush();
     }
 }

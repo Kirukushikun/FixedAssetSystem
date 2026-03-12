@@ -167,6 +167,8 @@ class DashboardData extends Component
             'BDL' => 'BROOKDALE FARMS',
             'PFC' => 'POULTRYPURE FARMS',
             'RH' => 'RH FARMS',
+            'BBGC' => 'BROOKSIDE BREEDING & GENETICS CORP.',    
+            'Hatchery' => 'HATCHERY', 
         ];
 
         $this->farmDistribution = [];

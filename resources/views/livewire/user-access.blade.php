@@ -162,6 +162,8 @@
                             <option value="BDL">BDL</option>
                             <option value="PFC">PFC</option>
                             <option value="RH">RH</option>
+                            <option value="BBGC">BBGC</option>
+                            <option value="Hatchery">Hatchery</option>
                         </select>
                     </div>
 

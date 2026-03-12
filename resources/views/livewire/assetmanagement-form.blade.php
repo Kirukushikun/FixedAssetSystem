@@ -197,16 +197,6 @@
                 @endif
             </div>
 
-            <!-- LOCATION -->
-            <div class="input-group">
-                <label>Location:</label>
-                @if($mode == 'view')
-                    <input type="text" wire:model="location" readonly>
-                @else
-                    <input type="text" wire:model="location">
-                @endif
-            </div>
-
             <!-- FARM -->
             <div class="input-group">
                 <label>Farm:</label>
@@ -234,6 +224,16 @@
                             <option value="{{ $deptOption }}">{{ $deptOption }}</option>
                         @endforeach
                     </select>
+                @endif
+            </div>
+
+            <!-- LOCATION -->
+            <div class="input-group">
+                <label>Location:</label>
+                @if($mode == 'view' || $mode == 'edit')
+                    <input type="text" wire:model="location" readonly>
+                @else
+                    <input type="text" wire:model="location">
                 @endif
             </div>
         </div>
@@ -363,7 +363,7 @@
                                 @foreach($audits as $audit)
                                     <tr>
                                         <td class="border border-gray-300 px-2 py-2">{{$audit->audited_at->format('m/d/Y')}}</td>
-                                        <td class="border border-gray-300 px-2 py-2">{{$audit->audited_by}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$audit->audited_by_name}}</td>
                                         <td class="border border-gray-300 px-2 py-2">{{$audit->notes ?? 'No notes were added for this audit.'}}</td>
                                         <td class="border border-gray-300 px-2 py-2">
                                             {{$audit->attachment_name ?? 'No files attached'}} 

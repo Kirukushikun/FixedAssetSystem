@@ -175,7 +175,7 @@
                     <span class="text-gray-400 font-semibold">Action</span>
                 </div>
 
-                <div class="divide-y divide-gray-200">
+                <div class="divide-y divide-gray-200 max-h-[250px] overflow-y-auto pr-1">
                     @foreach($farmDistribution as $farm)
                     <div class="grid grid-cols-[1fr_2fr_0.5fr] items-center py-4">
                         <span class="text-gray-700 text-sm font-bold">{{ $farm['name'] }}</span>
@@ -387,7 +387,9 @@
                         <option value="BFC">BFC</option>
                         <option value="BDL">BDL</option>
                         <option value="BFC">BFC</option>
-                        <option value="RH">RH</option>
+                        <option value="BDL">BDL</option>
+                        <option value="BBGC">BBGC</option>
+                        <option value="Hatchery">Hatchery</option>
                     </select>
                 </div>
 
