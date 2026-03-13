@@ -132,8 +132,11 @@ class AssetManagementForm extends Component
                 ->toArray();
         });
 
-        $this->brands = Cache::remember('brand_list', 3600, function() {
-            return DynamicField::where('field', 'brand')->pluck('value')->toArray();
+        $this->brands = Cache::remember('brand_list', 3600, function () {
+            return DynamicField::where('field', 'brand')
+                ->orderBy('value')
+                ->pluck('value')
+                ->toArray();
         });
 
         $this->processors = Cache::remember('processor_list', 3600, function() {
