@@ -78,6 +78,9 @@ class AssetManagementForm extends Component
 
     public $newHolder;
     public $newCondition;
+    public $newLocation = null;
+    public $transferFarm = null;
+    public $transferDepartment = null;
 
     public $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'Hatchery'];
     public $departments = [];
@@ -110,7 +113,6 @@ class AssetManagementForm extends Component
     public $processors;
     public $rams;
     public $storages;
-
 
     public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null)
     {
@@ -253,6 +255,18 @@ class AssetManagementForm extends Component
             $this->selectedEmployeeName = $data['employee_name'];
             $this->farm = $data['farm'];
             $this->department = $data['department'];
+        }
+    }
+
+    public function updatedNewHolder($value)
+    {
+        $employee = collect($this->employees)->firstWhere('id', (int) $value); // cast to int
+        if ($employee) {
+            $this->transferFarm = $employee['farm'];
+            $this->transferDepartment = $employee['department'];
+        } else {
+            $this->transferFarm = null;
+            $this->transferDepartment = null;
         }
     }
 
@@ -460,16 +474,15 @@ class AssetManagementForm extends Component
                 return;
             }
 
-            // Just preview the transfer - NOT saved to DB yet
             $this->selectedEmployee = $assignee->id;
             $this->selectedEmployeeName = $assignee->employee_name;
             $this->targetAsset->assigned_id = $assignee->id;
             $this->targetAsset->assigned_name = $assignee->employee_name;
             $this->farm = $assignee->farm;
             $this->department = $assignee->department;
-            $this->location = null;
+            $this->location = $this->newLocation; // <-- use newLocation instead of null
 
-            $this->reset(['newHolder', 'newCondition']);
+            $this->reset(['newHolder', 'newCondition', 'newLocation', 'transferFarm', 'transferDepartment']);
 
             $this->noreloadNotif('success', 'Transfer Preview Ready', 'Review the details and click SAVE to confirm the transfer.');
 
@@ -477,7 +490,6 @@ class AssetManagementForm extends Component
             Log::error('Asset transfer preview failed', [
                 'error' => $e->getMessage(),
                 'asset_id' => $this->targetAsset->id,
-                'new_holder' => $this->newHolder,
                 'user_id' => auth()->id()
             ]);
             
@@ -498,28 +510,35 @@ class AssetManagementForm extends Component
                 return;
             }
 
-            // Update form fields to preview the assignment (NOT saved to DB yet)
             $this->selectedEmployee = $assignee->id;
             $this->selectedEmployeeName = $assignee->employee_name;
+            $this->targetAsset->assigned_id = $assignee->id;
             $this->targetAsset->assigned_name = $assignee->employee_name;
             $this->farm = $assignee->farm;
             $this->department = $assignee->department;
-            
-            // Reset the modal field
-            $this->reset(['newHolder']);
+            $this->location = $this->newLocation; // <-- carry location from modal
 
-            $this->clearAllAssetCaches();
-            
+            $this->reset(['newHolder', 'newLocation', 'transferFarm', 'transferDepartment']);
+
+            $this->noreloadNotif('success', 'Assignment Preview Ready', 'Review the details and click SAVE to confirm.');
+
         } catch (\Exception $e) {
             Log::error('Asset assignment preview failed', [
                 'error' => $e->getMessage(),
                 'asset_id' => $this->targetAsset->id ?? null,
-                'new_holder' => $this->newHolder,
                 'user_id' => auth()->id()
             ]);
             
             $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to preview asset assignment. Please try again.');
         }
+    }
+
+    public function resetChanges()
+    {
+        $this->loadAssetData($this->targetAsset->id);
+        $this->originalAssignedId = $this->targetAsset->assigned_id;
+        $this->reset(['newHolder', 'newCondition', 'newLocation', 'transferFarm', 'transferDepartment']);
+        $this->noreloadNotif('success', 'Changes Reset', 'All unsaved changes have been discarded.');
     }
     
     public function render()

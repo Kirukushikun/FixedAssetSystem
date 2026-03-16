@@ -386,14 +386,19 @@
             <div class="self-end flex gap-3">
                 @if($mode == 'edit')
                     @if(!$targetAsset->assigned_id)
-                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button> 
+                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" 
+                            @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button> 
                     @else 
-                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button> 
+                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" 
+                            @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button> 
                     @endif
                 @endif 
                 @if($mode != 'view')
-                    <!-- <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" wire:click="submit">RESET</button> -->
-                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" wire:click="trySubmit()" @click="modalTemplate = 'submit'">SAVE</button> 
+                    <!-- ADD THIS -->
+                    <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" 
+                        wire:click="resetChanges()">RESET CHANGES</button>
+                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" 
+                        wire:click="trySubmit()" @click="modalTemplate = 'submit'">SAVE</button> 
                 @endif
             </div>
         </div>
@@ -439,33 +444,61 @@
             
             @if($mode != 'create')
                 <!-- SUBMIT MODAL -->
-                <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'transfer'">
-                    <h2 class="text-xl font-semibold -mb-2">Transfer Asset</h2>
-                    <p>Update the current holder of this asset. This action will create a transfer record and move the accountability to the selected employee.</p>
-
-                    <div class="input-group">
-                        <label for="">Current Holder: </label>
-                        <input type="text" value="{{$targetAsset->assigned_name ?? 'No current holder'}}" readonly>
+                <div class="flex flex-col gap-4 w-[26rem]" x-show="modalTemplate === 'transfer'">
+                    <div>
+                        <h2 class="text-xl font-semibold">Transfer Asset</h2>
+                        <p class="text-sm text-gray-400 mt-1">Move accountability to a new employee. Changes apply only after saving.</p>
                     </div>
 
+                    <hr>
+
+                    <!-- Current Holder -->
                     <div class="input-group">
-                        <label for="">New Holder: </label>
-                        <select name="" id="" wire:model="newHolder">
-                            <option value=""></option>
-                            
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Current Holder</label>
+                        <input type="text" value="{{$targetAsset->assigned_name ?? 'No current holder'}}" readonly class="bg-gray-50 text-gray-500">
+                    </div>
+
+                    <!-- New Holder -->
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">New Holder</label>
+                        <select wire:model.live="newHolder">
+                            <option value="">Select employee...</option>
                             @foreach ($employees as $emp)
-                                @if($emp['id'] !=  $targetAsset->assigned_id)
+                                @if($emp['id'] != $targetAsset->assigned_id)
                                     <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
                                 @endif
-                                
                             @endforeach
                         </select>
                     </div>
 
+                    <!-- Employee Reference -->
+                    <div class="bg-gray-50 rounded-lg p-3 flex flex-col gap-3 border border-gray-200">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Employee Reference</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="text-xs text-gray-500">Farm</label>
+                                <input type="text" wire:model="transferFarm" readonly 
+                                    class="bg-white text-gray-600" placeholder="—">
+                            </div>
+                            <div class="input-group">
+                                <label class="text-xs text-gray-500">Department</label>
+                                <input type="text" wire:model="transferDepartment" readonly 
+                                    class="bg-white text-gray-600" placeholder="—">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
                     <div class="input-group">
-                        <label for="">Condition: </label>
-                        <select name="" id="" wire:model="newCondition">
-                            <option value=""></option>
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Location</label>
+                        <input type="text" wire:model="newLocation" placeholder="Enter new location">
+                    </div>
+
+                    <!-- Condition -->
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Condition</label>
+                        <select wire:model="newCondition">
+                            <option value="">Select condition...</option>
                             <option value="Good">Good</option>
                             <option value="Repair">Repair</option>
                             <option value="Defective">Defective</option>
@@ -473,25 +506,62 @@
                         </select>
                     </div>
 
-                    <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer" @click="showModal = false; $wire.transferAsset()">Confirm</button>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="showModal = false" 
+                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
+                        <button type="button" @click="showModal = false; $wire.transferAsset()" 
+                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold">Confirm Transfer</button>
+                    </div>
                 </div>
 
-                <div class="flex flex-col gap-5 w-[23rem]" x-show="modalTemplate === 'assign'">
-                    <h2 class="text-xl font-semibold -mb-2">Assign Asset</h2>
-                    <p>Assign the current holder of this asset. This action will assign a record and move the accountability to the selected employee.</p>
+                <div class="flex flex-col gap-4 w-[26rem]" x-show="modalTemplate === 'assign'">
+                    <div>
+                        <h2 class="text-xl font-semibold">Assign Asset</h2>
+                        <p class="text-sm text-gray-400 mt-1">Assign this asset to an employee. Changes apply only after saving.</p>
+                    </div>
 
+                    <hr>
+
+                    <!-- New Holder -->
                     <div class="input-group">
-                        <label for="">New Holder: </label>
-                        <select name="" id="" wire:model="newHolder">
-                            <option value=""></option>
-                            
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Assign To</label>
+                        <select wire:model.live="newHolder">
+                            <option value="">Select employee...</option>
                             @foreach ($employees as $emp)
                                 <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer" @click="showModal = false; $wire.assignAsset()">Confirm</button>
+                    <!-- Employee Reference -->
+                    <div class="bg-gray-50 rounded-lg p-3 flex flex-col gap-3 border border-gray-200">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Employee Reference</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="text-xs text-gray-500">Farm</label>
+                                <input type="text" wire:model="transferFarm" readonly 
+                                    class="bg-white text-gray-600" placeholder="—">
+                            </div>
+                            <div class="input-group">
+                                <label class="text-xs text-gray-500">Department</label>
+                                <input type="text" wire:model="transferDepartment" readonly 
+                                    class="bg-white text-gray-600" placeholder="—">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Location</label>
+                        <input type="text" wire:model="newLocation" placeholder="Enter location">
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="showModal = false" 
+                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
+                        <button type="button" @click="showModal = false; $wire.assignAsset()" 
+                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold">Confirm Assignment</button>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-5 items-center" x-show="modalTemplate === 'qr'">
