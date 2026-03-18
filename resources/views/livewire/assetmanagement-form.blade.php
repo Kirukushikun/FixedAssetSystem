@@ -21,8 +21,7 @@
 
                 <!-- Overlay -->
                 <div class="absolute top-[20px] right-[25px] w-[90px] h-[90px] 
-                        bg-black/40 rounded flex items-center justify-center gap-3
-                        opacity-0 group-hover:opacity-100 transition">
+                        bg-black/40 rounded flex items-center justify-center gap-3">
                 <!-- View -->
                 <span @click="modalTemplate = 'qr', showModal = true" class="cursor-pointer">
                     <i class="fa-solid fa-eye text-white text-xl"></i>
