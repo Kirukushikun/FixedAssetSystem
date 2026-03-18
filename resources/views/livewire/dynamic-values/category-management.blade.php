@@ -33,7 +33,7 @@
     </div>
 
     <!-- List -->
-    <div class="flex flex-col gap-1 overflow-y-auto pr-1" style="height: 450px;">
+    <div class="flex flex-col gap-1 overflow-y-auto pr-1" style="height: 360px;">
         @forelse($categories as $cat)
             <div class="flex items-center px-3 py-2.5 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition group">
 

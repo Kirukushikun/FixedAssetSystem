@@ -45,14 +45,14 @@
 
     <!-- Table Header -->
     <div class="flex text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 pb-2 px-3">
-        <span class="flex-1">Subcategory</span>
-        <span class="w-36">Category</span>
-        <span class="w-20 text-center">Type</span>
+        <span class="w-48">Subcategory</span>
+        <span class="flex-1">Category</span>
+        <span class="w-48 text-center">Type</span>
         <span class="w-20 text-right">Actions</span>
     </div>
 
     <!-- Subcategory List -->
-    <div class="flex flex-col gap-1 overflow-y-auto pr-1" style="height: 450px;">
+    <div class="flex flex-col gap-1 overflow-y-auto pr-1" style="height: 300px;">
         @forelse($subcategories as $sub)
             <div class="flex items-center px-3 py-2.5 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition group">
 
@@ -78,11 +78,11 @@
                     </div>
 
                 @else
-                    <span class="flex-1 text-sm font-semibold text-gray-700">{{ $sub->name }}</span>
-                    <span class="w-36 text-sm text-gray-500">{{ $sub->category->name ?? '—' }}</span>
-                    <span class="w-20 text-center">
+                    <span class="w-48 text-sm font-semibold text-gray-700">{{ $sub->name }}</span>
+                    <span class="flex-1 text-sm text-gray-500">{{ $sub->category->name ?? '—' }}</span>
+                    <span class="w-48 text-center">
                         <span class="px-2 py-0.5 rounded-full text-white text-xs font-semibold"
-                            style="{{ $sub->category_type === 'IT' ? 'background-color: #6366f1;' : 'background-color: #fb923c;' }}">
+                            style="{{ $sub->category_type === 'IT' ? 'background-color: #6486f1;' : 'background-color: #fb923c;' }}">
                             {{ $sub->category_type }}
                         </span>
                     </span>

@@ -15,7 +15,7 @@
     </div>
 </div>
 
-<div class="flex flex-col gap-5 flex-1 overflow-y-auto">
+<div class="flex flex-col gap-5 flex-1 overflow-y-auto pr-5">
 
     <!-- Row 1: inline grid, Livewire components ARE the grid items -->
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
