@@ -22,7 +22,7 @@ class DepartmentManagement extends Component
     public function loadDepartments()
     {
         try {
-            $this->departments = Department::latest()->get();
+            $this->departments = Department::latest()->get()->sortBy('name');
         } catch (Exception $e) {
             $this->noreloadNotif('failed', 'Load Error', 'Failed to load departments: ' . $e->getMessage());
         }
