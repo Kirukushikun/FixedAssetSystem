@@ -161,9 +161,7 @@ class AssetManagementTable extends Component
         // Initialize export_categories to all categories
         $this->export_categories = $this->categories;
         
-        $this->departments = Cache::remember('departments_list', 3600, function() {
-            return Department::pluck('name')->toArray();
-        });
+        $this->departments = Department::pluck('name')->toArray();
     }
 
     // Reset pagination when filters change

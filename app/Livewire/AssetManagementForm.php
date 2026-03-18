@@ -134,24 +134,10 @@ class AssetManagementForm extends Component
                 ->toArray();
         });
 
-        $this->brands = Cache::remember('brand_list', 3600, function () {
-            return DynamicField::where('field', 'brand')
-                ->orderBy('value')
-                ->pluck('value')
-                ->toArray();
-        });
-
-        $this->processors = Cache::remember('processor_list', 3600, function() {
-            return DynamicField::where('field', 'processor')->pluck('value')->toArray();
-        });
-
-        $this->rams = Cache::remember('ram_list', 3600, function() {
-            return DynamicField::where('field', 'RAM')->pluck('value')->toArray();
-        });
-
-        $this->storages = Cache::remember('storage_list', 3600, function() {
-            return DynamicField::where('field', 'Storage')->pluck('value')->toArray();
-        });
+        $this->brands = DynamicField::where('field', 'brand')->orderBy('value')->pluck('value')->toArray();
+        $this->processors = DynamicField::where('field', 'processor')->pluck('value')->toArray();
+        $this->rams = DynamicField::where('field', 'RAM')->pluck('value')->toArray();
+        $this->storages = DynamicField::where('field', 'Storage')->pluck('value')->toArray();
 
         $this->departments = Cache::remember('departments_list', 3600, function() {
             return Department::pluck('name')->toArray();

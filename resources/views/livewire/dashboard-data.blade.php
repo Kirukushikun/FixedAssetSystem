@@ -395,7 +395,12 @@
 
                 <div class="input-group">
                     <label>Department/Division:</label>
-                    <input type="text" wire:model="department" class="border rounded px-2 py-1 w-full" />
+                    <select wire:model="department">
+                        <option value=""></option>
+                        @foreach($departments ?? [] as $dept)
+                            <option value="{{ $dept }}">{{ $dept }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="flex justify-end gap-3">

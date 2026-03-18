@@ -167,7 +167,7 @@ class EmployeesTable extends Component
 
     public function render()
     {   
-        $departments = Department::latest()->get();
+        $departments = Department::latest()->get()->sortBy('name');
 
         // Create unique cache key based on search and page
         $cacheKey = 'employee_table_' . md5(json_encode([

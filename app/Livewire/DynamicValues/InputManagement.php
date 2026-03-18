@@ -62,7 +62,7 @@ class InputManagement extends Component
 
             $this->audit("Added '{$this->newValue}' to {$this->fieldName}");
 
-            Cache::forget($this->inputType . '_list');
+            Cache::forget(strtolower($this->inputType) . '_list');
             
             $this->newValue = '';
             $this->loadData();
@@ -127,7 +127,7 @@ class InputManagement extends Component
             $this->cancelEdit();
             $this->loadData();
 
-            Cache::forget($this->inputType . '_list');
+            Cache::forget(strtolower($this->inputType) . '_list');
             
             $this->noreloadNotif('success', 'Value Updated', 'Value has been successfully updated.');
         } catch (Exception $e) {
@@ -155,7 +155,7 @@ class InputManagement extends Component
             
             $item->delete();
 
-            Cache::forget($this->inputType . '_list');
+            Cache::forget(strtolower($this->inputType) . '_list');
 
             $this->audit("Deleted '{$valueToDelete}' from {$this->fieldName}");
             

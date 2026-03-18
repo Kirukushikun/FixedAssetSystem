@@ -125,6 +125,7 @@ class DashboardData extends Component
     public function mount()
     {   
         $this->departments = Department::pluck('name')->toArray();
+        sort($this->departments);
         $this->categories = Category::with('subcategories')->get();
         
         // Initialize export_categories to all categories
