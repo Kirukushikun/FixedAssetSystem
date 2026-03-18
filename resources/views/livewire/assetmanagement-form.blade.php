@@ -394,9 +394,10 @@
                     @endif
                 @endif 
                 @if($mode != 'view')
-                    <!-- ADD THIS -->
-                    <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" 
-                        wire:click="resetChanges()">RESET CHANGES</button>
+                    @if($mode == 'edit')
+                        <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" 
+                            wire:click="resetChanges()">RESET CHANGES</button>
+                    @endif
                     <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" 
                         wire:click="trySubmit()" @click="modalTemplate = 'submit'">SAVE</button> 
                 @endif

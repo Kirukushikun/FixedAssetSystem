@@ -535,6 +535,10 @@ class AssetManagementForm extends Component
 
     public function resetChanges()
     {
+        if (!$this->targetAsset) {
+            return;
+        }
+
         $this->loadAssetData($this->targetAsset->id);
         $this->originalAssignedId = $this->targetAsset->assigned_id;
         $this->reset(['newHolder', 'newCondition', 'newLocation', 'transferFarm', 'transferDepartment']);
