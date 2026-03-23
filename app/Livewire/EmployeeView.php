@@ -10,6 +10,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Log;
 use Livewire\WithPagination;
 use App\Models\History;
+use Illuminate\Support\Facades\Cache;
 
 class EmployeeView extends Component
 {   
@@ -42,6 +43,9 @@ class EmployeeView extends Component
             // Clear form
             $this->reset(['flag_type', 'asset']);
 
+            // Clear cache for employee flags
+            Cache::flush();
+
             // Use NORELOAD - stays on same page, flags list refreshes
             $this->noreloadNotif('success', 'Flag Added', 'Flag has been successfully added to ' . $this->employee->employee_name . '.');
 
@@ -63,6 +67,9 @@ class EmployeeView extends Component
 
             $flag->delete();
 
+            // Clear cache for employee flags
+            Cache::flush();
+
             $this->noreloadNotif('success', 'Flag Resolved', 'The flag has been successfully resolved.');
 
         } catch (\Exception $e) {
@@ -82,6 +89,9 @@ class EmployeeView extends Component
             }
 
             Flag::where('target_id', $this->employee->id)->delete();
+
+            // Clear cache for employee flags
+            Cache::flush();
 
             $this->noreloadNotif('success', 'All Flags Resolved', $flagCount . ' flag(s) have been successfully resolved.');
 
