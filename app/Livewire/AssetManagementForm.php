@@ -88,6 +88,13 @@ class AssetManagementForm extends Component
 
     public $originalAssignedId; // tracks the original before any transfer preview
 
+    // Repair & Maintenance
+    public $repairs;
+    public $repair_date = '';
+    public $repair_type = '';
+    public $repair_cost = '';
+    public $repair_notes = '';
+
     // RULES FOR VALIDATION
     protected $rules = [
         'ref_id' => 'required',
@@ -186,6 +193,9 @@ class AssetManagementForm extends Component
             'audits' => function ($query) {
                 $query->latest()->limit(50);
             },
+            'repairs' => function ($query) {        // ADD THIS
+                $query->latest()->limit(50);
+            },
             'assignedEmployee:id,employee_name,farm,department',
             'categoryDetails:code,name'
         ])->findOrFail($targetID);
@@ -231,6 +241,8 @@ class AssetManagementForm extends Component
         // Access eager-loaded relationships
         $this->history = $this->targetAsset->history;
         $this->audits = $this->targetAsset->audits;
+        $this->repairs = $this->targetAsset->repairs;
+
     }
 
     public function updatedSelectedEmployee($value)
@@ -517,6 +529,37 @@ class AssetManagementForm extends Component
             
             $this->noreloadNotif('failed', 'Assignment Failed', 'Unable to preview asset assignment. Please try again.');
         }
+    }
+
+    public function addRepairRecord()
+    {
+        $this->validate([
+            'repair_date' => 'required|date',
+            'repair_type' => 'required|string',
+            'repair_cost' => 'nullable|numeric|min:0',
+            'repair_notes' => 'nullable|string|max:1000',
+        ]);
+
+        AssetRepair::create([
+            'asset_id' => $this->targetAsset->id,
+            'date' => $this->repair_date,
+            'type' => $this->repair_type,
+            'cost' => $this->repair_cost ?: null,
+            'notes' => $this->repair_notes,
+        ]);
+
+        // Refresh the table
+        $this->repairs = $this->targetAsset->repairs()->orderByDesc('date')->get();
+
+        // Reset fields
+        $this->repair_date = '';
+        $this->repair_type = '';
+        $this->repair_cost = '';
+        $this->repair_notes = '';
+
+        $this->showConfirmModal = false;
+
+        $this->noreloadNotif('success', 'Repair Record Added', 'The repair/maintenance record has been saved successfully.');
     }
 
     public function resetChanges()

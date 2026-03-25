@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('farm');
             $table->string('location')->nullable();
             $table->date('next_audit_date');
+            $table->string('finding')->nullable();
             $table->text('notes')->nullable();
             $table->string('attachment_path')->nullable();
             $table->string('attachment_name')->nullable();

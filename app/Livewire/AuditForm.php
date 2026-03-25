@@ -24,6 +24,7 @@ class AuditForm extends Component
     public $model;
     public $farm;
     public $location;
+    public $finding = '';
     public $description;
     
     // Editable fields
@@ -73,6 +74,7 @@ class AuditForm extends Component
                 'farm' => $this->targetAsset->farm ?? 'Not assigned',
                 'location' => $this->targetAsset->location ?? 'Not specified',
                 'next_audit_date' => $this->next_audit,
+                'finding' => $this->finding,
                 'notes' => $this->notes,
                 'attachment_path' => $attachmentPath,
                 'attachment_name' => $attachmentName,

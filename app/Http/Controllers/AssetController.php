@@ -45,6 +45,18 @@ class AssetController extends Controller
         return back();
     }
 
+    public function exportAuditLog(Request $request)
+    {
+        return Excel::download(
+            new AuditLogExport(
+                $this->audit_export_date_from ?: null,
+                $this->audit_export_date_to ?: null,
+                $this->audit_export_farm ?: null,
+            ),
+            'audit-log-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
 
     /**
      * Get all assets

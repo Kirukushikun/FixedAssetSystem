@@ -70,6 +70,8 @@
 
                <i class="fa-solid fa-file-export cursor-pointer" @click="showModal = true; modalTemplate = 'export-filter'" title="Export Assets"></i>
 
+               <i class="fa-solid fa-clipboard-list cursor-pointer" @click="showModal = true; modalTemplate = 'audit-log-filter'" title="Export Audit Log"></i>
+
                <div x-data="{ filterOpen: false }" class="relative">
                     <!-- Toggle Button -->
                     <button @click="filterOpen = !filterOpen">
@@ -383,79 +385,115 @@
 
                <!-- Export Filter Modal -->
                <div class="flex flex-col gap-5 w-[25rem]" x-show="modalTemplate === 'export-filter'">
-               <h2 class="text-xl font-semibold -mb-2">Export Assets - Filters</h2>
-               <p class="text-sm text-gray-500">Select filters to customize your export. Leave blank to export all.</p>
+                    <h2 class="text-xl font-semibold -mb-2">Export Assets - Filters</h2>
+                    <p class="text-sm text-gray-500">Select filters to customize your export. Leave blank to export all.</p>
 
-               <div class="input-group">
-                    <label>Category Type:</label>
-                    <select wire:model.live="export_category_type">
-                         <option value="">All</option>
-                         <option value="IT">IT</option>
-                         <option value="NON-IT">NON-IT</option>
-                    </select>
-               </div>
+                    <div class="input-group">
+                         <label>Category Type:</label>
+                         <select wire:model.live="export_category_type">
+                              <option value="">All</option>
+                              <option value="IT">IT</option>
+                              <option value="NON-IT">NON-IT</option>
+                         </select>
+                    </div>
 
-               <div class="input-group">
-                    <label>Category:</label>
-                    <select wire:model.live="export_category">
-                         <option value="">All</option>
-                         @foreach($export_categories as $cat)
-                              <option value="{{ $cat->code }}">{{ $cat->name }}</option>
-                         @endforeach
-                    </select>
-               </div>
+                    <div class="input-group">
+                         <label>Category:</label>
+                         <select wire:model.live="export_category">
+                              <option value="">All</option>
+                              @foreach($export_categories as $cat)
+                                   <option value="{{ $cat->code }}">{{ $cat->name }}</option>
+                              @endforeach
+                         </select>
+                    </div>
 
-               <div class="input-group">
-                    <label>Sub-category:</label>
-                    <select wire:model="export_sub_category">
-                         <option value="">All</option>
-                         @foreach($export_sub_categories ?? [] as $subcat)
-                              <option value="{{ $subcat }}">{{ $subcat }}</option>
-                         @endforeach
-                    </select>
-               </div>
+                    <div class="input-group">
+                         <label>Sub-category:</label>
+                         <select wire:model="export_sub_category">
+                              <option value="">All</option>
+                              @foreach($export_sub_categories ?? [] as $subcat)
+                                   <option value="{{ $subcat }}">{{ $subcat }}</option>
+                              @endforeach
+                         </select>
+                    </div>
 
-               <div class="input-group">
-                    <label>Farm:</label>
-                    <select wire:model="export_farm">
-                         <option value="">All</option>
-                         <option value="BFC">BFC</option>
-                         <option value="BDL">BDL</option>
-                         <option value="PFC">PFC</option>
-                         <option value="RH">RH</option>
-                    </select>
-               </div>
+                    <div class="input-group">
+                         <label>Farm:</label>
+                         <select wire:model="export_farm">
+                              <option value="">All</option>
+                              <option value="BFC">BFC</option>
+                              <option value="BDL">BDL</option>
+                              <option value="PFC">PFC</option>
+                              <option value="RH">RH</option>
+                         </select>
+                    </div>
 
-               <div class="input-group">
-                    <label>Department:</label>
-                    <select wire:model="export_department">
-                         <option value="">All</option>
-                         @foreach($departments ?? [] as $dept)
-                              <option value="{{ $dept }}">{{ $dept }}</option>
-                         @endforeach
-                    </select>
-               </div>
+                    <div class="input-group">
+                         <label>Department:</label>
+                         <select wire:model="export_department">
+                              <option value="">All</option>
+                              @foreach($departments ?? [] as $dept)
+                                   <option value="{{ $dept }}">{{ $dept }}</option>
+                              @endforeach
+                         </select>
+                    </div>
 
-               <div class="input-group">
-                    <label>Asset Age:</label>
-                    <div class="grid grid-cols-2 gap-3">
-                         <div>
-                              <label class="text-xs text-gray-500">Min Years:</label>
-                              <input type="number" wire:model="export_age_min" placeholder="0" min="0" class="w-full">
+                    <div class="input-group">
+                         <label>Asset Age:</label>
+                         <div class="grid grid-cols-2 gap-3">
+                              <div>
+                                   <label class="text-xs text-gray-500">Min Years:</label>
+                                   <input type="number" wire:model="export_age_min" placeholder="0" min="0" class="w-full">
+                              </div>
+                              <div>
+                                   <label class="text-xs text-gray-500">Max Years:</label>
+                                   <input type="number" wire:model="export_age_max" placeholder="Any" min="0" class="w-full">
+                              </div>
                          </div>
-                         <div>
-                              <label class="text-xs text-gray-500">Max Years:</label>
-                              <input type="number" wire:model="export_age_max" placeholder="Any" min="0" class="w-full">
-                         </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                         <button type="button" @click="showModal = false; $wire.clearExportFilters()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
+                         <button type="button" wire:click="exportWithFilters" class="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
+                              <i class="fa-solid fa-download mr-2"></i>Export
+                         </button>
                     </div>
                </div>
 
-               <div class="flex justify-end gap-3">
-                    <button type="button" @click="showModal = false; $wire.clearExportFilters()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
-                    <button type="button" wire:click="exportWithFilters" class="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
-                         <i class="fa-solid fa-download mr-2"></i>Export
-                    </button>
-               </div>
+               <!-- Audit Log Export Modal -->
+               <div class="flex flex-col gap-5 w-[25rem]" x-show="modalTemplate === 'audit-log-filter'">
+                    <h2 class="text-xl font-semibold -mb-2">Export Audit Log</h2>
+                    <p class="text-sm text-gray-500">Filter audit records to export. Leave blank to export all.</p>
+
+                    <div class="input-group">
+                         <label>Date From:</label>
+                         <input type="date" wire:model="audit_export_date_from">
+                    </div>
+
+                    <div class="input-group">
+                         <label>Date To:</label>
+                         <input type="date" wire:model="audit_export_date_to">
+                    </div>
+
+                    <div class="input-group">
+                         <label>Farm:</label>
+                         <select wire:model="audit_export_farm">
+                              <option value="">All</option>
+                              <option value="BFC">BFC</option>
+                              <option value="BDL">BDL</option>
+                              <option value="PFC">PFC</option>
+                              <option value="RH">RH</option>
+                              <option value="BBGC">BBGC</option>
+                              <option value="Hatchery">Hatchery</option>
+                         </select>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                         <button type="button" @click="showModal = false" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
+                         <button type="button" wire:click="exportAuditLog" class="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
+                              <i class="fa-solid fa-download mr-2"></i>Export
+                         </button>
+                    </div>
                </div>
           </div>
 

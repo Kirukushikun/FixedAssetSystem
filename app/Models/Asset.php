@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Audit;
 use App\Models\Employee;
 use App\Models\History;
+use App\Models\AssetRepair;
 
 class Asset extends Model
 {
@@ -112,5 +113,10 @@ class Asset extends Model
     public function categoryDetails()
     {
         return $this->belongsTo(Category::class, 'category', 'code');
+    }
+
+    public function repairs()
+    {
+        return $this->hasMany(AssetRepair::class);
     }
 }

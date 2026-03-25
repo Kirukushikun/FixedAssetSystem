@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Exports\AssetExport;
+use App\Exports\AuditLogExport;
 use Maatwebsite\Excel\Facades\Excel;
+
 
 // Import the job
 use App\Jobs\SyncAssetToSnipeIT;
@@ -52,8 +54,13 @@ class AssetManagementTable extends Component
     public $export_age_min = '';
     public $export_age_max = '';
 
-    public $export_categories = []; // ADD THIS
+    public $export_categories = [];
     public $export_sub_categories = [];
+
+    // Audit Log Export
+    public $audit_export_date_from = '';
+    public $audit_export_date_to = '';
+    public $audit_export_farm = '';
     
     public function updatedFilterCategory($value)
     {
@@ -122,6 +129,23 @@ class AssetManagementTable extends Component
         $this->clearExportFilters();
         
         return Excel::download(new AssetExport($filters), 'assets_filtered_' . now()->format('Y-m-d_His') . '.xlsx');
+    }
+
+    public function exportAuditLog()
+    {
+        $this->validate([
+            'audit_export_date_from' => 'nullable|date',
+            'audit_export_date_to' => 'nullable|date|after_or_equal:audit_export_date_from',
+        ]);
+
+        return Excel::download(
+            new \App\Exports\AuditLogExport(
+                $this->audit_export_date_from ?: null,
+                $this->audit_export_date_to ?: null,
+                $this->audit_export_farm ?: null,
+            ),
+            'audit-log-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     public function clearExportFilters()

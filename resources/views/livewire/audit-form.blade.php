@@ -79,6 +79,18 @@
             </div>
 
             <div class="input-group">
+                <label for="finding" class="font-semibold">Finding:</label>
+                <select id="finding" wire:model="finding">
+                    <option value="">-- No specific finding --</option>
+                    <option value="Good">Good</option>
+                    <option value="For Repair">For Repair</option>
+                    <option value="For Disposal">For Disposal</option>
+                    <option value="Scrap">Scrap</option>
+                    <option value="Lost">Lost</option>
+                </select>
+            </div>
+
+            <div class="input-group">
                 <label for="notes" class="font-semibold">Audit Notes:</label>
                 <textarea 
                     id="notes" 

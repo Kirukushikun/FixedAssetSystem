@@ -354,6 +354,7 @@
                                     <th class="border border-gray-300 text-left px-2 py-2">Date</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Auditor</th>
                                     <!-- <th class="border border-gray-300 text-left px-2 py-2">Result</th> -->
+                                    <th class="border border-gray-300 text-left px-2 py-2">Finding</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Notes</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Attachment(s)</th>
                                 </tr>
@@ -363,6 +364,7 @@
                                     <tr>
                                         <td class="border border-gray-300 px-2 py-2">{{$audit->audited_at->format('m/d/Y')}}</td>
                                         <td class="border border-gray-300 px-2 py-2">{{$audit->audited_by_name}}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{$audit->finding ?? 'No specific finding'}}</td>
                                         <td class="border border-gray-300 px-2 py-2">{{$audit->notes ?? 'No notes were added for this audit.'}}</td>
                                         <td class="border border-gray-300 px-2 py-2">
                                             {{$audit->attachment_name ?? 'No files attached'}} 
@@ -380,6 +382,34 @@
                         <p class="text-gray-400 text-sm">This asset has not been audited yet.</p>
                     @endif
                 </div>
+
+                <div class="input-group">
+                    <label class="block mb-2 font-medium">Repair & Maintenance History:</label>
+                    @if($repairs->isNotEmpty())
+                        <table class="w-full border border-gray-300 border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500">
+                                    <th class="border border-gray-300 text-left px-2 py-2">Date</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Type</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Cost</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($repairs as $repair)
+                                    <tr>
+                                        <td class="border border-gray-300 px-2 py-2">{{ \Carbon\Carbon::parse($repair->date)->format('m/d/Y') }}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{ $repair->type }}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{ $repair->cost ? '₱' . number_format($repair->cost, 2) : '—' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2">{{ $repair->notes ?? '—' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p class="text-gray-400 text-sm">No repair or maintenance records found for this asset.</p>
+                    @endif
+                </div>
             @endif
 
             <div class="self-end flex gap-3">
@@ -391,6 +421,8 @@
                         <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" 
                             @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button> 
                     @endif
+                        <button class="px-5 py-3 bg-orange-400 rounded-lg font-bold text-white text-xs hover:bg-orange-500" 
+                            @click="modalTemplate = 'repair', showModal = true">ADD REPAIR RECORD</button>
                 @endif 
                 @if($mode != 'view')
                     @if($mode == 'edit')
@@ -561,6 +593,47 @@
                             class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
                         <button type="button" @click="showModal = false; $wire.assignAsset()" 
                             class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold">Confirm Assignment</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4 w-[26rem]" x-show="modalTemplate === 'repair'">
+                    <div>
+                        <h2 class="text-xl font-semibold">Add Repair / Maintenance Record</h2>
+                        <p class="text-sm text-gray-400 mt-1">Log a repair or maintenance activity for this asset.</p>
+                    </div>
+
+                    <hr>
+
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Date</label>
+                        <input type="date" wire:model="repair_date">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Type</label>
+                        <select wire:model="repair_type">
+                            <option value="">Select type...</option>
+                            <option value="PMS">PMS (Preventive Maintenance)</option>
+                            <option value="Regular Maintenance">Regular Maintenance</option>
+                            <option value="Repair">Repair</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Cost</label>
+                        <input type="number" wire:model="repair_cost" placeholder="0.00" min="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Notes</label>
+                        <textarea wire:model="repair_notes" rows="3" placeholder="Describe the repair or maintenance done..."></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="showModal = false" 
+                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
+                        <button type="button" @click="showModal = false; $wire.addRepairRecord()" 
+                            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 text-sm font-semibold">Save Record</button>
                     </div>
                 </div>
 

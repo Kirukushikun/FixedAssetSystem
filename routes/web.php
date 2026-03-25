@@ -85,6 +85,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/assets/export', [AssetController::class, 'export'])->name('assets.export');
     Route::post('/assets/import', [AssetController::class, 'import'])->name('assets.import');
+
+    Route::get('/assets/export-audit-log', [AssetController::class, 'exportAuditLog'])->name('assets.export.audit-log');
 });
 
 
