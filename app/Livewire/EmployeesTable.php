@@ -19,25 +19,42 @@ class EmployeesTable extends Component
 
     public $search = '';
 
-    public function goToPage($page)
-    {
-       $this->setPage($page);
-    }
+    // ── Filters ──
+    public $filterFarm       = '';
+    public $filterDepartment = '';
+    public $filterPosition   = '';
+    public $filterFlag       = '';
 
     public function updatedSearch()
     {
         $this->resetPage();
     }
 
+    public function updatedFilterFarm()       { $this->resetPage(); }
+    public function updatedFilterDepartment() { $this->resetPage(); }
+    public function updatedFilterPosition()   { $this->resetPage(); }
+    public function updatedFilterFlag()       { $this->resetPage(); }
+
+    public function resetFilters()
+    {
+        $this->reset(['filterFarm', 'filterDepartment', 'filterPosition', 'filterFlag']);
+        $this->resetPage();
+    }
+
+    public function goToPage($page)
+    {
+       $this->setPage($page);
+    }
+
     public $target;
     public $employee_id, $employee_name, $position, $farm, $department;
 
     protected $rules = [
-        'employee_id' => 'required|unique:employees,employee_id',
+        'employee_id'   => 'required|unique:employees,employee_id',
         'employee_name' => 'required',
-        'position' => 'required',
-        'farm' => 'required',
-        'department' => 'required',
+        'position'      => 'required',
+        'farm'          => 'required',
+        'department'    => 'required',
     ];
 
     public function targetID($id)
@@ -46,11 +63,11 @@ class EmployeesTable extends Component
 
         $employee = Employee::find($id);
 
-        $this->employee_id = $employee->employee_id;
+        $this->employee_id   = $employee->employee_id;
         $this->employee_name = $employee->employee_name;
-        $this->position = $employee->position;
-        $this->farm = $employee->farm;
-        $this->department = $employee->department;
+        $this->position      = $employee->position;
+        $this->farm          = $employee->farm;
+        $this->department    = $employee->department;
     }
 
     public function submit()
@@ -59,22 +76,16 @@ class EmployeesTable extends Component
             $this->validate();
 
             Employee::create([
-                'employee_id' => $this->employee_id,
+                'employee_id'   => $this->employee_id,
                 'employee_name' => $this->employee_name,
-                'position' => $this->position,
-                'farm' => $this->farm,
-                'department' => $this->department,
+                'position'      => $this->position,
+                'farm'          => $this->farm,
+                'department'    => $this->department,
             ]);
 
-            // Clear cache after creating
             $this->clearEmployeeCache();
-
-            // Audit Trail
             $this->audit('Added Employee: ' . $this->employee_id . ' - ' . $this->employee_name);
-
             $this->clear();
-
-            // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
 
         } catch (\Exception $e) {
@@ -95,22 +106,16 @@ class EmployeesTable extends Component
                 return;
             }
 
-            $employee->employee_id = $this->employee_id;
+            $employee->employee_id   = $this->employee_id;
             $employee->employee_name = $this->employee_name;
-            $employee->position = $this->position;
-            $employee->farm = $this->farm;
-            $employee->department = $this->department;
+            $employee->position      = $this->position;
+            $employee->farm          = $this->farm;
+            $employee->department    = $this->department;
             $employee->save();
 
-            // Clear cache after updating
             $this->clearEmployeeCache();
-
-            // Audit Trail
             $this->audit('Updated Employee: ' . $employee->employee_id . ' - ' . $employee->employee_name);
-
             $this->clear();
-
-            // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Updated', 'Employee ' . $this->employee_name . ' has been successfully updated.');
 
         } catch (\Exception $e) {
@@ -134,15 +139,9 @@ class EmployeesTable extends Component
             $employee->is_deleted = true;
             $employee->save();
             
-            // Clear cache after deleting
             $this->clearEmployeeCache();
-
             $this->clear();
-
-            // Audit Trail
             $this->audit('Deleted Employee: ' . $employee->employee_id . ' - ' . $employeeName);    
-
-            // Use NORELOAD - stays on same page, table refreshes automatically
             $this->noreloadNotif('success', 'Employee Deleted', 'Employee ' . $employeeName . ' has been successfully deleted.');
 
         } catch (\Exception $e) {
@@ -158,34 +157,46 @@ class EmployeesTable extends Component
 
     private function clearEmployeeCache()
     {
-        // Clear all employee table cache (starts with 'employee_table_')
-        Cache::flush(); // Simple approach - clears all cache
-        
-        // OR use this for more targeted clearing (if you want to keep other caches):
-        // Cache::forget('employee_table_query');
+        Cache::flush();
     }
 
     public function render()
     {   
         $departments = Department::latest()->get()->sortBy('name');
 
-        // Create unique cache key based on search and page
+        // Distinct positions for the filter dropdown
+        $positions = Employee::where('is_deleted', false)
+            ->whereNotNull('position')
+            ->distinct()
+            ->orderBy('position')
+            ->pluck('position');
+
+        // Cache key includes all active filters
         $cacheKey = 'employee_table_' . md5(json_encode([
-            'search' => $this->search,
-            'page' => $this->getPage()
+            'search'           => $this->search,
+            'filterFarm'       => $this->filterFarm,
+            'filterDepartment' => $this->filterDepartment,
+            'filterPosition'   => $this->filterPosition,
+            'filterFlag'       => $this->filterFlag,
+            'page'             => $this->getPage(),
         ]));
 
-        // Cache the query results for 10 minutes
         $employees = Cache::remember($cacheKey, 600, function () {
             return Employee::where('is_deleted', false)
                 ->when($this->search, function ($query) {
                     $query->where(function ($q) {
-                        $q->where('employee_id', 'like', '%' . $this->search . '%')
-                            ->orWhere('employee_name', 'like', '%' . $this->search . '%')
-                            ->orWhere('position', 'like', '%' . $this->search . '%')
-                            ->orWhere('farm', 'like', '%' . $this->search . '%')
-                            ->orWhere('department', 'like', '%' . $this->search . '%');
+                        $q->where('employee_id',   'like', '%' . $this->search . '%')
+                          ->orWhere('employee_name', 'like', '%' . $this->search . '%')
+                          ->orWhere('position',      'like', '%' . $this->search . '%')
+                          ->orWhere('farm',          'like', '%' . $this->search . '%')
+                          ->orWhere('department',    'like', '%' . $this->search . '%');
                     });
+                })
+                ->when($this->filterFarm,       fn($q) => $q->where('farm', $this->filterFarm))
+                ->when($this->filterDepartment, fn($q) => $q->where('department', $this->filterDepartment))
+                ->when($this->filterPosition,   fn($q) => $q->where('position', $this->filterPosition))
+                ->when($this->filterFlag, function ($query) {
+                    $query->whereHas('flags', fn($q) => $q->where('flag_type', $this->filterFlag));
                 })
                 ->with(['flags'])
                 ->withCount(['assets', 'flags'])
@@ -193,27 +204,29 @@ class EmployeesTable extends Component
                 ->paginate(10);
         });
             
-        return view('livewire.employees-table', compact('employees', 'departments'));
+        return view('livewire.employees-table', compact('employees', 'departments', 'positions'));
     }
 
-    private function noreloadNotif($type, $header, $message){
+    private function noreloadNotif($type, $header, $message)
+    {
         $this->dispatch('notif', type: $type, header: $header, message: $message);
     }
 
-    private function reloadNotif($type, $header, $message){
+    private function reloadNotif($type, $header, $message)
+    {
         session()->flash('notif', [
-            'type' => $type,
-            'header' => $header,
-            'message' => $message
+            'type'    => $type,
+            'header'  => $header,
+            'message' => $message,
         ]);
     }
 
-    private function audit($action){
-        $user = auth()->user();
+    private function audit($action)
+    {
         \App\Models\AuditTrail::create([
-            'user_id' => Auth::id(),
+            'user_id'   => Auth::id(),
             'user_name' => Auth::user()->name,
-            'action' => $action,
+            'action'    => $action,
         ]);
     }
 }

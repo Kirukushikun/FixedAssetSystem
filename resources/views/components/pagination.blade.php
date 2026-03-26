@@ -15,7 +15,7 @@
     $pages = range($start, $end);
 @endphp
 
-<div class="pagination-container flex items-center justify-end gap-3 mt-auto">
+<div class="pagination-container flex items-center justify-end gap-3 mt-auto pt-4">
     <div class="text-xs text-gray-400">
         Showing {{ $paginator->firstItem() }} to {{ $paginator->lastItem() }} of {{ $paginator->total() }} results
     </div>

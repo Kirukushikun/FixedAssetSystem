@@ -2,29 +2,30 @@
 
 @section('content')
 
-<div class="card">
-    <div class="flex items-center justify-between mb-2">
-        <h1 class="text-lg font-bold">Profile Information</h1>
-        <livewire:settings-action />
-    </div>
-    <div class="flex flex-col gap-2">
-        <p class="text-sm text-gray-500"><b>Full Name: </b> {{Auth::user()->name}}</p>
-        <p class="text-sm text-gray-500"><b>Position: </b> {{Auth::user()->position}}</p>
-        <p class="text-sm text-gray-500"><b>Farm: </b> BFC</p>
-        <p class="text-sm text-gray-500"><b>Department: </b> IT & Security</p>
-    </div>
-</div>
+<div class="flex flex-col gap-5 h-full">
 
-<div class="flex flex-col gap-5 flex-1 overflow-y-auto pr-5">
+    {{-- ── Profile Card ── --}}
+    <div class="card">
+        <div class="flex items-center justify-between mb-3">
+            <h1 class="text-lg font-bold text-[#2d3748]">Profile Information</h1>
+            <livewire:settings-action />
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <p class="text-sm text-gray-500"><span class="font-semibold text-gray-700">Full Name:</span> {{ Auth::user()->name }}</p>
+            <p class="text-sm text-gray-500"><span class="font-semibold text-gray-700">Position:</span> {{ Auth::user()->position }}</p>
+            <p class="text-sm text-gray-500"><span class="font-semibold text-gray-700">Farm:</span> BFC</p>
+            <p class="text-sm text-gray-500"><span class="font-semibold text-gray-700">Department:</span> IT & Security</p>
+        </div>
+    </div>
 
-    <!-- Row 1: inline grid, Livewire components ARE the grid items -->
-    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+    {{-- ── Row 1: Categories (1fr) + Subcategories (2fr) ── --}}
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-5">
         <livewire:dynamic-values.category-management />
         <livewire:dynamic-values.subcategory-management />
     </div>
 
-    <!-- Row 2 -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+    {{-- ── Row 2: Department + Input managers ── --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-5">
         <livewire:dynamic-values.department-management />
         <livewire:dynamic-values.input-management inputType="brand" />
         <livewire:dynamic-values.input-management inputType="processor" />

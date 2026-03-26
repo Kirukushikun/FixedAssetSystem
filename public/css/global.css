@@ -7,6 +7,7 @@
     font-family: "Inter", sans-serif;
 }
 
+/* FA icons render via ::before — never touch those pseudo-elements globally */
 *:not(i)::before,
 *:not(i)::after {
     box-sizing: border-box;
@@ -237,10 +238,10 @@ nav.collapsed .logo p {
 }
 
 /* Collapsed state */
-/* nav.collapsed .sidebar a {
+nav.collapsed .sidebar a {
     justify-content: center;
     padding: 9px 0;
-} */
+}
 
 nav.collapsed .sidebar a p {
     opacity: 0;
@@ -433,7 +434,7 @@ main > .content-area {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: clamp(16px, 3vw, 32px);
+    padding: clamp(16px, 3vw, 20px);
     scroll-behavior: smooth;
 }
 
@@ -461,7 +462,6 @@ main > .content-area::-webkit-scrollbar-thumb {
 
 .card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
 }
 
 /* ============================================================
