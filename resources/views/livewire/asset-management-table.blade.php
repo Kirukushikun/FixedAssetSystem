@@ -13,6 +13,10 @@
                </div>
                <button class="px-5 py-2 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" @click="showModal = true; modalTemplate = 'create'" title="Add New Asset">ADD NEW ASSET</button>
                
+               <a href="/assetmanagement/qr" class="px-5 py-2 bg-indigo-400 rounded-lg font-bold text-white text-xs hover:bg-indigo-500" title="QR Code Management">
+                    <i class="fa-solid fa-qrcode mr-2"></i>QR CODES
+               </a>
+               
                <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
@@ -490,7 +494,7 @@
 
                     <div class="flex justify-end gap-3">
                          <button type="button" @click="showModal = false" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
-                         <button type="button" wire:click="exportAuditLog" class="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
+                         <button type="button" @click="showModal = false" wire:click="exportAuditLog" class="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
                               <i class="fa-solid fa-download mr-2"></i>Export
                          </button>
                     </div>

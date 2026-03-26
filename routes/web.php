@@ -30,6 +30,9 @@ Route::middleware('auth')->group(function () {
         return view('assetmanagement');
     });
 
+    Route::get('/assetmanagement/qr', \App\Livewire\QrManagement::class)->name('assets.qr');
+    Route::get('/assetmanagement/qr/print', [AssetController::class, 'printQr'])->name('assets.qr.print');
+
     Route::get('/assetmanagement/{mode}', function (Request $request, $mode) {
         $targetID = null;
         $category_type = null;
@@ -87,6 +90,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/assets/import', [AssetController::class, 'import'])->name('assets.import');
 
     Route::get('/assets/export-audit-log', [AssetController::class, 'exportAuditLog'])->name('assets.export.audit-log');
+    
+    Route::get('/assetmanagement/qr', function () {
+        return view('qr-management');
+    })->name('assets.qr');
 });
 
 

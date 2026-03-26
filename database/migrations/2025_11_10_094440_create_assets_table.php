@@ -57,6 +57,9 @@ return new class extends Migration
 
             $table->text('remarks')->nullable();
 
+            $table->boolean('qr_printed')->default(false);
+            $table->boolean('qr_affixed')->default(false);
+
             $table->timestamps();
         });
     }
