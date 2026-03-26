@@ -51,8 +51,7 @@
 
     <!-- Main Cards -->
     <div class="main-cards h-full grid-cols-1 gap-7 lg:grid lg:grid-cols-[calc(35%-10px)_calc(65%-10px)]">
-
-        <div class="card flex flex-col gap-5">
+        <div class="card flex flex-col gap-5 mb-7 lg:mb-0">
             <!-- Condition Chart -->
             <div class="graph">
                 <div class="flex items-end bg-gradient-to-br from-[#0a0f2c] to-[#111c3d] rounded-xl p-[40px] pb-[65px] font-sans h-72 w-full">

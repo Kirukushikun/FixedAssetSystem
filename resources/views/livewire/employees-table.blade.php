@@ -1,4 +1,4 @@
-<div class="card content flex-1 flex flex-col" x-data="{
+<div class="card content h-full flex flex-col" x-data="{
     showModal: false,
     modalTemplate: '',
 }">

@@ -1,31 +1,31 @@
 <div class="table-container h-full flex flex-col">
     <table>
-            <thead>
+        <thead>
+            <tr>
+                <th>USER ID</th>
+                <th>USER NAME</th>
+                <th>ACTION</th>
+                <th>DATE</th>
+                <th>TIME</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($audits as $audit)
                 <tr>
-                    <th>USER ID</th>
-                    <th>USER NAME</th>
-                    <th>ACTION</th>
-                    <th>DATE</th>
-                    <th>TIME</th>
+                    <td>#{{$audit->user_id}} <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
+                    <td>{{$audit->user_name}}</td>
+                    <td>{{$audit->action}}</td>
+                    <td>{{$audit->created_at->format('d/m/Y')}}</td>
+                    <td>{{$audit->created_at->format('h:i A')}}</td>
                 </tr>
-            </thead>
-            <tbody>
-                @forelse($audits as $audit)
-                    <tr>
-                        <td>#{{$audit->user_id}} <i class="fa-regular fa-copy cursor-pointer text-gray-400"></i></td>
-                        <td>{{$audit->user_name}}</td>
-                        <td>{{$audit->action}}</td>
-                        <td>{{$audit->created_at->format('d/m/Y')}}</td>
-                        <td>{{$audit->created_at->format('h:i A')}}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
-                            No audit trail record found
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
+            @empty
+                <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                        No audit trail record found
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
     </table>
 
     <x-pagination :paginator="$audits" />
