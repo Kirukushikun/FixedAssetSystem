@@ -5,30 +5,53 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\AuditTrail as AuditModel;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Cache;
 
 class AuditTrail extends Component
-{   
+{
     use WithPagination;
-    
+
     protected $paginationTheme = 'tailwind';
 
+    public string $search = '';
+    public string $filterDateFrom = '';
+    public string $filterDateTo = '';
+    public string $filterTimeFrom = '';
+    public string $filterTimeTo = '';
 
-    public function goToPage($page)
+    public function updatingSearch(): void { $this->resetPage(); }
+    public function updatingFilterDateFrom(): void { $this->resetPage(); }
+    public function updatingFilterDateTo(): void { $this->resetPage(); }
+    public function updatingFilterTimeFrom(): void { $this->resetPage(); }
+    public function updatingFilterTimeTo(): void { $this->resetPage(); }
+
+    public function resetFilters(): void
     {
-       $this->setPage($page);
+        $this->reset('search', 'filterDateFrom', 'filterDateTo', 'filterTimeFrom', 'filterTimeTo');
+        $this->resetPage();
     }
 
-
     public function render()
-    {   
-        // Create unique cache key based on current page
-        $cacheKey = 'audit_trail_' . $this->getPage();
-
-        // Cache the audit trail for 5 minutes (300 seconds)
-        $audits = Cache::remember($cacheKey, 300, function () {
-            return AuditModel::latest()->paginate(10);
-        });
+    {
+        $audits = AuditModel::query()
+            ->when($this->search, fn($q) =>
+                $q->where('user_id', 'like', "%{$this->search}%")
+                  ->orWhere('user_name', 'like', "%{$this->search}%")
+                  ->orWhere('action', 'like', "%{$this->search}%")
+            )
+            ->when($this->filterDateFrom, fn($q) =>
+                $q->whereDate('created_at', '>=', $this->filterDateFrom)
+            )
+            ->when($this->filterDateTo, fn($q) =>
+                $q->whereDate('created_at', '<=', $this->filterDateTo)
+            )
+            ->when($this->filterTimeFrom, fn($q) =>
+                $q->whereTime('created_at', '>=', $this->filterTimeFrom)
+            )
+            ->when($this->filterTimeTo, fn($q) =>
+                $q->whereTime('created_at', '<=', $this->filterTimeTo)
+            )
+            ->latest()
+            ->paginate(10);
 
         return view('livewire.audit-trail', compact('audits'));
     }

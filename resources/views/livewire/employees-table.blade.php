@@ -171,124 +171,126 @@
     {{-- ── Table ── --}}
     <div class="table-container flex-1 flex flex-col min-h-0">
         <div class="flex-1 overflow-y-auto overflow-x-auto minimal-scroll">
-            <table class="h-full">
-                <thead>
-                    <tr>
-                        <th>Employee ID</th>
-                        <th>Employee Name</th>
-                        <th>Position</th>
-                        <th>Farm</th>
-                        <th>Department/Division</th>
-                        <th>Assigned Assets</th>
-                        <th>Flags</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $flagColors = [
-                            'Under Investigation' => 'text-blue-500',
-                            'Pending Clearances'  => 'text-purple-500',
-                            'Lost Asset'          => 'text-red-500',
-                            'Unreturned Asset'    => 'text-orange-500',
-                            'Damaged Asset'       => 'text-yellow-500',
-                        ];
-                    @endphp
 
-                    @forelse($employees as $employee)
-                    <tr>
-                        <td class="font-mono text-xs text-gray-500">
-                            #{{ $employee->employee_id }}
-                            <i class="fa-regular fa-copy cursor-pointer text-gray-400 hover:text-teal-500 transition-colors ml-1"></i>
-                        </td>
-                        <td class="text-sm font-semibold">{{ $employee->employee_name }}</td>
-                        <td class="text-sm text-gray-600">{{ $employee->position }}</td>
-                        <td class="text-sm text-gray-600">{{ $employee->farm }}</td>
-                        <td class="text-sm text-gray-600">{{ $employee->department }}</td>
-                        <td class="text-sm text-gray-600">{{ $employee->assets_count }}</td>
-                        <td>
-                            @if($employee->flags_count > 0)
-                                @php
-                                    $displayedFlags = $employee->flags->take(3);
-                                    $remainingCount = $employee->flags_count - 3;
-                                @endphp
-                                <div class="flex gap-2 items-center">
-                                    @foreach($displayedFlags as $flag)
-                                        <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"
-                                           title="{{ $flag->flag_type }} - {{ $flag->asset }}"></i>
-                                    @endforeach
-                                    @if($remainingCount > 0)
-                                        <span class="text-xs font-bold text-gray-400">+{{ $remainingCount }}</span>
-                                    @endif
-                                </div>
-                            @else
-                                <span class="text-gray-400 text-xs">No flags</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div x-data="{ open: false }" class="relative flex justify-center">
-                                <button
-                                    type="button"
-                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-                                    @click="open = !open"
-                                >
-                                    <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
-                                </button>
+            @if($employees->isEmpty())
+                <!-- Empty state vertically centered -->
+                <div class="flex flex-col items-center justify-center h-full gap-3 text-gray-400 py-24">
+                    <i class="fa-solid fa-users text-4xl"></i>
+                    <p class="text-sm font-semibold">No employees found</p>
+                    <p class="text-xs">Try adjusting your search or filters</p>
+                </div>
+            @else
+                <!-- Table content aligned at top -->
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Employee Name</th>
+                            <th>Position</th>
+                            <th>Farm</th>
+                            <th>Department/Division</th>
+                            <th>Assigned Assets</th>
+                            <th>Flags</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $flagColors = [
+                                'Under Investigation' => 'text-blue-500',
+                                'Pending Clearances'  => 'text-purple-500',
+                                'Lost Asset'          => 'text-red-500',
+                                'Unreturned Asset'    => 'text-orange-500',
+                                'Damaged Asset'       => 'text-yellow-500',
+                            ];
+                        @endphp
 
-                                <div
-                                    x-show="open"
-                                    @click.outside="open = false"
-                                    x-transition:enter="transition ease-out duration-150"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-100"
-                                    x-transition:leave-start="opacity-100 scale-100"
-                                    x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute right-0 mt-1 top-full w-36 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden"
-                                >
-                                    <ul class="text-sm text-gray-700 py-1">
-                                        <li>
-                                            <button
-                                                class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                                                onclick="window.location.href='/employees/view?targetID={{ $employee->id }}'"
-                                            >
-                                                <i class="fa-solid fa-eye text-xs text-gray-400"></i> View
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button
-                                                class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                                                @click="open = false; window.dispatchEvent(new CustomEvent('open-modal', { detail: { template: 'edit', employee: {{ $employee->id }} } })); $wire.targetID({{ $employee->id }})"
-                                            >
-                                                <i class="fa-solid fa-pen text-xs text-gray-400"></i> Edit
-                                            </button>
-                                        </li>
-                                        <li class="border-t border-gray-100">
-                                            <button
-                                                class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 flex items-center gap-2 transition-colors"
-                                                @click="open = false; window.dispatchEvent(new CustomEvent('open-modal', { detail: { template: 'delete', employee: {{ $employee->id }} } })); $wire.targetID({{ $employee->id }})"
-                                            >
-                                                <i class="fa-solid fa-trash text-xs"></i> Delete
-                                            </button>
-                                        </li>
-                                    </ul>
+                        @foreach($employees as $employee)
+                        <tr>
+                            <td class="font-mono text-xs text-gray-500">
+                                #{{ $employee->employee_id }}
+                                <i class="fa-regular fa-copy cursor-pointer text-gray-400 hover:text-teal-500 transition-colors ml-1"></i>
+                            </td>
+                            <td class="text-sm font-semibold">{{ $employee->employee_name }}</td>
+                            <td class="text-sm text-gray-600">{{ $employee->position }}</td>
+                            <td class="text-sm text-gray-600">{{ $employee->farm }}</td>
+                            <td class="text-sm text-gray-600">{{ $employee->department }}</td>
+                            <td class="text-sm text-gray-600">{{ $employee->assets_count }}</td>
+                            <td>
+                                @if($employee->flags_count > 0)
+                                    @php
+                                        $displayedFlags = $employee->flags->take(3);
+                                        $remainingCount = $employee->flags_count - 3;
+                                    @endphp
+                                    <div class="flex gap-2 items-center">
+                                        @foreach($displayedFlags as $flag)
+                                            <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"
+                                            title="{{ $flag->flag_type }} - {{ $flag->asset }}"></i>
+                                        @endforeach
+                                        @if($remainingCount > 0)
+                                            <span class="text-xs font-bold text-gray-400">+{{ $remainingCount }}</span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-xs">No flags</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div x-data="{ open: false }" class="relative flex justify-center">
+                                    <button
+                                        type="button"
+                                        class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                                        @click="open = !open"
+                                    >
+                                        <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+                                    </button>
+
+                                    <div
+                                        x-show="open"
+                                        @click.outside="open = false"
+                                        x-transition:enter="transition ease-out duration-150"
+                                        x-transition:enter-start="opacity-0 scale-95"
+                                        x-transition:enter-end="opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-100"
+                                        x-transition:leave-start="opacity-100 scale-100"
+                                        x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute right-0 mt-1 top-full w-36 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden"
+                                    >
+                                        <ul class="text-sm text-gray-700 py-1">
+                                            <li>
+                                                <button
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                                    onclick="window.location.href='/employees/view?targetID={{ $employee->id }}'"
+                                                >
+                                                    <i class="fa-solid fa-eye text-xs text-gray-400"></i> View
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                                    @click="open = false; window.dispatchEvent(new CustomEvent('open-modal', { detail: { template: 'edit', employee: {{ $employee->id }} } })); $wire.targetID({{ $employee->id }})"
+                                                >
+                                                    <i class="fa-solid fa-pen text-xs text-gray-400"></i> Edit
+                                                </button>
+                                            </li>
+                                            <li class="border-t border-gray-100">
+                                                <button
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 flex items-center gap-2 transition-colors"
+                                                    @click="open = false; window.dispatchEvent(new CustomEvent('open-modal', { detail: { template: 'delete', employee: {{ $employee->id }} } })); $wire.targetID({{ $employee->id }})"
+                                                >
+                                                    <i class="fa-solid fa-trash text-xs"></i> Delete
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr class="h-full">
-                        <td colspan="8" class="text-center">
-                            <div class="flex flex-col items-center justify-center gap-3 text-gray-400 py-24">
-                                <i class="fa-solid fa-users text-4xl"></i>
-                                <p class="text-sm font-semibold">No employees found</p>
-                                <p class="text-xs">Try adjusting your search or filters</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+
         </div>
 
         <x-pagination :paginator="$employees" />

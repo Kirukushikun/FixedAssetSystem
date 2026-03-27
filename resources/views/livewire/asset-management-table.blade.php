@@ -240,65 +240,45 @@
     </div>
 
     {{-- ── Table ── --}}
-    <div class="table-container flex-1 flex flex-col min-h-0">
-        <div class="flex-1 overflow-y-auto overflow-x-auto minimal-scroll">
-            <table class="h-full">
-                <thead>
-                    <tr>
-                        <th>Reference ID</th>
-                        <th>Category</th>
-                        <th>Sub-category</th>
-                        <th>Brand</th>
-                        <th>Model</th>
-                        <th>Status</th>
-                        <th>Condition</th>
-                        <th>Assigned To</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $statusStyle = [
-                            'Available'    => 'bg-green-100 text-green-700',
-                            'Issued'       => 'bg-yellow-100 text-yellow-700',
-                            'Transferred'  => 'bg-blue-100 text-blue-700',
-                            'For Disposal' => 'bg-orange-100 text-orange-700',
-                            'Disposed'     => 'bg-gray-100 text-gray-600',
-                            'Lost'         => 'bg-red-100 text-red-600',
-                        ];
-                        $conditionStyle = [
-                            'Good'      => 'text-green-500',
-                            'Defective' => 'text-amber-500',
-                            'Repair'    => 'text-sky-500',
-                            'Replace'   => 'text-red-500',
-                        ];
-                    @endphp
+     <div class="table-container flex-1 flex flex-col min-h-0">
+     <div class="flex-1 overflow-y-auto overflow-x-auto minimal-scroll">
 
-                    @forelse($assets as $asset)
-                    <tr>
-                        <td class="font-mono text-xs text-gray-500">{{ $asset->ref_id }}</td>
-                        <td>
-                            <div class="flex items-center gap-2">
-                                <img src="{{ asset('img/' . $categoryCodeImage[$asset->category]->icon . '.png') }}" class="w-5 h-5 object-contain" alt="">
-                                <span class="font-semibold text-sm">{{ $categoryCodeImage[$asset->category]->name }}</span>
-                            </div>
-                        </td>
-                        <td class="text-sm text-gray-600">{{ $asset->sub_category }}</td>
-                        <td class="text-sm">{{ $asset->brand }}</td>
-                        <td class="text-sm">{{ $asset->model }}</td>
-                        <td>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusStyle[$asset->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                {{ $asset->status }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="text-xs font-bold uppercase {{ $conditionStyle[$asset->condition] ?? 'text-gray-500' }}">
-                                {{ $asset->condition }}
-                            </span>
-                        </td>
-                        <td class="text-sm text-gray-600">{{ $asset->assigned_name ?? '—' }}</td>
-                        <td>
-                            <div x-data="{ open: false }" class="relative flex justify-center">
+          @if($assets->isEmpty())
+               <!-- Empty state vertically centered -->
+               <div class="flex flex-col items-center justify-center h-full text-gray-400 py-24">
+                    <i class="fa-solid fa-boxes-stacked text-4xl"></i>
+                    <p class="text-sm font-semibold">No assets found</p>
+                    <p class="text-xs">Try adjusting your search or filters</p>
+               </div>
+          @else
+               <!-- Table content aligned at top -->
+               <table class="w-full border-collapse">
+                    <thead>
+                         <tr>
+                         <th>Reference ID</th>
+                         <th>Category</th>
+                         <th>Sub-category</th>
+                         <th>Brand</th>
+                         <th>Model</th>
+                         <th>Status</th>
+                         <th>Condition</th>
+                         <th>Assigned To</th>
+                         <th>Action</th>
+                         </tr>
+                    </thead>
+                    <tbody>
+                         @foreach($assets as $asset)
+                         <tr>
+                         <td class="font-mono text-xs text-gray-500">{{ $asset->ref_id }}</td>
+                         <td>{{ $asset->category }}</td>
+                         <td>{{ $asset->sub_category }}</td>
+                         <td>{{ $asset->brand }}</td>
+                         <td>{{ $asset->model }}</td>
+                         <td>{{ $asset->status }}</td>
+                         <td>{{ $asset->condition }}</td>
+                         <td>{{ $asset->assigned_name ?? '—' }}</td>
+                         <td>
+                              <div x-data="{ open: false }" class="relative flex">
                                 <button
                                     type="button"
                                     class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
@@ -356,41 +336,18 @@
                                     </ul>
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr class="h-full">
-                        <td colspan="9" class="text-center">
-                            <div class="flex flex-col items-center justify-center gap-3 text-gray-400 py-24">
-                                <i class="fa-solid fa-boxes-stacked text-4xl"></i>
-                                <p class="text-sm font-semibold">No assets found</p>
-                                <p class="text-xs">Try adjusting your search or filters</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                         </td>
+                         </tr>
+                         @endforeach
+                    </tbody>
+               </table>
+          @endif
 
-        <x-pagination :paginator="$assets" />
-    </div>
+     </div>
 
-    {{-- ── Import loading backdrop ── --}}
-    <div
-        id="asset-import-backdrop"
-        class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center"
-    >
-        <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4 min-w-[280px]">
-            <div class="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-teal-500"></div>
-            <div class="text-center">
-                <h3 class="text-base font-bold text-gray-800 mb-1">Importing Assets</h3>
-                <p class="text-sm text-gray-400">Please wait while we process your file...</p>
-            </div>
-        </div>
-    </div>
-
-</div>{{-- end card --}}
+     <x-pagination :paginator="$assets" />
+     </div>
+     {{-- end card --}}
 
 
 {{-- ================================================================

@@ -5,23 +5,30 @@ namespace App\Livewire;
 use App\Models\User;
 use App\Models\Department;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class UserAccess extends Component
-{   
-    public $users = [];
+{
+    use WithPagination;
+
+    protected $paginationTheme = 'tailwind';
+
     public $dbUsers = [];
     public $departments = [];
-    
+    public string $search = '';
+
     // Selected user properties for modal
     public $selectedUserId;
     public $selectedUserName;
     public $selectedUserEmail;
-    
+
     // Edit properties
     public $editUserId;
     public $editFarm;
@@ -29,9 +36,6 @@ class UserAccess extends Component
 
     public function mount()
     {
-        $this->fetchUsers();
-        
-        // Cache database users for 10 minutes
         $this->dbUsers = Cache::remember('user_access_db_users', 600, function () {
             return User::all()->keyBy('id');
         });
@@ -39,10 +43,14 @@ class UserAccess extends Component
         $this->departments = Department::all();
     }
 
-    public function fetchUsers()
+    public function updatingSearch(): void
     {
-        // Cache API users for 5 minutes since this is external data
-        $this->users = Cache::remember('user_access_api_users', 300, function () {
+        $this->resetPage();
+    }
+
+    private function fetchUsers(): Collection
+    {
+        $users = Cache::remember('user_access_api_users', 300, function () {
             $response = Http::withHeaders([
                 'x-api-key' => '123456789bgc'
             ])
@@ -54,9 +62,8 @@ class UserAccess extends Component
             if ($response->successful()) {
                 $json = $response->json();
                 $users = $json['data'] ?? $json;
-                
-                // Decrypt the user IDs
-                return array_map(function($user) {
+
+                return array_map(function ($user) {
                     try {
                         $user['id'] = Crypt::decryptString($user['id']);
                     } catch (\Exception $e) {
@@ -64,16 +71,43 @@ class UserAccess extends Component
                     }
                     return $user;
                 }, $users);
-            } else {
-                session()->flash('error', 'Failed to fetch users. Status: ' . $response->status());
-                Log::info('API Error: ' . $response->status());
-                return [];
             }
+
+            session()->flash('error', 'Failed to fetch users. Status: ' . $response->status());
+            Log::error('API Error: ' . $response->status());
+            return [];
         });
 
-        if (!empty($this->users)) {
-            Log::info('Fetched Users:', $this->users);
+        return collect($users);
+    }
+
+    private function paginateUsers(): LengthAwarePaginator
+    {
+        $users = $this->fetchUsers();
+
+        // Apply search filter on the collection
+        if ($this->search) {
+            $search = strtolower($this->search);
+            $users = $users->filter(fn($user) =>
+                str_contains(strtolower($user['first_name'] . ' ' . $user['last_name']), $search) ||
+                str_contains(strtolower($user['email']), $search) ||
+                str_contains(strtolower((string) $user['id']), $search)
+            );
         }
+
+        $perPage = 10;
+        $page = $this->getPage();
+        $total = $users->count();
+
+        $items = $users->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return new LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url()]
+        );
     }
 
     public function confirmGrantAccess()
@@ -102,7 +136,7 @@ class UserAccess extends Component
         $this->editUserId = $userId;
         $this->editFarm = $user->farm;
         $this->editDepartment = $user->department;
-        
+
         $this->dispatch('open-edit-modal');
     }
 
@@ -110,7 +144,7 @@ class UserAccess extends Component
     {
         try {
             $user = User::find($this->editUserId);
-            
+
             if (!$user) {
                 $this->noreloadNotif('failed', 'User Not Found', 'User not found in system.');
                 return;
@@ -121,18 +155,12 @@ class UserAccess extends Component
                 'department' => $this->editDepartment,
             ]);
 
-            // Clear cache after update
             Cache::forget('user_access_db_users');
-            
-            // Update the dbUsers collection
             $this->dbUsers->put($this->editUserId, $user);
 
             $this->noreloadNotif('success', 'Updated', 'User details updated successfully.');
-            Log::info('User details updated: ' . $user->email);
-            
-            // Reset edit properties
             $this->reset(['editUserId', 'editFarm', 'editDepartment']);
-            
+
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Update Failed', 'Failed to update user: ' . $e->getMessage());
             Log::error('Update user error: ' . $e->getMessage());
@@ -142,15 +170,13 @@ class UserAccess extends Component
     private function grantAccess($userId, $name, $email)
     {
         try {
-            // Check if user already exists
             if ($this->dbUsers->has($userId)) {
                 $this->noreloadNotif('failed', 'Access Denied', 'User already has access.');
                 return;
             }
 
-            // Create new user in local database using their actual ID
             $user = User::create([
-                'id' => $userId, // Use their actual employee ID as the primary key
+                'id' => $userId,
                 'name' => $name,
                 'email' => $email,
                 'password' => Hash::make('default_password_' . rand(1000, 9999)),
@@ -158,15 +184,12 @@ class UserAccess extends Component
                 'department' => null,
             ]);
 
-            // Clear cache after creating user
             Cache::forget('user_access_db_users');
-            
-            // Update the dbUsers collection with the new user
             $this->dbUsers->put($userId, $user);
 
             $this->noreloadNotif('success', 'Access Granted', 'Access granted to ' . $user->name);
             Log::info('User granted access: ' . $user->email);
-            
+
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Grant Access Failed', 'Failed to grant access: ' . $e->getMessage());
             Log::error('Grant access error: ' . $e->getMessage());
@@ -177,23 +200,20 @@ class UserAccess extends Component
     {
         try {
             $user = User::find($userId);
-            
+
             if (!$user) {
                 $this->noreloadNotif('failed', 'User Not Found', 'User not found in system.');
                 return;
             }
 
             $user->delete();
-            
-            // Clear cache after deletion
+
             Cache::forget('user_access_db_users');
-            
-            // Remove from dbUsers collection
             $this->dbUsers->forget($userId);
 
             $this->noreloadNotif('success', 'Access Revoked', 'Access revoked for ' . $name);
             Log::info('User access revoked: ' . $userId);
-            
+
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Revoke Access Failed', 'Failed to revoke access: ' . $e->getMessage());
             Log::error('Revoke access error: ' . $e->getMessage());
@@ -204,43 +224,40 @@ class UserAccess extends Component
     {
         try {
             $user = User::find($userId);
-            
+
             if (!$user) {
                 $this->noreloadNotif('failed', 'User Not Found', 'User not found in system.');
                 return;
             }
 
-            // Check if user is already an admin
             if ($user->is_admin) {
                 $this->noreloadNotif('failed', 'Already Admin', $name . ' is already an admin.');
                 return;
             }
 
-            $user->update([
-                'is_admin' => true,
-            ]);
+            $user->update(['is_admin' => true]);
 
-            // Clear cache after update
             Cache::forget('user_access_db_users');
-            
-            // Update the dbUsers collection
             $this->dbUsers->put($userId, $user);
 
             $this->noreloadNotif('success', 'Admin Granted', $name . ' is now an admin.');
             Log::info('User made admin: ' . $user->email);
-            
+
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Make Admin Failed', 'Failed to make admin: ' . $e->getMessage());
             Log::error('Make admin error: ' . $e->getMessage());
         }
     }
 
-    private function noreloadNotif($type, $header, $message){
+    private function noreloadNotif($type, $header, $message): void
+    {
         $this->dispatch('notif', type: $type, header: $header, message: $message);
     }
 
     public function render()
     {
-        return view('livewire.user-access');
+        return view('livewire.user-access', [
+            'users' => $this->paginateUsers(),
+        ]);
     }
 }

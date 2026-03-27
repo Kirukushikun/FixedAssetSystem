@@ -6,7 +6,7 @@
 
     {{-- ── Profile Card ── --}}
     <div class="card">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between">
             <h1 class="text-lg font-bold text-[#2d3748]">Profile Information</h1>
             <livewire:settings-action />
         </div>
@@ -25,7 +25,7 @@
     </div>
 
     {{-- ── Row 2: Department + Input managers ── --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 pb-5 auto-rows-fr">
         <livewire:dynamic-values.department-management />
         <livewire:dynamic-values.input-management inputType="brand" />
         <livewire:dynamic-values.input-management inputType="processor" />

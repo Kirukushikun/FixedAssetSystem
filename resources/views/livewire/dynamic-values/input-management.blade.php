@@ -1,5 +1,5 @@
 {{-- input-management livewire --}}
-<div class="card flex-1 flex flex-col gap-5">
+<div class="card h-full flex flex-col gap-5">
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
@@ -27,7 +27,7 @@
     </div>
 
     {{-- List --}}
-    <div class="flex flex-col gap-1 overflow-y-auto min-h-0 max-h-96 pr-1">
+    <div class="flex flex-col gap-1 overflow-y-auto min-h-0 flex-1 pr-1">
         @forelse($items as $item)
             <div class="flex items-center px-3 py-2.5 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition group">
 
@@ -56,7 +56,7 @@
 
             </div>
         @empty
-            <div class="flex flex-col items-center justify-center text-center gap-2 py-16">
+            <div class="flex flex-col items-center justify-center text-center gap-2 py-16 h-full">
                 <i class="fa-solid fa-box-open text-gray-300 text-4xl"></i>
                 <p class="text-gray-400 text-sm">No {{ strtolower($fieldName) }} found.</p>
                 <p class="text-gray-300 text-xs">Add one above to get started.</p>
