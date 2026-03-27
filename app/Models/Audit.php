@@ -19,6 +19,7 @@ class Audit extends Model
         'audited_at',
         'audited_by',
         'audited_by_name',
+        'finding',
     ];
 
     protected $casts = [

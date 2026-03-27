@@ -181,7 +181,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/global.js') }}" defer></script>
+    <script src="{{ asset('js/global.js') }}"></script>
     @livewireScripts
 
 </body>

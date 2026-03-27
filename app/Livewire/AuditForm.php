@@ -53,6 +53,7 @@ class AuditForm extends Component
             'next_audit' => 'required|date',
             'notes' => 'nullable|string|max:1000',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB max
+            'finding' => 'nullable|string|max:255',
         ]);
         
         $this->showConfirmModal = true;

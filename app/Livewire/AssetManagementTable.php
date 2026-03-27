@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Exports\AssetExport;
 use App\Exports\AuditLogExport;
+use App\Exports\RepairLogExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -61,6 +62,11 @@ class AssetManagementTable extends Component
     public $audit_export_date_from = '';
     public $audit_export_date_to = '';
     public $audit_export_farm = '';
+
+    // Repair Log Export
+    public $repair_export_date_from = '';
+    public $repair_export_date_to = '';
+    public $repair_export_type = '';
     
     public function updatedFilterCategory($value)
     {
@@ -145,6 +151,23 @@ class AssetManagementTable extends Component
                 $this->audit_export_farm ?: null,
             ),
             'audit-log-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    public function exportRepairLog()
+    {
+        $this->validate([
+            'repair_export_date_from' => 'nullable|date',
+            'repair_export_date_to' => 'nullable|date|after_or_equal:repair_export_date_from',
+        ]);
+
+        return Excel::download(
+            new RepairLogExport(
+                $this->repair_export_date_from ?: null,
+                $this->repair_export_date_to ?: null,
+                $this->repair_export_type ?: null,
+            ),
+            'repair-log-' . now()->format('Y-m-d') . '.xlsx'
         );
     }
 
@@ -339,7 +362,7 @@ class AssetManagementTable extends Component
         // Order by created_at DESC, then by id DESC for consistent ordering
         $assets = $query->orderBy('created_at', 'desc')
                         ->orderBy('id', 'desc')
-                        ->paginate(10);
+                        ->paginate(12);
 
         // Get categories as array with code as key (cached)
         $categoryCodeImage = Cache::remember('categories_by_code', 3600, function() {

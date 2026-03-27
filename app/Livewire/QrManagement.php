@@ -47,20 +47,42 @@ class QrManagement extends Component
     public function togglePrinted($assetId)
     {
         $asset = Asset::findOrFail($assetId);
-        $asset->update(['qr_printed' => !$asset->qr_printed]);
+        $newValue = !$asset->qr_printed;
+
+        // If this asset is in the selection, bulk update all selected
+        if (in_array((string) $assetId, array_map('strval', $this->selectedAssets))) {
+            Asset::whereIn('id', $this->selectedAssets)
+                ->update(['qr_printed' => $newValue]);
+        } else {
+            $asset->update(['qr_printed' => $newValue]);
+        }
     }
 
     public function toggleAffixed($assetId)
     {
         $asset = Asset::findOrFail($assetId);
-        $asset->update(['qr_affixed' => !$asset->qr_affixed]);
+        $newValue = !$asset->qr_affixed;
+
+        // If this asset is in the selection, bulk update all selected
+        if (in_array((string) $assetId, array_map('strval', $this->selectedAssets))) {
+            Asset::whereIn('id', $this->selectedAssets)
+                ->update(['qr_affixed' => $newValue]);
+        } else {
+            $asset->update(['qr_affixed' => $newValue]);
+        }
     }
 
     public function printSelected()
     {
         if (empty($this->selectedAssets)) return;
 
-        $ids = implode(',', $this->selectedAssets);
+        $encryptedIds = array_map(fn($id) => encrypt($id), $this->selectedAssets);
+        $ids = implode(',', $encryptedIds);
+
+        // Reset selection before redirecting
+        $this->selectedAssets = [];
+        $this->selectAll = false;
+
         return redirect('/assetmanagement/qr/print?ids=' . $ids);
     }
 

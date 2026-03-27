@@ -34,7 +34,6 @@ class AuditLogExport implements FromQuery, WithHeadings, WithMapping
             'Farm',
             'Auditor',
             'Finding',
-            'Condition',
             'Notes',
         ];
     }
@@ -49,7 +48,6 @@ class AuditLogExport implements FromQuery, WithHeadings, WithMapping
             $audit->farm ?? '—',
             $audit->audited_by_name,
             $audit->finding ?? '—',
-            $audit->condition ?? '—',
             $audit->notes ?? '—',
         ];
     }

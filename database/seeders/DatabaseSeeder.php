@@ -138,70 +138,70 @@ class DatabaseSeeder extends Seeder
         $totalInserted = 0;
 
         // --- Generate from categories ---
-        foreach ($categories as $categoryType => $categoryGroup) {
-            foreach ($categoryGroup as $category => $subCategories) {
-                foreach ($subCategories as $subCategory) {
+        // foreach ($categories as $categoryType => $categoryGroup) {
+        //     foreach ($categoryGroup as $category => $subCategories) {
+        //         foreach ($subCategories as $subCategory) {
 
-                    // Generate 5–20 per subcategory
-                    $assetCount = rand(5, 20);
+        //             // Generate 5–20 per subcategory
+        //             $assetCount = rand(5, 20);
 
-                    for ($i = 0; $i < $assetCount; $i++) {
+        //             for ($i = 0; $i < $assetCount; $i++) {
 
-                        DB::table('assets')->insert([
-                            'is_deleted' => false,
-                            'is_archived' => rand(0, 10) > 8,
-                            'ref_id' => sprintf('FA-%s-%05d', $year, $counter++),
-                            'category_type' => $categoryType,
-                            'category' => $category,
-                            'sub_category' => $subCategory,
-                            'brand' => $brands[array_rand($brands)],
-                            'model' => $models[array_rand($models)],
-                            'status' => $statuses[array_rand($statuses)],
-                            'condition' => $conditions[array_rand($conditions)],
-                            'acquisition_date' => Carbon::now()->subDays(rand(1, 1825))->format('Y-m-d'),
-                            'item_cost' => rand(5000, 100000),
-                            'depreciated_value' => rand(1000, 50000),
-                            'usable_life' => rand(3, 10) . ' years',
-                            'farm' => $farms[array_rand($farms)],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+        //                 DB::table('assets')->insert([
+        //                     'is_deleted' => false,
+        //                     'is_archived' => rand(0, 10) > 8,
+        //                     'ref_id' => sprintf('FA-%s-%05d', $year, $counter++),
+        //                     'category_type' => $categoryType,
+        //                     'category' => $category,
+        //                     'sub_category' => $subCategory,
+        //                     'brand' => $brands[array_rand($brands)],
+        //                     'model' => $models[array_rand($models)],
+        //                     'status' => $statuses[array_rand($statuses)],
+        //                     'condition' => $conditions[array_rand($conditions)],
+        //                     'acquisition_date' => Carbon::now()->subDays(rand(1, 1825))->format('Y-m-d'),
+        //                     'item_cost' => rand(5000, 100000),
+        //                     'depreciated_value' => rand(1000, 50000),
+        //                     'usable_life' => rand(3, 10) . ' years',
+        //                     'farm' => $farms[array_rand($farms)],
+        //                     'created_at' => now(),
+        //                     'updated_at' => now(),
+        //                 ]);
 
-                        $totalInserted++;
-                    }
-                }
-            }
-        }
+        //                 $totalInserted++;
+        //             }
+        //         }
+        //     }
+        // }
 
         // --- Ensure minimum 3000 assets ---
-        while ($totalInserted < 3000) {
-            // Pick random category
-            $randomCategoryType = array_rand($categories);
-            $randomCategoryGroup = array_rand($categories[$randomCategoryType]);
-            $randomSubCategory = $categories[$randomCategoryType][$randomCategoryGroup][array_rand($categories[$randomCategoryType][$randomCategoryGroup])];
+        // while ($totalInserted < 3000) {
+        //     // Pick random category
+        //     $randomCategoryType = array_rand($categories);
+        //     $randomCategoryGroup = array_rand($categories[$randomCategoryType]);
+        //     $randomSubCategory = $categories[$randomCategoryType][$randomCategoryGroup][array_rand($categories[$randomCategoryType][$randomCategoryGroup])];
 
-            DB::table('assets')->insert([
-                'is_deleted' => false,
-                'is_archived' => rand(0, 10) > 8,
-                'ref_id' => sprintf('FA-%s-%05d', $year, $counter++),
-                'category_type' => 'NON-IT',
-                'category' => $randomCategoryGroup,
-                'sub_category' => $randomSubCategory,
-                'brand' => $brands[array_rand($brands)],
-                'model' => $models[array_rand($models)],
-                'status' => $statuses[array_rand($statuses)],
-                'condition' => $conditions[array_rand($conditions)],
-                'acquisition_date' => Carbon::now()->subDays(rand(1, 1825))->format('Y-m-d'),
-                'item_cost' => rand(5000, 100000),
-                'depreciated_value' => rand(1000, 50000),
-                'usable_life' => rand(3, 10) . ' years',
-                'farm' => $farms[array_rand($farms)],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        //     DB::table('assets')->insert([
+        //         'is_deleted' => false,
+        //         'is_archived' => rand(0, 10) > 8,
+        //         'ref_id' => sprintf('FA-%s-%05d', $year, $counter++),
+        //         'category_type' => 'NON-IT',
+        //         'category' => $randomCategoryGroup,
+        //         'sub_category' => $randomSubCategory,
+        //         'brand' => $brands[array_rand($brands)],
+        //         'model' => $models[array_rand($models)],
+        //         'status' => $statuses[array_rand($statuses)],
+        //         'condition' => $conditions[array_rand($conditions)],
+        //         'acquisition_date' => Carbon::now()->subDays(rand(1, 1825))->format('Y-m-d'),
+        //         'item_cost' => rand(5000, 100000),
+        //         'depreciated_value' => rand(1000, 50000),
+        //         'usable_life' => rand(3, 10) . ' years',
+        //         'farm' => $farms[array_rand($farms)],
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]);
 
-            $totalInserted++;
-        }
+        //     $totalInserted++;
+        // }
         $this->command->info('Assets seeded successfully! Total assets: ' . ($counter - 1));
 
 

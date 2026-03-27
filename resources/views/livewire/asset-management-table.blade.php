@@ -99,6 +99,16 @@
                     <i class="fa-solid fa-clipboard-list text-sm"></i>
                 </button>
 
+                {{-- Repair Log --}}
+                <button
+                    type="button"
+                    title="Export Repair Log"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-teal-500 transition-colors"
+                    @click="openModal('repair-log-filter')"
+                >
+                    <i class="fa-solid fa-tools text-sm"></i>
+                </button>
+
                 {{-- Filter --}}
                 <div x-data="{ filterOpen: false }" class="relative">
                     <button
@@ -270,12 +280,43 @@
                          @foreach($assets as $asset)
                          <tr>
                          <td class="font-mono text-xs text-gray-500">{{ $asset->ref_id }}</td>
-                         <td>{{ $asset->category }}</td>
+                         <td>
+                                <p class="flex items-center gap-2">
+                                    <img src="{{ asset('img/' . $categoryCodeImage[$asset->category]->icon . '.png') }}" class="w-5 h-5 object-contain" alt="">
+                                    <span class="text-sm font-bold text-gray-700">{{ $categoryCodeImage[$asset->category]->name }}</span>
+                                </p>
+                            </td>
                          <td>{{ $asset->sub_category }}</td>
                          <td>{{ $asset->brand }}</td>
                          <td>{{ $asset->model }}</td>
-                         <td>{{ $asset->status }}</td>
-                         <td>{{ $asset->condition }}</td>
+                        <td>
+                            @php
+                                $statusColor = [
+                                    'Available'    => 'bg-[#48BB78]',
+                                    'Issued'       => 'bg-[#ECC94B]',
+                                    'Transferred'  => 'bg-[#4299E1]',
+                                    'For Disposal' => 'bg-[#ED8936]',
+                                    'Disposed'     => 'bg-[#2D3748]',
+                                    'Lost'         => 'bg-[#F56565]',
+                                ];
+                            @endphp
+                            <span class="px-3 py-1 rounded-lg text-xs font-semibold text-white {{ $statusColor[$asset->status] ?? 'bg-gray-400' }}">
+                                {{ $asset->status }}
+                            </span>
+                        </td>
+                         <td>
+                            @php
+                                $conditionColor = [
+                                    'Good'      => 'text-green-500',
+                                    'Defective' => 'text-amber-500',
+                                    'Repair'    => 'text-sky-500',
+                                    'Replace'   => 'text-red-500',
+                                ];
+                            @endphp
+                            <span class="text-xs font-bold uppercase {{ $conditionColor[$asset->condition] ?? 'text-gray-500' }}">
+                                {{ $asset->condition }}
+                            </span>
+                        </td>
                          <td>{{ $asset->assigned_name ?? '—' }}</td>
                          <td>
                               <div x-data="{ open: false }" class="relative flex">
@@ -578,6 +619,42 @@
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" @click="showModal = false" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
                     <button type="button" @click="showModal = false" wire:click="exportAuditLog" class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors">
+                        <i class="fa-solid fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Repair Log Export Modal -->
+            <div class="p-8" x-show="modalTemplate === 'repair-log-filter'">
+                <h2 class="text-lg font-bold text-gray-800 mb-1">Export Repair Log</h2>
+                <p class="text-sm text-gray-400 mb-6">Filter repair records to export. Leave blank to export all.</p>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group">
+                            <label>Date From</label>
+                            <input type="date" wire:model="repair_export_date_from">
+                        </div>
+                        <div class="input-group">
+                            <label>Date To</label>
+                            <input type="date" wire:model="repair_export_date_to">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group mt-4">
+                    <label>Type:</label>
+                    <select wire:model="repair_export_type">
+                        <option value="">All</option>
+                        <option value="PMS">PMS (Preventive Maintenance)</option>
+                        <option value="Regular Maintenance">Regular Maintenance</option>
+                        <option value="Repair">Repair</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" @click="showModal = false" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+                    <button type="button" @click="showModal = false" wire:click="exportRepairLog" class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors">
                         <i class="fa-solid fa-download mr-2"></i>Export
                     </button>
                 </div>

@@ -173,4 +173,17 @@ class AssetController extends Controller
             ], 500);
         }
     }
+
+    public function printQr(Request $request)
+    {
+        $encryptedIds = explode(',', $request->query('ids', ''));
+
+        $ids = array_map(fn($id) => decrypt($id), $encryptedIds);
+
+        $assets = Asset::whereIn('id', $ids)
+            ->whereNotNull('qr_code')
+            ->get();
+
+        return view('qr-print', compact('assets'));
+    }
 }

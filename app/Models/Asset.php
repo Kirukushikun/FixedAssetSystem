@@ -42,6 +42,8 @@ class Asset extends Model
         'location',
 
         'qr_code',
+        'qr_printed',  // ADD THIS
+        'qr_affixed',  // ADD THIS
         'attachment',
         'attachment_name',
 
@@ -51,6 +53,8 @@ class Asset extends Model
     protected $casts = [  // Fixed: should be 'casts' not 'cast'
         'is_deleted' => 'boolean',
         'is_archived' => 'boolean',
+        'qr_printed' => 'boolean',
+        'qr_affixed' => 'boolean',
         'acquisition_date' => 'datetime',
         'technical_data' => 'array'
     ];

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 use App\Models\Asset;
+use App\Models\AssetRepair;
 use App\Models\Employee;
 use App\Models\History;
 use App\Models\Audit;
