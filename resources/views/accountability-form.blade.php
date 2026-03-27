@@ -152,7 +152,46 @@
                 <div class="flex flex-col sm:flex-row sm:items-end gap-4 pb-4 border-b border-gray-200">
                     <div class="flex-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Signature:</label>
-                        <div class="border-b-2 border-gray-400 pb-1 min-h-[40px]"></div>
+                        
+                        {{-- Signature pad (hidden on print) --}}
+                        <div class="no-print">
+                            <canvas 
+                                id="signature-pad" 
+                                class="border-2 border-dashed border-gray-300 rounded w-full touch-none cursor-crosshair bg-white"
+                                height="80"
+                            ></canvas>
+                            <div class="flex gap-2 mt-1">
+                                <button 
+                                    type="button"
+                                    onclick="clearSignature()"
+                                    class="text-xs text-gray-400 hover:text-gray-600 transition"
+                                >
+                                    <i class="fa-solid fa-rotate-left"></i> Clear
+                                </button>
+                                <button 
+                                    type="button"
+                                    onclick="confirmSignature()"
+                                    class="text-xs text-teal-500 hover:text-teal-700 font-semibold transition"
+                                >
+                                    <i class="fa-solid fa-check"></i> Confirm Signature
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Confirmed signature image (shown always, including print) --}}
+                        <div id="signature-preview" class="hidden">
+                            <img id="signature-img" src="" alt="Signature" class="h-12 object-contain">
+                            <button 
+                                type="button"
+                                onclick="resetSignature()" 
+                                class="no-print text-xs text-red-400 hover:text-red-600 mt-1 block transition"
+                            >
+                                <i class="fa-solid fa-xmark"></i> Reset
+                            </button>
+                        </div>
+
+                        {{-- Fallback line shown before signature is confirmed --}}
+                        <div id="signature-line" class="border-b-2 border-gray-400 pb-1 min-h-[40px] hidden print:block"></div>
                     </div>
                     <div class="sm:w-40">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
@@ -193,5 +232,67 @@
             <p class="text-xs text-gray-600">This is an official company document. Please keep for your records.</p>
         </div>
     </div>
+
+    <script>
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let hasSignature = false;
+
+        // Match canvas internal size to display size
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 80;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            if (e.touches) {
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            }
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown',  (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('mousemove',  (e) => { if (!drawing) return; hasSignature = true; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#1a202c'; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); });
+        canvas.addEventListener('mouseup',    () => drawing = false);
+        canvas.addEventListener('mouseleave', () => drawing = false);
+
+        canvas.addEventListener('touchstart',  (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
+        canvas.addEventListener('touchmove',   (e) => { e.preventDefault(); if (!drawing) return; hasSignature = true; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#1a202c'; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); }, { passive: false });
+        canvas.addEventListener('touchend',    () => drawing = false);
+
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasSignature = false;
+        }
+
+        function confirmSignature() {
+            if (!hasSignature) {
+                alert('Please draw your signature first.');
+                return;
+            }
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('signature-img').src = dataUrl;
+            document.getElementById('signature-pad').closest('div.no-print').classList.add('hidden');
+            document.getElementById('signature-preview').classList.remove('hidden');
+            document.getElementById('signature-line').classList.add('hidden');
+        }
+
+        function resetSignature() {
+            clearSignature();
+            document.getElementById('signature-pad').closest('div.no-print').classList.remove('hidden');
+            document.getElementById('signature-preview').classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
