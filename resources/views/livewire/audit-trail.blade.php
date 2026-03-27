@@ -1,7 +1,8 @@
 <div class="h-full flex flex-col gap-4">
 
     {{-- ── Toolbar ── --}}
-    <div class="flex flex-wrap items-center justify-end gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-lg font-bold text-[#2d3748]">Audit Trail</h1>
 
         <div class="flex items-center gap-2">
 
