@@ -672,16 +672,16 @@
         const file     = document.getElementById('asset-import-file');
         const form     = document.getElementById('asset-import-form');
         const backdrop = document.getElementById('asset-import-backdrop');
-        if (!btn || !file || !form || !backdrop) return;
+        if (!btn || !file || !form) return;
         btn.addEventListener('click', () => file.click());
         file.addEventListener('change', () => {
             if (file.files.length > 0) {
-                backdrop.classList.remove('hidden');
+                backdrop?.classList.remove('hidden');
                 form.submit();
             }
         });
         window.addEventListener('pageshow', (e) => {
-            if (e.persisted) backdrop.classList.add('hidden');
+            if (e.persisted) backdrop?.classList.add('hidden');
         });
     })();
 </script>

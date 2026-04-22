@@ -1,14 +1,25 @@
 <div class="relative overflow-y-auto flex flex-col gap-7"
-    x-data="{
-        showModal: @entangle('showConfirmModal'),
-        modalTemplate: '',
-    }"    
->
-    <div class="card self-center relative">
-        
-        <i class="fa-solid fa-arrow-left absolute top-8 -left-[50px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
-        <h1 class="text-lg font-bold">General Information</h1>
-        <p class="text-gray-400 text-sm mb-10">Basic details that describe and identify this asset. These values help classify and track the item within the system.</p>
+     x-data="{
+         showModal: @entangle('showConfirmModal'),
+         modalTemplate: '',
+     }"    
+ >
+     <div
+         wire:loading.flex
+         wire:target="attachment,trySubmit,submit,update,transferAsset,assignAsset,addRepairRecord,resetChanges"
+         class="fixed inset-0 bg-black/30 z-[90] items-center justify-center"
+     >
+         <div class="bg-white px-5 py-4 rounded-lg shadow-lg flex items-center gap-3 text-sm font-semibold text-gray-700">
+             <i class="fa-solid fa-spinner fa-spin text-teal-500"></i>
+             <span>Processing request...</span>
+         </div>
+     </div>
+
+     <div class="card self-center relative">
+         
+         <i class="fa-solid fa-arrow-left absolute top-8 -left-[50px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
+         <h1 class="text-lg font-bold">General Information</h1>
+         <p class="text-gray-400 text-sm mb-10">Basic details that describe and identify this asset. These values help classify and track the item within the system.</p>
 
         <!-- <img  src="{{asset('img/QR-Code.png')}}" width="120" alt=""> -->
 
@@ -253,16 +264,24 @@
                     <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm relative">
 
                         <!-- Clickable Upload Button -->
-                        <div 
-                            class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500"
+                        <button
+                            type="button"
+                            wire:loading.attr="disabled"
+                            wire:target="attachment"
+                            class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             @click="$refs.attachment.click()"
                         >
-                            Upload File
-                        </div>
+                            <span wire:loading.remove wire:target="attachment">Upload File</span>
+                            <span wire:loading.inline-flex wire:target="attachment" class="items-center gap-2">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                <span>Uploading...</span>
+                            </span>
+                        </button>
 
                         <!-- Filename or placeholder -->
                         <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
-                            {{ $attachment ? $attachment->getClientOriginalName() : 'No file attached' }}
+                            <span wire:loading.remove wire:target="attachment">{{ $attachment ? $attachment->getClientOriginalName() : 'No file attached' }}</span>
+                            <span wire:loading.inline wire:target="attachment">Uploading selected file...</span>
                         </div>
 
                         <!-- Hidden Real Input -->
@@ -426,11 +445,21 @@
                 @endif 
                 @if($mode != 'view')
                     @if($mode == 'edit')
-                        <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200" 
-                            wire:click="resetChanges()">RESET CHANGES</button>
+                        <button class="px-5 py-3 border border-2 border-gray-300 rounded-lg font-bold text-gray-600 text-xs hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed" 
+                            wire:click="resetChanges()"
+                            wire:loading.attr="disabled"
+                            wire:target="resetChanges">
+                            <span wire:loading.remove wire:target="resetChanges">RESET CHANGES</span>
+                            <span wire:loading.inline wire:target="resetChanges">RESETTING...</span>
+                        </button>
                     @endif
-                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500" 
-                        wire:click="trySubmit()" @click="modalTemplate = 'submit'">SAVE</button> 
+                    <button class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500 disabled:opacity-60 disabled:cursor-not-allowed" 
+                        wire:click="trySubmit()" @click="modalTemplate = 'submit'"
+                        wire:loading.attr="disabled"
+                        wire:target="trySubmit,submit,update">
+                        <span wire:loading.remove wire:target="trySubmit,submit,update">SAVE</span>
+                        <span wire:loading.inline wire:target="trySubmit,submit,update">PROCESSING...</span>
+                    </button> 
                 @endif
             </div>
         </div>
@@ -467,9 +496,15 @@
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="showModal = false;" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer">Cancel</button>
                     @if($mode == 'create')
-                        <button type="button" @click="showModal = false; $wire.submit()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                        <button type="button" @click="showModal = false; $wire.submit()" wire:loading.attr="disabled" wire:target="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="submit">Confirm</span>
+                            <span wire:loading.inline wire:target="submit">Saving...</span>
+                        </button>
                     @else 
-                        <button type="button" @click="showModal = false; $wire.update()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                        <button type="button" @click="showModal = false; $wire.update()" wire:loading.attr="disabled" wire:target="update" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="update">Confirm</span>
+                            <span wire:loading.inline wire:target="update">Saving...</span>
+                        </button>
                     @endif
                 </div>
             </div>
@@ -541,8 +576,11 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="showModal = false" 
                             class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
-                        <button type="button" @click="showModal = false; $wire.transferAsset()" 
-                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold">Confirm Transfer</button>
+                        <button type="button" @click="showModal = false; $wire.transferAsset()" wire:loading.attr="disabled" wire:target="transferAsset"
+                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="transferAsset">Confirm Transfer</span>
+                            <span wire:loading.inline wire:target="transferAsset">Processing...</span>
+                        </button>
                     </div>
                 </div>
 
@@ -591,8 +629,11 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="showModal = false" 
                             class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
-                        <button type="button" @click="showModal = false; $wire.assignAsset()" 
-                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold">Confirm Assignment</button>
+                        <button type="button" @click="showModal = false; $wire.assignAsset()" wire:loading.attr="disabled" wire:target="assignAsset"
+                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="assignAsset">Confirm Assignment</span>
+                            <span wire:loading.inline wire:target="assignAsset">Processing...</span>
+                        </button>
                     </div>
                 </div>
 
@@ -632,8 +673,11 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="showModal = false" 
                             class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
-                        <button type="button" @click="showModal = false; $wire.addRepairRecord()" 
-                            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 text-sm font-semibold">Save Record</button>
+                        <button type="button" @click="showModal = false; $wire.addRepairRecord()" wire:loading.attr="disabled" wire:target="addRepairRecord"
+                            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="addRepairRecord">Save Record</span>
+                            <span wire:loading.inline wire:target="addRepairRecord">Saving...</span>
+                        </button>
                     </div>
                 </div>
 
