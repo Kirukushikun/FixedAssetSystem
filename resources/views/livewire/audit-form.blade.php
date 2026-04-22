@@ -1,12 +1,23 @@
 <div class="relative overflow-y-auto flex flex-col gap-7"
-    x-data="{
-        showModal: @entangle('showConfirmModal'),
-        modalTemplate: '',
-    }"    
->
-    <div class="card self-center relative max-w-4xl">
-    
-        <i class="fa-solid fa-arrow-left absolute top-8 -left-[50px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
+     x-data="{
+         showModal: @entangle('showConfirmModal'),
+         modalTemplate: '',
+     }"    
+ >
+     <div
+         wire:loading.flex
+         wire:target="attachment,trySubmit,submit"
+         class="fixed inset-0 bg-black/30 z-[90] items-center justify-center"
+     >
+         <div class="bg-white px-5 py-4 rounded-lg shadow-lg flex items-center gap-3 text-sm font-semibold text-gray-700">
+             <i class="fa-solid fa-spinner fa-spin text-teal-500"></i>
+             <span>Processing request...</span>
+         </div>
+     </div>
+
+     <div class="card self-center relative max-w-4xl">
+     
+         <i class="fa-solid fa-arrow-left absolute top-8 -left-[50px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
         
         <h1 class="text-lg font-bold">Audit Asset</h1>
         <p class="text-gray-400 text-sm mb-7">Review asset details and record audit findings.</p>
@@ -110,15 +121,25 @@
                 </label>
 
                 <div class="flex w-full border border-gray-400 rounded-md overflow-hidden text-sm">
-                    <div 
-                        class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500 transition"
+                    <button
+                        type="button"
+                        wire:loading.attr="disabled"
+                        wire:target="attachment"
+                        class="bg-gray-600 text-white px-4 py-2 cursor-pointer hover:bg-gray-500 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         @click="$refs.attachment.click()"
                     >
-                        <i class="fa-solid fa-upload mr-2"></i>Choose File
-                    </div>
+                        <span wire:loading.remove wire:target="attachment">
+                            <i class="fa-solid fa-upload mr-2"></i>Choose File
+                        </span>
+                        <span wire:loading.inline-flex wire:target="attachment" class="items-center gap-2">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <span>Uploading...</span>
+                        </span>
+                    </button>
 
                     <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2 flex items-center">
-                        {{ $attachment ? $attachment->getClientOriginalName() : 'No file selected' }}
+                        <span wire:loading.remove wire:target="attachment">{{ $attachment ? $attachment->getClientOriginalName() : 'No file selected' }}</span>
+                        <span wire:loading.inline wire:target="attachment">Uploading selected file...</span>
                     </div>
 
                     <input 
@@ -143,9 +164,12 @@
                 <button 
                     type="button"
                     @click="modalTemplate = 'submit', $wire.trySubmit()"
-                    class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500"
+                    wire:loading.attr="disabled"
+                    wire:target="trySubmit,submit"
+                    class="px-5 py-3 bg-[#4fd1c5] rounded-lg font-bold text-white text-xs hover:bg-teal-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                    <i class="fa-solid fa-check mr-2"></i>SUBMIT AUDIT
+                    <span wire:loading.remove wire:target="trySubmit,submit"><i class="fa-solid fa-check mr-2"></i>SUBMIT AUDIT</span>
+                    <span wire:loading.inline wire:target="trySubmit,submit">PROCESSING...</span>
                 </button>
             </div>
         </div>
@@ -179,7 +203,10 @@
 
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="showModal = false;" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer">Cancel</button>
-                    <button type="button" @click="showModal = false; $wire.submit()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer">Confirm</button>
+                    <button type="button" @click="showModal = false; $wire.submit()" wire:loading.attr="disabled" wire:target="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span wire:loading.remove wire:target="submit">Confirm</span>
+                        <span wire:loading.inline wire:target="submit">Saving...</span>
+                    </button>
                 </div>
             </div>
             

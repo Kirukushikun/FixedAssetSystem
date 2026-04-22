@@ -1,5 +1,5 @@
 <div
-    class="content flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden pr-5"
+    class="content flex flex-col overflow-x-hidden pr-5"
     style="padding-bottom: 0 !important;"
     x-data="{
         showModal: false,
@@ -48,10 +48,8 @@
         </div>
     </div>
 
-    <br />
-
     <!-- Main Cards -->
-    <div class="main-cards grid-cols-1 gap-7 lg:grid lg:grid-cols-[calc(35%-10px)_calc(65%-10px)]">
+    <div class="main-cards mt-5 grid-cols-1 gap-7 lg:grid lg:grid-cols-[calc(35%-10px)_calc(65%-10px)]">
         <div class="card flex flex-col gap-5 mb-7 lg:mb-0">
             <!-- Condition Chart -->
             <div class="graph">
