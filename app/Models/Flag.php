@@ -12,5 +12,8 @@ class Flag extends Model
         'target_id',
         'flag_type',
         'asset',
+        'source',
+        'created_by_user_id',
+        'remarks',
     ];
 }

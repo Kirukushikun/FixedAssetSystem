@@ -148,7 +148,7 @@ class DashboardData extends Component
             'available' => Asset::where('is_deleted', false)->where('status', 'Available')->count(),
             'issued' => Asset::where('is_deleted', false)->where('status', 'Issued')->count(),
             'transferred' => Asset::where('is_deleted', false)->where('status', 'Transferred')->count(),
-            'for_disposal' => Asset::where('is_deleted', false)->where('status', 'For disposal')->count(),
+            'for_disposal' => Asset::where('is_deleted', false)->where('status', 'For Disposal')->count(),
             'disposed' => Asset::where('is_deleted', false)->where('status', 'Disposed')->count(),
             'lost' => Asset::where('is_deleted', false)->where('status', 'Lost')->count(),
         ];

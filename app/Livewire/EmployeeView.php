@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Asset;
+use App\Models\AssetSmeReview;
 use App\Models\Employee;
 use App\Models\Flag;
 use App\Models\Category;
@@ -193,11 +194,15 @@ class EmployeeView extends Component
     {   
         $assets = Asset::where('is_deleted', false)->where('assigned_id', $this->employee->id)->latest()->paginate(10);
         $flags = Flag::where('target_id', $this->employee->id)->get();
+        $smeReviews = AssetSmeReview::with('asset')
+            ->where('employee_id', $this->employee->id)
+            ->latest()
+            ->get();
 
         // Get categories as array with code as key
         $categoryCodeImage = Category::all()->keyBy('code');
 
-        return view('livewire.employee-view', compact('assets', 'flags', 'categoryCodeImage'));
+        return view('livewire.employee-view', compact('assets', 'flags', 'smeReviews', 'categoryCodeImage'));
     }
 
     private function noreloadNotif($type, $header, $message)

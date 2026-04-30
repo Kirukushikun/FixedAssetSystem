@@ -14,6 +14,49 @@
 
     <div class="card flex flex-col gap-4">
         <div class="flex items-center justify-between">
+            <h1 class="text-lg font-bold">SME Insights</h1>
+            <span class="text-xs font-semibold px-3 py-1 rounded-lg bg-teal-50 text-teal-600">Visible to HR</span>
+        </div>
+
+        @if($smeReviews->isEmpty())
+            <p class="text-sm text-gray-400">No SME reviews have been recorded for this employee yet.</p>
+        @else
+            <div class="flex flex-col gap-3 text-sm">
+                @foreach($smeReviews as $review)
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="font-bold text-gray-800">{{ $review->asset?->brand }} {{ $review->asset?->model }}</p>
+                                <p class="text-xs text-gray-500">{{ $review->asset?->ref_id ?? 'Asset record unavailable' }} • {{ $review->asset?->sub_category ?? 'N/A' }}</p>
+                            </div>
+                            <p class="text-xs text-gray-400">{{ $review->created_at->format('m/d/Y h:i A') }}</p>
+                        </div>
+                        <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <p class="text-xs uppercase font-semibold text-gray-400">Condition Note</p>
+                                <p class="font-semibold text-gray-700">{{ $review->condition_note ?: '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase font-semibold text-gray-400">Recommended Flag</p>
+                                <p class="font-semibold text-gray-700">{{ $review->recommended_flag ?: '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase font-semibold text-gray-400">Reviewed By</p>
+                                <p class="font-semibold text-gray-700">{{ $review->reviewed_by_name ?: 'System' }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-xs uppercase font-semibold text-gray-400">Remarks</p>
+                            <p class="text-gray-700">{{ $review->remarks ?: 'No remarks provided.' }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    <div class="card flex flex-col gap-4">
+        <div class="flex items-center justify-between">
             <h1 class="text-lg font-bold">Active Flags</h1>
             <i class="fa-solid fa-pen-to-square cursor-pointer text-gray-400"></i>
         </div>
@@ -34,7 +77,7 @@
                 <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"></i>
-                        <span>{{ $flag->flag_type }} - {{ $flag->asset }}</span>
+                        <span>{{ $flag->flag_type }} - {{ $flag->asset }}@if(!empty($flag->source)) <span class="text-xs text-gray-400">({{ $flag->source }})</span>@endif</span>
                     </div>
                     <button 
                         class="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition"
@@ -76,8 +119,14 @@
                         <i class="fa-solid fa-users-slash mr-1"></i>UNASSIGN ALL
                     </button>
                 @endif
+                <button class="px-5 py-2 bg-gray-200 rounded-lg font-bold text-gray-700 text-xs hover:bg-gray-300" onclick="window.location.href='/employees/forms?targetID={{ $employee->id }}'">
+                    <i class="fa-solid fa-folder-open mr-1"></i>FORM LIBRARY
+                </button>
                 <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" onclick="window.location.href='/accountability-form?targetID={{$employee->id}}'">
                     <i class="fa-solid fa-file-lines mr-1"></i>GENERATE ACCOUNTABILITY FORM
+                </button>
+                <button class="px-5 py-2 bg-indigo-500 rounded-lg font-bold text-white text-xs hover:bg-indigo-600" onclick="window.location.href='/transfer-form?targetID={{ $employee->id }}'">
+                    <i class="fa-solid fa-right-left mr-1"></i>GENERATE TRANSFER FORM
                 </button>
             </div>
         </div>

@@ -62,10 +62,12 @@
                     </div>
                     <div>
                         <p class="text-xs sm:text-sm text-gray-500 mb-1">Status</p>
-                        <span class="inline-block px-3 py-1 text-xs sm:text-sm font-semibold text-white rounded 
+                        <span class="inline-block px-3 py-1 text-xs sm:text-sm font-semibold text-white rounded
                             @if($asset->status == 'Available') bg-green-500
                             @elseif($asset->status == 'Issued') bg-yellow-500
                             @elseif($asset->status == 'Transferred') bg-blue-500
+                            @elseif($asset->status == 'For Disposal') bg-orange-500
+                            @elseif($asset->status == 'Disposed') bg-gray-800
                             @else bg-gray-500
                             @endif">
                             {{ $asset->status }}
@@ -95,7 +97,7 @@
                 @if($asset->assigned_name)
                     <hr class="my-4">
                     <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-3">Assignment Information</h3>
-                    
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <p class="text-xs sm:text-sm text-gray-500 mb-1">Assigned To</p>
@@ -116,6 +118,39 @@
                             <p class="text-xs sm:text-sm text-gray-500 mb-1">Location</p>
                             <p class="font-semibold text-sm sm:text-base text-gray-800">{{ $asset->location ?? 'N/A' }}</p>
                         </div>
+                    </div>
+                @endif
+
+                @if($asset->latestDisposalRequest)
+                    <hr class="my-4">
+                    <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-3">Disposal Information</h3>
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs sm:text-sm text-gray-500 mb-1">Disposal Status</p>
+                                <p class="font-semibold text-sm sm:text-base text-gray-800">{{ $asset->latestDisposalRequest->status }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs sm:text-sm text-gray-500 mb-1">Requested By</p>
+                                <p class="font-semibold text-sm sm:text-base text-gray-800">{{ $asset->latestDisposalRequest->requested_by_name ?: 'System' }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-xs sm:text-sm text-gray-500 mb-1">Reason</p>
+                            <p class="text-sm text-gray-700">{{ $asset->latestDisposalRequest->reason }}</p>
+                        </div>
+                        @if($asset->latestDisposalRequest->vp_approved_by_name)
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <p class="text-xs sm:text-sm text-gray-500 mb-1">Approved By</p>
+                                    <p class="font-semibold text-sm sm:text-base text-gray-800">{{ $asset->latestDisposalRequest->vp_approved_by_name }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs sm:text-sm text-gray-500 mb-1">Approved At</p>
+                                    <p class="font-semibold text-sm sm:text-base text-gray-800">{{ optional($asset->latestDisposalRequest->vp_approved_at)->format('m/d/Y h:i A') }}</p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>

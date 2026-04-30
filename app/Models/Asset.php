@@ -8,6 +8,8 @@ use App\Models\Audit;
 use App\Models\Employee;
 use App\Models\History;
 use App\Models\AssetRepair;
+use App\Models\AssetSmeReview;
+use App\Models\DisposalRequest;
 
 class Asset extends Model
 {
@@ -122,5 +124,20 @@ class Asset extends Model
     public function repairs()
     {
         return $this->hasMany(AssetRepair::class);
+    }
+
+    public function smeReviews()
+    {
+        return $this->hasMany(AssetSmeReview::class);
+    }
+
+    public function disposalRequests()
+    {
+        return $this->hasMany(DisposalRequest::class)->latest();
+    }
+
+    public function latestDisposalRequest()
+    {
+        return $this->hasOne(DisposalRequest::class)->latestOfMany();
     }
 }

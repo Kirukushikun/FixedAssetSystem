@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Flag;
 use App\Models\Asset;
+use App\Models\GeneratedForm;
+use App\Models\AssetSmeReview;
 
 class Employee extends Model
 {
@@ -32,5 +34,15 @@ class Employee extends Model
     {
         return $this->hasMany(Asset::class, 'assigned_id')
                     ->where('is_deleted', false);
+    }
+
+    public function generatedForms()
+    {
+        return $this->hasMany(GeneratedForm::class)->latest();
+    }
+
+    public function smeReviews()
+    {
+        return $this->hasMany(AssetSmeReview::class)->latest();
     }
 }

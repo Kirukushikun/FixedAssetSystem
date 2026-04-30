@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\EmployeeDocumentController;
 
 Route::get('/login', fn() => view('auth.login'))->name('login');
 
@@ -66,22 +67,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', function () {
         return view('settings');
     });
-    
-    Route::get('/accountability-form', function (Request $request) {
-        $employee = Employee::find($request->targetID);
-        
-        // Add error handling
-        if (!$employee) {
-            return redirect('/employees')->with('error', 'Employee not found');
-        }
-        
-        // Use relationship instead of direct query
-        $assets = $employee->assets()
-            ->where('is_deleted', false)
-            ->get();
-        
-        return view('accountability-form', compact('employee', 'assets'));
-    });
+
+    Route::get('/sme-workspace', function () {
+        return view('sme-workspace');
+    })->name('sme.workspace');
+
+    Route::get('/disposal-workspace', function () {
+        return view('disposal-workspace');
+    })->name('disposal.workspace');
+
+    Route::get('/disposal-form/{asset}', function (Asset $asset) {
+        $request = $asset->latestDisposalRequest;
+
+        abort_unless($request, 404);
+
+        return view('disposal-form', compact('asset', 'request'));
+    })->name('assets.disposal-form');
+
+    Route::get('/accountability-form', [EmployeeDocumentController::class, 'accountability'])->name('employees.forms.accountability');
+    Route::get('/transfer-form', [EmployeeDocumentController::class, 'transfer'])->name('employees.forms.transfer');
+    Route::get('/employees/forms', [EmployeeDocumentController::class, 'library'])->name('employees.forms.library');
+    Route::get('/employees/forms/{form}', [EmployeeDocumentController::class, 'show'])->name('employees.forms.show');
 
     Route::get('/employees/export', [EmployeeController::class, 'export'])->name('employees.export');
     Route::post('/employees/import', [EmployeeController::class, 'import'])->name('employees.import');
@@ -107,7 +113,7 @@ Route::get('/testing', function () {
 
 Route::get('/viewasset/{targetID}', function (Request $request, $targetID) {
     $targetID = decrypt($targetID);
-    $asset = Asset::find($targetID);
+    $asset = Asset::with('latestDisposalRequest')->find($targetID);
     $categoryDetails = \App\Models\Category::where('code', $asset->category)->first();
     return view('view-asset', compact('asset', 'categoryDetails'));
 });

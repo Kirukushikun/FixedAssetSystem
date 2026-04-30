@@ -19,6 +19,7 @@ use App\Models\Audit;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\DynamicField;
+use App\Models\DisposalRequest;
 
 // Import the new jobs
 use App\Jobs\GenerateAssetQrCode;
@@ -95,6 +96,7 @@ class AssetManagementForm extends Component
     public $repair_type = '';
     public $repair_cost = '';
     public $repair_notes = '';
+    public $latestDisposalRequest;
 
     // RULES FOR VALIDATION
     protected $rules = [
@@ -197,6 +199,7 @@ class AssetManagementForm extends Component
             'repairs' => function ($query) {        // ADD THIS
                 $query->latest()->limit(50);
             },
+            'latestDisposalRequest',
             'assignedEmployee:id,employee_name,farm,department',
             'categoryDetails:code,name'
         ])->findOrFail($targetID);
@@ -243,6 +246,7 @@ class AssetManagementForm extends Component
         $this->history = $this->targetAsset->history;
         $this->audits = $this->targetAsset->audits;
         $this->repairs = $this->targetAsset->repairs;
+        $this->latestDisposalRequest = $this->targetAsset->latestDisposalRequest;
 
     }
 

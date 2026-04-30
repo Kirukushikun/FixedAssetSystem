@@ -429,6 +429,35 @@
                         <p class="text-gray-400 text-sm">No repair or maintenance records found for this asset.</p>
                     @endif
                 </div>
+
+                <div class="input-group">
+                    <label class="block mb-2 font-medium">Disposal Record:</label>
+                    @if($latestDisposalRequest)
+                        <div class="border border-gray-200 rounded-xl p-4 bg-gray-50 flex flex-col gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs uppercase font-semibold text-gray-400">Status</p>
+                                    <p class="font-semibold text-gray-700">{{ $latestDisposalRequest->status }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs uppercase font-semibold text-gray-400">Approval Date</p>
+                                    <p class="font-semibold text-gray-700">{{ optional($latestDisposalRequest->vp_approved_at)->format('m/d/Y h:i A') ?: 'Pending approval' }}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase font-semibold text-gray-400">Reason</p>
+                                <p class="text-sm text-gray-700">{{ $latestDisposalRequest->reason }}</p>
+                            </div>
+                            <div class="flex justify-end">
+                                <a href="{{ route('assets.disposal-form', $targetAsset->id) }}" class="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm font-bold hover:bg-gray-800">
+                                    <i class="fa-solid fa-file-lines mr-2"></i>View Disposal Form
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-gray-400 text-sm">No disposal request has been recorded for this asset.</p>
+                    @endif
+                </div>
             @endif
 
             <div class="self-end flex gap-3">

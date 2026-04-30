@@ -16,6 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('target_id');
             $table->string('flag_type');
             $table->string('asset');
+            $table->string('source')->nullable();
+            $table->unsignedBigInteger('created_by_user_id')->nullable();
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }

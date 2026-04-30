@@ -63,6 +63,18 @@
                 <span><i class="fa-solid fa-user-gear"></i></span>
                 <p>Settings</p>
             </a>
+            <a href="/sme-workspace"
+               data-tooltip="SME Workspace"
+               class="{{ request()->is('sme-workspace*') ? 'active' : '' }}">
+                <span><i class="fa-solid fa-user-check"></i></span>
+                <p>SME Workspace</p>
+            </a>
+            <a href="/disposal-workspace"
+               data-tooltip="Disposal Workspace"
+               class="{{ request()->is('disposal-workspace*') ? 'active' : '' }}">
+                <span><i class="fa-solid fa-recycle"></i></span>
+                <p>Disposal Workspace</p>
+            </a>
         </aside>
     </nav>
 
@@ -103,6 +115,12 @@
                         @case(request()->is('settings*'))
                             Settings
                             @break
+                        @case(request()->is('sme-workspace*'))
+                            SME Workspace
+                            @break
+                        @case(request()->is('disposal-workspace*'))
+                            Disposal Workspace
+                            @break
                     @endswitch
                 </div>
 
@@ -117,6 +135,10 @@
                         System Records
                     @elseif(request()->is('settings*'))
                         Settings
+                    @elseif(request()->is('sme-workspace*'))
+                        SME Workspace
+                    @elseif(request()->is('disposal-workspace*'))
+                        Disposal Workspace
                     @endif
                 </div>
             </div>
