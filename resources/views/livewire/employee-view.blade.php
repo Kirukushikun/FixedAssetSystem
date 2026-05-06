@@ -4,6 +4,7 @@
     selectedFlagId: null,
     selectedAssetId: null,
 }">
+    @php($employeeViewUser = Auth::user())
     <div class="card flex items-center justify-between">
         <div>
             <p class="text-sm text-gray-400">#{{$employee->employee_id}}</p>
@@ -79,12 +80,14 @@
                         <i class="fa-solid fa-flag {{ $flagColors[$flag->flag_type] ?? 'text-gray-500' }}"></i>
                         <span>{{ $flag->flag_type }} - {{ $flag->asset }}@if(!empty($flag->source)) <span class="text-xs text-gray-400">({{ $flag->source }})</span>@endif</span>
                     </div>
-                    <button 
-                        class="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition"
-                        @click="showModal = true; modalTemplate = 'resolve'; selectedFlagId = {{ $flag->id }}"
-                    >
-                        <i class="fa-solid fa-check mr-1"></i>RESOLVE
-                    </button>
+                    @if($employeeViewUser?->hasPermission('employees.update'))
+                        <button 
+                            class="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition"
+                            @click="showModal = true; modalTemplate = 'resolve'; selectedFlagId = {{ $flag->id }}"
+                        >
+                            <i class="fa-solid fa-check mr-1"></i>RESOLVE
+                        </button>
+                    @endif
                 </div>
             @empty
                 <div class="text-gray-400">
@@ -93,25 +96,27 @@
             @endforelse
         </div>
 
-        <div class="flex gap-3">
-            <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit"
-                @click="showModal = true; modalTemplate = 'flag'">
-                ADD NEW FLAG
-            </button>
-            @if($flags->isNotEmpty())
-                <button class="px-5 py-2 bg-green-600 rounded-lg font-bold text-white text-xs hover:bg-green-700 w-fit"
-                    @click="showModal = true; modalTemplate = 'resolveAll'">
-                    MARK ALL AS RESOLVED
+        @if($employeeViewUser?->hasPermission('employees.update'))
+            <div class="flex gap-3">
+                <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit"
+                    @click="showModal = true; modalTemplate = 'flag'">
+                    ADD NEW FLAG
                 </button>
-            @endif
-        </div>
+                @if($flags->isNotEmpty())
+                    <button class="px-5 py-2 bg-green-600 rounded-lg font-bold text-white text-xs hover:bg-green-700 w-fit"
+                        @click="showModal = true; modalTemplate = 'resolveAll'">
+                        MARK ALL AS RESOLVED
+                    </button>
+                @endif
+            </div>
+        @endif
     </div>
 
     <div class="card content flex-1 flex flex-col">
         <div class="table-header flex justify-between items-center">
             <h1 class="text-lg font-bold">Assigned Assets</h1>
             <div class="flex items-center gap-3">
-                @if($assets->total() > 0)
+                @if($assets->total() > 0 && $employeeViewUser?->hasPermission('employees.update'))
                     <button 
                         @click="showModal = true; modalTemplate = 'unassignAll'"
                         class="px-5 py-2 bg-orange-500 rounded-lg font-bold text-white text-xs hover:bg-orange-600"
@@ -119,15 +124,21 @@
                         <i class="fa-solid fa-users-slash mr-1"></i>UNASSIGN ALL
                     </button>
                 @endif
-                <button class="px-5 py-2 bg-gray-200 rounded-lg font-bold text-gray-700 text-xs hover:bg-gray-300" onclick="window.location.href='/employees/forms?targetID={{ $employee->id }}'">
-                    <i class="fa-solid fa-folder-open mr-1"></i>FORM LIBRARY
-                </button>
-                <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" onclick="window.location.href='/accountability-form?targetID={{$employee->id}}'">
-                    <i class="fa-solid fa-file-lines mr-1"></i>GENERATE ACCOUNTABILITY FORM
-                </button>
-                <button class="px-5 py-2 bg-indigo-500 rounded-lg font-bold text-white text-xs hover:bg-indigo-600" onclick="window.location.href='/transfer-form?targetID={{ $employee->id }}'">
-                    <i class="fa-solid fa-right-left mr-1"></i>GENERATE TRANSFER FORM
-                </button>
+                @if($employeeViewUser?->hasPermission('forms.view'))
+                    <button class="px-5 py-2 bg-gray-200 rounded-lg font-bold text-gray-700 text-xs hover:bg-gray-300" onclick="window.location.href='/employees/forms?targetID={{ $employee->id }}'">
+                        <i class="fa-solid fa-folder-open mr-1"></i>FORM LIBRARY
+                    </button>
+                @endif
+                @if($employeeViewUser?->hasPermission('forms.accountability'))
+                    <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600" onclick="window.location.href='/accountability-form?targetID={{$employee->id}}'">
+                        <i class="fa-solid fa-file-lines mr-1"></i>GENERATE ACCOUNTABILITY FORM
+                    </button>
+                @endif
+                @if($employeeViewUser?->hasPermission('forms.transfer'))
+                    <button class="px-5 py-2 bg-indigo-500 rounded-lg font-bold text-white text-xs hover:bg-indigo-600" onclick="window.location.href='/transfer-form?targetID={{ $employee->id }}'">
+                        <i class="fa-solid fa-right-left mr-1"></i>GENERATE TRANSFER FORM
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -142,7 +153,9 @@
                         <th>MODEL</th>
                         <th>STATUS</th>
                         <th>CONDITION</th>
-                        <th>ACTION</th> <!-- ADD THIS -->
+                        @if($employeeViewUser?->hasPermission('employees.update'))
+                            <th>ACTION</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -179,14 +192,16 @@
                                 @endphp 
                                 <div class="text-{{$conditionColor[$asset->condition]}}-500 font-bold uppercase">{{$asset->condition}}</div>
                             </td>
-                            <td>
-                                <button 
-                                    @click="showModal = true; modalTemplate = 'unassign'; selectedAssetId = {{ $asset->id }}"
-                                    class="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition"
-                                >
-                                    <i class="fa-solid fa-user-minus mr-1"></i>UNASSIGN
-                                </button>
-                            </td>
+                            @if($employeeViewUser?->hasPermission('employees.update'))
+                                <td>
+                                    <button 
+                                        @click="showModal = true; modalTemplate = 'unassign'; selectedAssetId = {{ $asset->id }}"
+                                        class="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition"
+                                    >
+                                        <i class="fa-solid fa-user-minus mr-1"></i>UNASSIGN
+                                    </button>
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>

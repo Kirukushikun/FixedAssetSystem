@@ -1,5 +1,5 @@
-<div>
-    <div class="card w-full flex flex-col gap-5">
+<div class="h-full min-h-0">
+    <div class="card h-full min-h-0 w-full flex flex-col gap-5">
 
         <!-- Header -->
         <div class="flex items-center justify-between">
@@ -33,7 +33,7 @@
         </div>
 
         <!-- List -->
-        <div class="flex flex-col gap-1 overflow-y-auto max-h-96 pr-1">
+        <div class="flex flex-col gap-1 overflow-y-auto min-h-0 flex-1 pr-1">
 
             @forelse($departments as $dept)
 
@@ -95,7 +95,7 @@
 
             @empty
 
-                <div class="flex flex-col items-center justify-center text-center gap-2 py-16">
+                <div class="flex flex-col items-center justify-center text-center gap-2 py-16 h-full">
                     <i class="fa-solid fa-building text-gray-300 text-4xl"></i>
                     <p class="text-gray-400 text-sm">No departments found.</p>
                     <p class="text-gray-300 text-xs">Add one above to get started.</p>

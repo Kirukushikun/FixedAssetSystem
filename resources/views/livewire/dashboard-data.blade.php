@@ -8,6 +8,7 @@
         targetAsset: '',
     }"
 >
+    @php($dashboardUser = Auth::user())
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 text-[#2d3748]">
         <div class="px-6 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
@@ -65,11 +66,12 @@
 
                     <!-- Chart Bars -->
                     <div class="flex items-end justify-around flex-1 h-full">
-                        @foreach(['good' => 'GOOD', 'defective' => 'DEFECTIVE', 'repair' => 'REPAIR', 'replace' => 'REPLACE'] as $key => $label) @php $height = $maxCondition > 0 ? ($conditions[$key] / $maxCondition) * 100 : 0; @endphp
-                        <div class="relative w-[10%] bg-white rounded-lg flex items-end justify-center text-[10px] pb-2 shadow-md hover:opacity-80 hover:-translate-y-1 transition" style="height: {{ $height }}%" title="{{ $conditions[$key] }} assets">
-                            <span class="text-gray-800 font-semibold">{{ $conditions[$key] }}</span>
-                            <div class="absolute -bottom-[30px] text-white">{{ $label }}</div>
-                        </div>
+                        @foreach(['good' => 'GOOD', 'defective' => 'DEFECTIVE', 'repair' => 'REPAIR', 'replace' => 'REPLACE'] as $key => $label)
+                            @php($height = $maxCondition > 0 ? ($conditions[$key] / $maxCondition) * 100 : 0)
+                            <div class="relative w-[10%] bg-white rounded-lg flex items-end justify-center text-[10px] pb-2 shadow-md hover:opacity-80 hover:-translate-y-1 transition" style="height: {{ $height }}%" title="{{ $conditions[$key] }} assets">
+                                <span class="text-gray-800 font-semibold">{{ $conditions[$key] }}</span>
+                                <div class="absolute -bottom-[30px] text-white">{{ $label }}</div>
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -220,16 +222,22 @@
                     <h1 class="text-lg text-white font-bold">Quick Actions</h1>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'create'"><i class="fa-solid fa-plus text-teal-400"></i> Add New Asset</button>
-                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'employee'"><i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee</button>
+                        @if($dashboardUser?->hasPermission('assets.create'))
+                            <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'create'"><i class="fa-solid fa-plus text-teal-400"></i> Add New Asset</button>
+                        @endif
+                        @if($dashboardUser?->hasPermission('employees.create'))
+                            <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" @click="showModal = true; modalTemplate = 'employee'"><i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee</button>
+                        @endif
                         <!-- <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button> -->
                         
                         <!-- Import Assets -->
-                        <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
-                            <button id="import-button" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button>
-                        </form>
+                        @if($dashboardUser?->hasPermission('assets.import'))
+                            <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
+                                <button id="import-button" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Assets</button>
+                            </form>
+                        @endif
 
                         <!-- Loading Modal Backdrop -->
                         <div 
@@ -254,57 +262,64 @@
                                 const importForm = document.getElementById('import-form');
                                 const loadingBackdrop = document.getElementById('import-loading-backdrop');
 
-                                // Trigger file input when button is clicked
-                                importButton.addEventListener('click', () => {
-                                    importFile.click();
-                                });
+                                if (importButton && importFile && importForm) {
+                                    importButton.addEventListener('click', () => {
+                                        importFile.click();
+                                    });
 
-                                // Handle file selection and show loading
-                                importFile.addEventListener('change', () => {
-                                    if (importFile.files.length > 0) {
-                                        // Show loading modal
-                                        loadingBackdrop.classList.remove('hidden');
-                                        
-                                        // Submit the form
-                                        importForm.submit();
-                                    }
-                                });
+                                    importFile.addEventListener('change', () => {
+                                        if (importFile.files.length > 0) {
+                                            loadingBackdrop?.classList.remove('hidden');
+                                            importForm.submit();
+                                        }
+                                    });
 
-                                // Optional: Hide loading if user navigates back (for better UX)
-                                window.addEventListener('pageshow', (event) => {
-                                    if (event.persisted) {
-                                        loadingBackdrop.classList.add('hidden');
-                                    }
-                                });
+                                    window.addEventListener('pageshow', (event) => {
+                                        if (event.persisted) {
+                                            loadingBackdrop?.classList.add('hidden');
+                                        }
+                                    });
+                                }
                         </script>
 
                         <!-- Export Assets -->
-                        <button 
-                            class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" 
-                            @click="showModal = true; modalTemplate = 'export-filter'"
-                        >
-                            <i class="fa-solid fa-file-export text-teal-400"></i> Export Assets
-                        </button>
+                        @if($dashboardUser?->hasPermission('assets.export'))
+                            <button 
+                                class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" 
+                                @click="showModal = true; modalTemplate = 'export-filter'"
+                            >
+                                <i class="fa-solid fa-file-export text-teal-400"></i> Export Assets
+                            </button>
+                        @endif
                                
                         <!-- Import Employees  -->
-                        <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <input type="file" id="import-employee" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
-                            <button id="import-button-btn" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Employees</button>
-                        </form>
+                        @if($dashboardUser?->hasPermission('employees.import'))
+                            <form id="import-form" action="/employees/import" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <input type="file" id="import-employee" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
+                                <button id="import-button-btn" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105"><i class="fa-solid fa-file-import text-teal-400"></i> Import Employees</button>
+                            </form>
+                        @endif
 
                         <script>
-                            document.getElementById('import-button-btn').addEventListener('click', () => {
-                                document.getElementById('import-employee').click();
-                            });
+                            const employeeImportButton = document.getElementById('import-button-btn');
+                            const employeeImportFile = document.getElementById('import-employee');
 
-                            document.getElementById('import-employee').addEventListener('change', () => {
-                                document.getElementById('import-form').submit();
-                            });
+                            if (employeeImportButton && employeeImportFile) {
+                                employeeImportButton.addEventListener('click', () => {
+                                    employeeImportFile.click();
+                                });
+
+                                employeeImportFile.addEventListener('change', () => {
+                                    employeeImportFile.closest('form')?.submit();
+                                });
+                            }
                         </script>
                         
                         <!-- Export Employees -->
-                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/employees/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Employees</button>
+                        @if($dashboardUser?->hasPermission('employees.export'))
+                            <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105" onclick="window.location.href='/employees/export'"><i class="fa-solid fa-file-export text-teal-400"></i> Export Employees</button>
+                        @endif
                     </div>
                 </div>
             </div>

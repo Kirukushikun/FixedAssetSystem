@@ -19,26 +19,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(RolePermissionSeeder::class);
+        $this->call(DynamicFieldSeeder::class);
+
         // User::factory(10)->create();
 
         User::factory()->create(
             [
                 'id' => 1,
                 'name' => 'Adam Trinidad',
+                'is_admin' => true,
             ]
         );
         User::factory()->create(
             [
                 'id' => 61,
                 'name' => 'Iverson Craig',
+                'is_admin' => true,
             ]
         );
         User::factory()->create(
             [
                 'id' => 5,
                 'name' => 'Jeffrey Montiano',
+                'is_admin' => true,
             ]
         );
+
+        $this->call(LocalRoleAccountSeeder::class);
 
         $categories = [
             'IT' => [

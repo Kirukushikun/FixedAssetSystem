@@ -2,6 +2,7 @@
      x-data="{ showModal: false, modalTemplate: '' }"
      @open-edit-modal.window="showModal = true; modalTemplate = 'edit'"
      @keydown.escape.window="showModal = false; modalTemplate = ''">
+    @php($currentUser = Auth::user())
 
     {{-- ── Toolbar ── --}}
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -40,6 +41,7 @@
                             <th>Email</th>
                             <th>Farm</th>
                             <th>Department</th>
+                            <th>Roles</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -62,25 +64,43 @@
                             </td>
                             <td>
                                 @if($dbUsers->has($user['id']))
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @if($dbUsers->get($user['id'])->is_admin)
+                                            <span class="px-2 py-1 text-[11px] font-semibold rounded-lg bg-yellow-50 text-yellow-600 border border-yellow-100">Admin Override</span>
+                                        @endif
+                                        @forelse($dbUsers->get($user['id'])->roles as $role)
+                                            <span class="px-2 py-1 text-[11px] font-semibold rounded-lg bg-teal-50 text-teal-600 border border-teal-100">{{ $role->name }}</span>
+                                        @empty
+                                            <span class="text-xs text-gray-400">No roles</span>
+                                        @endforelse
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400">No access</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($dbUsers->has($user['id']))
                                     <div class="flex items-center gap-2">
                                         {{-- Edit --}}
-                                        <button
-                                            @click="modalTemplate = 'edit'; showModal = true; $wire.openEditModal('{{ $user['id'] }}');"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-500 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                                        >
-                                            <i class="fa-solid fa-pen text-xs"></i> Edit
-                                        </button>
+                                        @if($currentUser?->hasPermission('users.update') || $currentUser?->hasPermission('roles.manage'))
+                                            <button
+                                                @click="modalTemplate = 'edit'; showModal = true; $wire.openEditModal('{{ $user['id'] }}');"
+                                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-500 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                            >
+                                                <i class="fa-solid fa-pen text-xs"></i> Edit
+                                            </button>
+                                        @endif
 
-                                        {{-- Revoke --}}
-                                        <button
-                                            @click="modalTemplate = 'revoke'; showModal = true; $wire.set('selectedUserId', '{{ $user['id'] }}'); $wire.set('selectedUserName', '{{ $user['first_name'] }} {{ $user['last_name'] }}');"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                                        >
-                                            <i class="fa-solid fa-ban text-xs"></i> Revoke
-                                        </button>
+                                        @if($currentUser?->hasPermission('users.delete'))
+                                            <button
+                                                @click="modalTemplate = 'revoke'; showModal = true; $wire.set('selectedUserId', '{{ $user['id'] }}'); $wire.set('selectedUserName', '{{ $user['first_name'] }} {{ $user['last_name'] }}');"
+                                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                            >
+                                                <i class="fa-solid fa-ban text-xs"></i> Revoke
+                                            </button>
+                                        @endif
 
-                                        {{-- Make Admin --}}
-                                        @if(!$dbUsers->get($user['id'])->is_admin)
+                                        @if(!$dbUsers->get($user['id'])->is_admin && $currentUser?->hasPermission('roles.manage'))
                                             <button
                                                 @click="modalTemplate = 'admin'; showModal = true; $wire.set('selectedUserId', '{{ $user['id'] }}'); $wire.set('selectedUserName', '{{ $user['first_name'] }} {{ $user['last_name'] }}');"
                                                 class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-yellow-600 border border-yellow-200 rounded-lg hover:bg-yellow-50 transition-colors"
@@ -90,12 +110,16 @@
                                         @endif
                                     </div>
                                 @else
-                                    <button
-                                        @click="modalTemplate = 'grant'; showModal = true; $wire.set('selectedUserId', '{{ $user['id'] }}'); $wire.set('selectedUserName', '{{ $user['first_name'] }} {{ $user['last_name'] }}'); $wire.set('selectedUserEmail', '{{ $user['email'] }}');"
-                                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-teal-600 border border-teal-200 rounded-lg hover:bg-teal-50 transition-colors"
-                                    >
-                                        <i class="fa-solid fa-key text-xs"></i> Grant Access
-                                    </button>
+                                    @if($currentUser?->hasPermission('users.create'))
+                                        <button
+                                            @click="modalTemplate = 'grant'; showModal = true; $wire.set('selectedUserId', '{{ $user['id'] }}'); $wire.set('selectedUserName', '{{ $user['first_name'] }} {{ $user['last_name'] }}'); $wire.set('selectedUserEmail', '{{ $user['email'] }}');"
+                                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-teal-600 border border-teal-200 rounded-lg hover:bg-teal-50 transition-colors"
+                                        >
+                                            <i class="fa-solid fa-key text-xs"></i> Grant Access
+                                        </button>
+                                    @else
+                                        <span class="text-xs text-gray-400">No action</span>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -107,20 +131,6 @@
         </div>
 
         {{-- ── Pagination ── --}}
-        @php
-            $currentPage = $users->currentPage();
-            $lastPage    = $users->lastPage();
-
-            $start = max(1, $currentPage - 2);
-            $end   = min($lastPage, $start + 4);
-
-            if ($end - $start < 4) {
-                $start = max(1, $end - 4);
-            }
-
-            $pages = range($start, $end);
-        @endphp
-
         @if($lastPage > 1)
             <div class="pagination-container flex items-center justify-end gap-3 mt-auto pt-4">
                 
@@ -174,7 +184,7 @@
         x-transition:leave-end="opacity-0 scale-95"
         class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none"
     >
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl pointer-events-auto max-h-[90vh] overflow-y-auto">
 
             {{-- Close --}}
             <button
@@ -271,6 +281,22 @@
                                 <option value="{{ $department->name }}">{{ $department->name }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Roles</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                            @foreach($roles as $role)
+                                <label class="flex items-start gap-2 rounded-xl border border-gray-200 p-3 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" wire:model="editRoleIds" value="{{ $role->id }}" class="mt-1 rounded border-gray-300 text-teal-500 focus:ring-teal-400">
+                                    <span>
+                                        <span class="block text-sm font-bold text-gray-700">{{ $role->name }}</span>
+                                        <span class="block text-xs text-gray-400">{{ $role->description }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Admin Override still gives full access even without selected roles.</p>
                     </div>
                 </div>
 

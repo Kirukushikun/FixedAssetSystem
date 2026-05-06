@@ -122,6 +122,11 @@ class AssetManagementTable extends Component
 
     public function exportWithFilters()
     {
+        if (!Auth::user()?->hasPermission('assets.export')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to export assets.');
+            return;
+        }
+
         $filters = [
             'category_type' => $this->export_category_type,
             'category' => $this->export_category,
@@ -139,6 +144,11 @@ class AssetManagementTable extends Component
 
     public function exportAuditLog()
     {
+        if (!Auth::user()?->hasPermission('audit.export')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to export audit logs.');
+            return;
+        }
+
         $this->validate([
             'audit_export_date_from' => 'nullable|date',
             'audit_export_date_to' => 'nullable|date|after_or_equal:audit_export_date_from',
@@ -156,6 +166,11 @@ class AssetManagementTable extends Component
 
     public function exportRepairLog()
     {
+        if (!Auth::user()?->hasPermission('reports.export')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to export repair logs.');
+            return;
+        }
+
         $this->validate([
             'repair_export_date_from' => 'nullable|date',
             'repair_export_date_to' => 'nullable|date|after_or_equal:repair_export_date_from',
@@ -249,6 +264,11 @@ class AssetManagementTable extends Component
      */
     public function delete($targetAsset)
     {
+        if (!Auth::user()?->hasPermission('assets.delete')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to delete assets.');
+            return;
+        }
+
         DB::beginTransaction();
         
         try {

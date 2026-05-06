@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -22,6 +23,24 @@ class LoginController extends Controller
             $remainingTime = $this->getRemainingLockoutTime($email);
             return back()->withErrors([
                 'login' => "Account temporarily locked due to multiple failed attempts. Please try again in {$remainingTime} minutes."
+            ])->withInput();
+        }
+
+        if (config('auth_mode.mode') === 'local') {
+            $user = User::where('email', $email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                $this->clearAttempts($email);
+                $this->logAccess($email, true, $request);
+                Auth::loginUsingId($user->id);
+                return $this->redirectAfterLogin();
+            }
+
+            $this->incrementAttempts($email);
+            $this->logAccess($email, false, $request);
+
+            return back()->withErrors([
+                'login' => 'Incorrect username or password.'
             ])->withInput();
         }
 
@@ -77,7 +96,7 @@ class LoginController extends Controller
                     
                     $this->logAccess($email, true, $request);
                     Auth::loginUsingId($user->id);
-                    return redirect()->route('dashboard');
+                    return $this->redirectAfterLogin();
                 }
 
                 // User exists in Authenticator but NOT in this system
@@ -202,6 +221,37 @@ class LoginController extends Controller
     {
         Auth::logout();
         return redirect('/login');
+    }
+
+    private function redirectAfterLogin()
+    {
+        $user = Auth::user();
+
+        if ($user?->hasPermission('dashboard.view')) {
+            return redirect()->route('dashboard');
+        }
+
+        if ($user?->hasPermission('assets.view')) {
+            return redirect('/assetmanagement');
+        }
+
+        if ($user?->hasPermission('employees.view')) {
+            return redirect('/employees');
+        }
+
+        if ($user?->hasPermission('sme.view')) {
+            return redirect()->route('sme.workspace');
+        }
+
+        if ($user?->hasPermission('disposal.view')) {
+            return redirect()->route('disposal.workspace');
+        }
+
+        if ($user?->hasPermission('settings.view')) {
+            return redirect('/settings');
+        }
+
+        return redirect('/logout');
     }
 
     private function reloadNotif($type, $header, $message)

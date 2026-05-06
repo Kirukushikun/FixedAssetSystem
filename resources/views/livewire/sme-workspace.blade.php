@@ -1,29 +1,77 @@
 <div class="flex flex-col gap-5">
+    @php($user = Auth::user())
     <div class="card flex flex-col gap-4">
         <div>
             <h1 class="text-lg font-bold">Subject Matter Expert Workspace</h1>
             <p class="text-sm text-gray-400">Select an employee, review assigned assets, add condition insights, and flag directly when needed.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="input-group">
-                <label>Select Employee</label>
-                <select wire:model.live="employeeId">
-                    <option value="">Choose an employee...</option>
-                    @foreach($employees as $employee)
-                        <option value="{{ $employee['id'] }}">{{ $employee['employee_name'] }} ({{ $employee['employee_id'] }})</option>
+                <label>Filter by Farm</label>
+                <select wire:model.live="filterFarm">
+                    <option value="">All farms</option>
+                    @foreach($farms as $farm)
+                        <option value="{{ $farm }}">{{ $farm }}</option>
                     @endforeach
                 </select>
             </div>
 
-            @if($selectedEmployee)
-                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
-                    <p class="font-bold text-gray-700">{{ $selectedEmployee->employee_name }}</p>
-                    <p class="text-gray-500">{{ $selectedEmployee->employee_id }}</p>
-                    <p class="text-gray-500">{{ $selectedEmployee->farm }} | {{ $selectedEmployee->department }}</p>
-                </div>
-            @endif
+            <div class="input-group">
+                <label>Filter by Department</label>
+                <select wire:model.live="filterDepartment">
+                    <option value="">All departments</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department }}">{{ $department }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Select Employee</label>
+                <select wire:model.live="employeeId">
+                    <option value="">Choose an employee...</option>
+                    @foreach($filteredEmployees as $employee)
+                        <option value="{{ $employee['id'] }}">{{ $employee['employee_name'] }} ({{ $employee['employee_id'] }})</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
+
+        @if($selectedEmployee)
+            <div class="rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50 to-white p-5">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-teal-500 text-white flex items-center justify-center text-lg font-bold">
+                            {{ strtoupper(substr($selectedEmployee->employee_name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <p class="text-xs text-teal-600 font-bold uppercase tracking-wide">Selected Employee</p>
+                            <h2 class="text-lg font-bold text-gray-800">{{ $selectedEmployee->employee_name }}</h2>
+                            <p class="text-sm text-gray-500">Employee #{{ $selectedEmployee->employee_id }}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white border border-teal-100 text-teal-600">
+                        {{ $assets->count() }} assigned asset(s)
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 text-sm">
+                    <div class="bg-white border border-gray-100 rounded-xl p-3">
+                        <p class="text-xs uppercase font-semibold text-gray-400">Farm</p>
+                        <p class="font-bold text-gray-700">{{ $selectedEmployee->farm ?: '—' }}</p>
+                    </div>
+                    <div class="bg-white border border-gray-100 rounded-xl p-3">
+                        <p class="text-xs uppercase font-semibold text-gray-400">Department</p>
+                        <p class="font-bold text-gray-700">{{ $selectedEmployee->department ?: '—' }}</p>
+                    </div>
+                    <div class="bg-white border border-gray-100 rounded-xl p-3">
+                        <p class="text-xs uppercase font-semibold text-gray-400">Review Scope</p>
+                        <p class="font-bold text-gray-700">Assigned assets</p>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     @if($selectedEmployee)
@@ -51,7 +99,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="input-group">
                                     <label>Condition Note</label>
-                                    <select wire:model="assetReviews.{{ $asset->id }}.condition_note">
+                                    <select wire:model="assetReviews.{{ $asset->id }}.condition_note" @if(!$user?->hasPermission('sme.review')) disabled @endif>
                                         <option value="">Select note...</option>
                                         <option value="Good">Good</option>
                                         <option value="Repair">Repair</option>
@@ -64,7 +112,7 @@
 
                                 <div class="input-group">
                                     <label>Recommended Flag</label>
-                                    <select wire:model="assetReviews.{{ $asset->id }}.recommended_flag">
+                                    <select wire:model="assetReviews.{{ $asset->id }}.recommended_flag" @if(!$user?->hasPermission('sme.review')) disabled @endif>
                                         <option value="">No direct flag</option>
                                         <option value="Pending Clearances">Pending Clearances</option>
                                         <option value="Damaged Asset">Damaged Asset</option>
@@ -77,18 +125,20 @@
 
                             <div class="input-group">
                                 <label>SME Remarks</label>
-                                <textarea rows="4" wire:model="assetReviews.{{ $asset->id }}.remarks" placeholder="Add observations, technical findings, or clearance notes..."></textarea>
+                                <textarea rows="4" wire:model="assetReviews.{{ $asset->id }}.remarks" placeholder="Add observations, technical findings, or clearance notes..." @if(!$user?->hasPermission('sme.review')) disabled @endif></textarea>
                             </div>
 
                             <div class="flex items-center justify-between gap-4 flex-wrap">
                                 <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-600">
-                                    <input type="checkbox" wire:model="assetReviews.{{ $asset->id }}.flagged_employee">
+                                    <input type="checkbox" wire:model="assetReviews.{{ $asset->id }}.flagged_employee" @if(!$user?->hasPermission('sme.review')) disabled @endif>
                                     Directly flag employee based on this review
                                 </label>
 
-                                <button type="button" wire:click="saveReview({{ $asset->id }})" class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600 transition-colors">
-                                    <i class="fa-solid fa-floppy-disk mr-2"></i>Save Review
-                                </button>
+                                @if($user?->hasPermission('sme.review'))
+                                    <button type="button" wire:click="saveReview({{ $asset->id }})" class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600 transition-colors">
+                                        <i class="fa-solid fa-floppy-disk mr-2"></i>Save Review
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @endforeach

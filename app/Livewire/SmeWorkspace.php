@@ -16,6 +16,10 @@ class SmeWorkspace extends Component
 {
     public $employeeId = '';
     public $employees = [];
+    public $farms = [];
+    public $departments = [];
+    public $filterFarm = '';
+    public $filterDepartment = '';
     public $selectedEmployee = null;
     public $assetReviews = [];
     public $categoryCodeImage;
@@ -27,7 +31,23 @@ class SmeWorkspace extends Component
             ->get(['id', 'employee_name', 'employee_id', 'farm', 'department'])
             ->toArray();
 
+        $this->farms = collect($this->employees)->pluck('farm')->filter()->unique()->sort()->values()->toArray();
+        $this->departments = collect($this->employees)->pluck('department')->filter()->unique()->sort()->values()->toArray();
         $this->categoryCodeImage = Category::all()->keyBy('code');
+    }
+
+    public function updatedFilterFarm(): void
+    {
+        $this->employeeId = '';
+        $this->selectedEmployee = null;
+        $this->assetReviews = [];
+    }
+
+    public function updatedFilterDepartment(): void
+    {
+        $this->employeeId = '';
+        $this->selectedEmployee = null;
+        $this->assetReviews = [];
     }
 
     public function updatedEmployeeId($value)
@@ -66,6 +86,11 @@ class SmeWorkspace extends Component
 
     public function saveReview($assetId)
     {
+        if (!Auth::user()?->hasPermission('sme.review')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to save SME reviews.');
+            return;
+        }
+
         if (!$this->selectedEmployee) {
             return;
         }
@@ -146,8 +171,14 @@ class SmeWorkspace extends Component
                 ->get();
         }
 
+        $filteredEmployees = collect($this->employees)
+            ->when($this->filterFarm, fn ($employees) => $employees->where('farm', $this->filterFarm))
+            ->when($this->filterDepartment, fn ($employees) => $employees->where('department', $this->filterDepartment))
+            ->values();
+
         return view('livewire.sme-workspace', [
             'assets' => $assets,
+            'filteredEmployees' => $filteredEmployees,
         ]);
     }
 }

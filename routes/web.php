@@ -25,14 +25,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->name('dashboard');
+    })->middleware('permission:dashboard.view')->name('dashboard');
 
     Route::get('/assetmanagement', function () {
         return view('assetmanagement');
-    });
+    })->middleware('permission:assets.view');
 
-    Route::get('/assetmanagement/qr', \App\Livewire\QrManagement::class)->name('assets.qr');
-    Route::get('/assetmanagement/qr/print', [AssetController::class, 'printQr'])->name('assets.qr.print');
+    Route::get('/assetmanagement/qr', \App\Livewire\QrManagement::class)->middleware('permission:assets.qr')->name('assets.qr');
+    Route::get('/assetmanagement/qr/print', [AssetController::class, 'printQr'])->middleware('permission:assets.qr')->name('assets.qr.print');
 
     Route::get('/assetmanagement/{mode}', function (Request $request, $mode) {
         $targetID = null;
@@ -41,40 +41,50 @@ Route::middleware('auth')->group(function () {
         $sub_category = null;
 
         if ($mode == 'create') {
+            abort_unless(Auth::user()?->hasPermission('assets.create'), 403);
+
             $category_type = $request->category_type;
             $category = $request->category;
             $sub_category = $request->sub_category;        
-        } else {
+        } elseif ($mode == 'edit') {
+            abort_unless(Auth::user()?->hasPermission('assets.update'), 403);
+
             $targetID = decrypt($request->targetID);
+        } elseif ($mode == 'view') {
+            abort_unless(Auth::user()?->hasPermission('assets.view'), 403);
+
+            $targetID = decrypt($request->targetID);
+        } else {
+            abort(404);
         }
 
         return view('assetmanagement-view', compact('mode', 'targetID', 'category_type', 'category', 'sub_category'));
-    });
+    })->middleware('permission:assets.view');
 
     Route::get('/employees', function () {
         return view('employees');
-    });
+    })->middleware('permission:employees.view');
 
     Route::get('/employees/view', function (Request $request) {
         $targetID = $request->targetID;
         return view('employees-view', compact('targetID'));
-    });
+    })->middleware('permission:employees.view');
 
     Route::get('/systemrecords', function () {
         return view('systemrecords');
-    });
+    })->middleware('permission:audit.view,activity.view,users.view');
 
     Route::get('/settings', function () {
         return view('settings');
-    });
+    })->middleware('permission:settings.view');
 
     Route::get('/sme-workspace', function () {
         return view('sme-workspace');
-    })->name('sme.workspace');
+    })->middleware('permission:sme.view')->name('sme.workspace');
 
     Route::get('/disposal-workspace', function () {
         return view('disposal-workspace');
-    })->name('disposal.workspace');
+    })->middleware('permission:disposal.view')->name('disposal.workspace');
 
     Route::get('/disposal-form/{asset}', function (Asset $asset) {
         $request = $asset->latestDisposalRequest;
@@ -82,32 +92,20 @@ Route::middleware('auth')->group(function () {
         abort_unless($request, 404);
 
         return view('disposal-form', compact('asset', 'request'));
-    })->name('assets.disposal-form');
+    })->middleware('permission:disposal.form.view')->name('assets.disposal-form');
 
-    Route::get('/accountability-form', [EmployeeDocumentController::class, 'accountability'])->name('employees.forms.accountability');
-    Route::get('/transfer-form', [EmployeeDocumentController::class, 'transfer'])->name('employees.forms.transfer');
-    Route::get('/employees/forms', [EmployeeDocumentController::class, 'library'])->name('employees.forms.library');
-    Route::get('/employees/forms/{form}', [EmployeeDocumentController::class, 'show'])->name('employees.forms.show');
+    Route::get('/accountability-form', [EmployeeDocumentController::class, 'accountability'])->middleware('permission:forms.accountability')->name('employees.forms.accountability');
+    Route::get('/transfer-form', [EmployeeDocumentController::class, 'transfer'])->middleware('permission:forms.transfer')->name('employees.forms.transfer');
+    Route::get('/employees/forms', [EmployeeDocumentController::class, 'library'])->middleware('permission:forms.view')->name('employees.forms.library');
+    Route::get('/employees/forms/{form}', [EmployeeDocumentController::class, 'show'])->middleware('permission:forms.view')->name('employees.forms.show');
 
-    Route::get('/employees/export', [EmployeeController::class, 'export'])->name('employees.export');
-    Route::post('/employees/import', [EmployeeController::class, 'import'])->name('employees.import');
+    Route::get('/employees/export', [EmployeeController::class, 'export'])->middleware('permission:employees.export')->name('employees.export');
+    Route::post('/employees/import', [EmployeeController::class, 'import'])->middleware('permission:employees.import')->name('employees.import');
 
-    Route::get('/assets/export', [AssetController::class, 'export'])->name('assets.export');
-    Route::post('/assets/import', [AssetController::class, 'import'])->name('assets.import');
+    Route::get('/assets/export', [AssetController::class, 'export'])->middleware('permission:assets.export')->name('assets.export');
+    Route::post('/assets/import', [AssetController::class, 'import'])->middleware('permission:assets.import')->name('assets.import');
 
-    Route::get('/assets/export-audit-log', [AssetController::class, 'exportAuditLog'])->name('assets.export.audit-log');
-    
-    Route::get('/assetmanagement/qr', function () {
-        return view('qr-management');
-    })->name('assets.qr');
-});
-
-
-Route::get('/testing', function () {
-    $user = User::find(1); 
-	Auth::login($user);
-
-    return view('dashboard');
+    Route::get('/assets/export-audit-log', [AssetController::class, 'exportAuditLog'])->middleware('permission:audit.export')->name('assets.export.audit-log');
 });
 
 
@@ -116,4 +114,4 @@ Route::get('/viewasset/{targetID}', function (Request $request, $targetID) {
     $asset = Asset::with('latestDisposalRequest')->find($targetID);
     $categoryDetails = \App\Models\Category::where('code', $asset->category)->first();
     return view('view-asset', compact('asset', 'categoryDetails'));
-});
+})->middleware(['auth', 'permission:assets.view']);

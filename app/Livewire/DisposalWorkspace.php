@@ -39,6 +39,11 @@ class DisposalWorkspace extends Component
 
     public function submitRequest()
     {
+        if (!Auth::user()?->hasPermission('disposal.request')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to request disposal.');
+            return;
+        }
+
         $this->validate();
 
         try {
@@ -89,6 +94,11 @@ class DisposalWorkspace extends Component
 
     public function approveRequest($requestId)
     {
+        if (!Auth::user()?->hasPermission('disposal.approve')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to approve disposal requests.');
+            return;
+        }
+
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
             $request->update([
@@ -111,6 +121,11 @@ class DisposalWorkspace extends Component
 
     public function markDisposed($requestId)
     {
+        if (!Auth::user()?->hasPermission('disposal.dispose')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to mark assets as disposed.');
+            return;
+        }
+
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
             $request->update([

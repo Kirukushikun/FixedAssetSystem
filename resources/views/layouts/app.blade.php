@@ -22,6 +22,7 @@
     <div id="nav-backdrop" onclick="closeMobileNav()"></div>
 
     <nav id="main-nav">
+        @php($navUser = Auth::user())
         <div class="logo">
             <p>
                 <img src="{{ asset('img/Fixed.png') }}" width="24" alt="">
@@ -33,47 +34,67 @@
         </div>
 
         <aside class="sidebar">
-            <a href="/dashboard"
-               data-tooltip="Dashboard"
-               class="{{ request()->is('dashboard*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-house-chimney"></i></span>
-                <p>Dashboard</p>
-            </a>
-            <a href="/assetmanagement"
-               data-tooltip="Asset Management"
-               class="{{ request()->is('assetmanagement*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-boxes-stacked"></i></span>
-                <p>Asset Management</p>
-            </a>
-            <a href="/employees"
-               data-tooltip="Employees"
-               class="{{ request()->is('employees*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-users"></i></span>
-                <p>Employees</p>
-            </a>
-            <a href="/systemrecords"
-               data-tooltip="System Records"
-               class="{{ request()->is('systemrecords*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-file"></i></span>
-                <p>System Records</p>
-            </a>
-            <a href="/settings"
-               data-tooltip="Settings"
-               class="{{ request()->is('settings*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-user-gear"></i></span>
-                <p>Settings</p>
-            </a>
-            <a href="/sme-workspace"
-               data-tooltip="SME Workspace"
-               class="{{ request()->is('sme-workspace*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-user-check"></i></span>
-                <p>SME Workspace</p>
-            </a>
-            <a href="/disposal-workspace"
-               data-tooltip="Disposal Workspace"
-               class="{{ request()->is('disposal-workspace*') ? 'active' : '' }}">
-                <span><i class="fa-solid fa-recycle"></i></span>
-                <p>Disposal Workspace</p>
+            @if($navUser?->hasPermission('dashboard.view'))
+                <a href="/dashboard"
+                   data-tooltip="Dashboard"
+                   class="{{ request()->is('dashboard*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-house-chimney"></i></span>
+                    <p>Dashboard</p>
+                </a>
+            @endif
+            @if($navUser?->hasPermission('assets.view'))
+                <a href="/assetmanagement"
+                   data-tooltip="Asset Management"
+                   class="{{ request()->is('assetmanagement*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-boxes-stacked"></i></span>
+                    <p>Asset Management</p>
+                </a>
+            @endif
+            @if($navUser?->hasPermission('employees.view'))
+                <a href="/employees"
+                   data-tooltip="Employees"
+                   class="{{ request()->is('employees*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-users"></i></span>
+                    <p>Employees</p>
+                </a>
+            @endif
+            @if($navUser?->hasPermission('audit.view') || $navUser?->hasPermission('activity.view') || $navUser?->hasPermission('users.view'))
+                <a href="/systemrecords"
+                   data-tooltip="System Records"
+                   class="{{ request()->is('systemrecords*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-file"></i></span>
+                    <p>System Records</p>
+                </a>
+            @endif
+            @if($navUser?->hasPermission('settings.view'))
+                <a href="/settings"
+                   data-tooltip="Settings"
+                   class="{{ request()->is('settings*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-user-gear"></i></span>
+                    <p>Settings</p>
+                </a>
+            @endif
+            @if($navUser?->hasPermission('sme.view'))
+                <a href="/sme-workspace"
+                   data-tooltip="SME Workspace"
+                   class="{{ request()->is('sme-workspace*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-user-check"></i></span>
+                    <p>SME Workspace</p>
+                </a>
+            @endif
+            @if($navUser?->hasPermission('disposal.view'))
+                <a href="/disposal-workspace"
+                   data-tooltip="Disposal Workspace"
+                   class="{{ request()->is('disposal-workspace*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-recycle"></i></span>
+                    <p>Disposal Workspace</p>
+                </a>
+            @endif
+            <a href="/logout"
+               data-tooltip="Logout"
+               class="mt-auto">
+                <span><i class="fa-solid fa-right-from-bracket"></i></span>
+                <p>Logout</p>
             </a>
         </aside>
     </nav>

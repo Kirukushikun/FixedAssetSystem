@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\User;
 use App\Models\Department;
+use App\Models\Role;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,7 @@ class UserAccess extends Component
 
     public $dbUsers = [];
     public $departments = [];
+    public $roles = [];
     public string $search = '';
 
     // Selected user properties for modal
@@ -33,14 +35,16 @@ class UserAccess extends Component
     public $editUserId;
     public $editFarm;
     public $editDepartment;
+    public array $editRoleIds = [];
 
     public function mount()
     {
         $this->dbUsers = Cache::remember('user_access_db_users', 600, function () {
-            return User::all()->keyBy('id');
+            return User::with('roles')->get()->keyBy('id');
         });
 
         $this->departments = Department::all();
+        $this->roles = Role::orderBy('name')->get();
     }
 
     public function updatingSearch(): void
@@ -95,6 +99,18 @@ class UserAccess extends Component
             );
         }
 
+        $accessUserIds = $this->dbUsers
+            ->keys()
+            ->map(fn ($id) => (string) $id)
+            ->flip();
+
+        $users = $users->sortBy(function ($user) use ($accessUserIds) {
+            $hasAccess = $accessUserIds->has((string) $user['id']) ? 0 : 1;
+            $name = strtolower($user['first_name'] . ' ' . $user['last_name']);
+
+            return $hasAccess . '|' . $name;
+        })->values();
+
         $perPage = 10;
         $page = $this->getPage();
         $total = $users->count();
@@ -112,21 +128,41 @@ class UserAccess extends Component
 
     public function confirmGrantAccess()
     {
+        if (!auth()->user()?->hasPermission('users.create')) {
+            $this->noreloadNotif('failed', 'Access Denied', 'You do not have permission to grant user access.');
+            return;
+        }
+
         $this->grantAccess($this->selectedUserId, $this->selectedUserName, $this->selectedUserEmail);
     }
 
     public function confirmRevokeAccess()
     {
+        if (!auth()->user()?->hasPermission('users.delete')) {
+            $this->noreloadNotif('failed', 'Access Denied', 'You do not have permission to revoke user access.');
+            return;
+        }
+
         $this->revokeAccess($this->selectedUserId, $this->selectedUserName);
     }
 
     public function confirmMakeAdmin()
     {
+        if (!auth()->user()?->hasPermission('roles.manage')) {
+            $this->noreloadNotif('failed', 'Access Denied', 'You do not have permission to grant admin access.');
+            return;
+        }
+
         $this->makeAdmin($this->selectedUserId, $this->selectedUserName);
     }
 
     public function openEditModal($userId)
     {
+        if (!auth()->user()?->hasPermission('users.update') && !auth()->user()?->hasPermission('roles.manage')) {
+            $this->noreloadNotif('failed', 'Access Denied', 'You do not have permission to edit user access.');
+            return;
+        }
+
         if (!$this->dbUsers->has($userId)) {
             $this->noreloadNotif('failed', 'Access Denied', 'User must be granted access first.');
             return;
@@ -136,12 +172,18 @@ class UserAccess extends Component
         $this->editUserId = $userId;
         $this->editFarm = $user->farm;
         $this->editDepartment = $user->department;
+        $this->editRoleIds = $user->roles->pluck('id')->map(fn ($id) => (string) $id)->all();
 
         $this->dispatch('open-edit-modal');
     }
 
     public function updateUserDetails()
     {
+        if (!auth()->user()?->hasPermission('users.update') && !auth()->user()?->hasPermission('roles.manage')) {
+            $this->noreloadNotif('failed', 'Access Denied', 'You do not have permission to update user access.');
+            return;
+        }
+
         try {
             $user = User::find($this->editUserId);
 
@@ -155,11 +197,14 @@ class UserAccess extends Component
                 'department' => $this->editDepartment,
             ]);
 
+            $user->roles()->sync($this->editRoleIds);
+            $user->load('roles');
+
             Cache::forget('user_access_db_users');
             $this->dbUsers->put($this->editUserId, $user);
 
             $this->noreloadNotif('success', 'Updated', 'User details updated successfully.');
-            $this->reset(['editUserId', 'editFarm', 'editDepartment']);
+            $this->reset(['editUserId', 'editFarm', 'editDepartment', 'editRoleIds']);
 
         } catch (\Exception $e) {
             $this->noreloadNotif('failed', 'Update Failed', 'Failed to update user: ' . $e->getMessage());
@@ -184,8 +229,11 @@ class UserAccess extends Component
                 'department' => null,
             ]);
 
+            $user->load('roles');
+
             Cache::forget('user_access_db_users');
             $this->dbUsers->put($userId, $user);
+            $this->resetPage();
 
             $this->noreloadNotif('success', 'Access Granted', 'Access granted to ' . $user->name);
             Log::info('User granted access: ' . $user->email);
@@ -256,8 +304,21 @@ class UserAccess extends Component
 
     public function render()
     {
+        $users = $this->paginateUsers();
+        $currentPage = $users->currentPage();
+        $lastPage = $users->lastPage();
+        $start = max(1, $currentPage - 2);
+        $end = min($lastPage, $start + 4);
+
+        if ($end - $start < 4) {
+            $start = max(1, $end - 4);
+        }
+
         return view('livewire.user-access', [
-            'users' => $this->paginateUsers(),
+            'users' => $users,
+            'currentPage' => $currentPage,
+            'lastPage' => $lastPage,
+            'pages' => range($start, $end),
         ]);
     }
 }

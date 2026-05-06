@@ -25,12 +25,12 @@
     </div>
 
     {{-- ── Row 2: Department + Input managers ── --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 pb-5 auto-rows-fr">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 pb-5 auto-rows-[32rem]">
         <livewire:dynamic-values.department-management />
         <livewire:dynamic-values.input-management inputType="brand" />
         <livewire:dynamic-values.input-management inputType="processor" />
         <livewire:dynamic-values.input-management inputType="RAM" />
-        <livewire:dynamic-values.input-management inputType="storage" />
+        <livewire:dynamic-values.input-management inputType="Storage" />
     </div>
 
 </div>

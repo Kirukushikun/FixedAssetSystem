@@ -51,6 +51,30 @@
                Forgot your password? Contact
                <span class="text-teal-600 font-medium">IT Department</span>.
           </div>
+          @if(config('auth_mode.mode') === 'local')
+               <div class="mt-5 border-t pt-4" x-data="{ copied: '' }">
+                    <p class="text-xs font-bold text-gray-500 uppercase mb-3">Local test accounts</p>
+                    <div class="space-y-2 text-xs">
+                         @foreach([
+                              'IT Admin' => 'admin@bfcgroup.org',
+                              'Accounting' => 'accounting@bfcgroup.org',
+                              'Farm Manager' => 'farm.manager@bfcgroup.org',
+                              'VP Approver' => 'vp@bfcgroup.org',
+                              'HR' => 'hr@bfcgroup.org',
+                              'SME' => 'sme@bfcgroup.org',
+                         ] as $label => $email)
+                              <button type="button"
+                                   class="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2 hover:bg-gray-50"
+                                   @click="navigator.clipboard.writeText('{{ $email }}'); copied = '{{ $email }}'">
+                                   <span class="font-semibold text-gray-600">{{ $label }}</span>
+                                   <span class="text-teal-600">{{ $email }}</span>
+                              </button>
+                         @endforeach
+                    </div>
+                    <p class="mt-3 text-xs text-gray-400">Password for all accounts: <span class="font-bold">1234</span></p>
+                    <p x-show="copied" class="mt-2 text-xs text-teal-600">Copied <span x-text="copied"></span></p>
+               </div>
+          @endif
      </main>
 </body>
 </html>
