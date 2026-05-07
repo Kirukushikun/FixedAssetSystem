@@ -91,7 +91,7 @@
                             Approve
                         </button>
                     </div>
-            @endif
+            @endforeach
         </div>
     </div>
 
