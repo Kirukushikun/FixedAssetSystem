@@ -105,8 +105,8 @@
         </div>
 
         <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 w-fit disabled:opacity-50 disabled:cursor-not-allowed"
-            @disabled="{!! $employeeViewUser?->hasPermission('employees.update') ? '' : 'disabled' !!}"
-            @click="$employeeViewUser?->hasPermission('employees.update') ? showModal = true, modalTemplate = 'flag' : null"
+            :disabled="!{{ $employeeViewUser?->hasPermission('employees.update') ? 'true' : 'false' }}"
+            @click="{{ $employeeViewUser?->hasPermission('employees.update') ? 'showModal = true; modalTemplate = \'flag\'' : 'null' }}"
             title="{!! $employeeViewUser?->hasPermission('employees.update') ? 'Add New Flag' : 'You do not have permission to add flags' !!}">
             ADD NEW FLAG
         </button>
@@ -125,27 +125,27 @@
             <h1 class="text-lg font-bold">Assigned Assets</h1>
             <div class="flex items-center gap-3">
                 <button
-                    @disabled="{!! ($assets->total() > 0 && $employeeViewUser?->hasPermission('employees.update')) ? '' : 'disabled' !!}"
-                    @click="($assets->total() > 0 && $employeeViewUser?->hasPermission('employees.update')) ? showModal = true, modalTemplate = 'unassignAll' : null"
+                    :disabled="{{ ($assets->total() > 0 && $employeeViewUser?->hasPermission('employees.update')) ? 'false' : 'true' }}"
+                    @click="{{ ($assets->total() > 0 && $employeeViewUser?->hasPermission('employees.update')) ? 'showModal = true; modalTemplate = \'unassignAll\'' : 'null' }}"
                     class="px-5 py-2 bg-orange-500 rounded-lg font-bold text-white text-xs hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="{!! ($assets->total() > 0 && $employeeViewUser?->hasPermission('employees.update')) ? 'Unassign All' : ($assets->total() === 0 ? 'No assets to unassign' : 'You do not have permission to unassign assets') !!}">
                     <i class="fa-solid fa-users-slash mr-1"></i>UNASSIGN ALL
                 </button>
                 <button class="px-5 py-2 bg-gray-200 rounded-lg font-bold text-gray-700 text-xs hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    @disabled="{!! $employeeViewUser?->hasPermission('forms.view') ? '' : 'disabled' !!}"
-                    @click="$employeeViewUser?->hasPermission('forms.view') ? window.location.href='/employees/forms?targetID={{ $employee->id }}' : null"
+                    :disabled="!{{ $employeeViewUser?->hasPermission('forms.view') ? 'true' : 'false' }}"
+                    @click="{{ $employeeViewUser?->hasPermission('forms.view') ? 'window.location.href = \'/employees/forms?targetID=' . $employee->id : 'null' }}"
                     title="{!! $employeeViewUser?->hasPermission('forms.view') ? 'Form Library' : 'You do not have permission to view forms' !!}">
                     <i class="fa-solid fa-folder-open mr-1"></i>FORM LIBRARY
                 </button>
                 <button class="px-5 py-2 bg-blue-500 rounded-lg font-bold text-white text-xs hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    @disabled="{!! $employeeViewUser?->hasPermission('forms.accountability') ? '' : 'disabled' !!}"
-                    @click="$employeeViewUser?->hasPermission('forms.accountability') ? window.location.href='/accountability-form?targetID={{$employee->id}}' : null"
+                    :disabled="!{{ $employeeViewUser?->hasPermission('forms.accountability') ? 'true' : 'false' }}"
+                    @click="{{ $employeeViewUser?->hasPermission('forms.accountability') ? 'window.location.href = \'/accountability-form?targetID=' . $employee->id : 'null' }}"
                     title="{!! $employeeViewUser?->hasPermission('forms.accountability') ? 'Generate Accountability Form' : 'You do not have permission to generate accountability forms' !!}">
                     <i class="fa-solid fa-file-lines mr-1"></i>GENERATE ACCOUNTABILITY FORM
                 </button>
                 <button class="px-5 py-2 bg-indigo-500 rounded-lg font-bold text-white text-xs hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    @disabled="{!! $employeeViewUser?->hasPermission('forms.transfer') ? '' : 'disabled' !!}"
-                    @click="$employeeViewUser?->hasPermission('forms.transfer') ? window.location.href='/transfer-form?targetID={{ $employee->id }}' : null"
+                    :disabled="!{{ $employeeViewUser?->hasPermission('forms.transfer') ? 'true' : 'false' }}"
+                    @click="{{ $employeeViewUser?->hasPermission('forms.transfer') ? 'window.location.href = \'/transfer-form?targetID=' . $employee->id : 'null' }}"
                     title="{!! $employeeViewUser?->hasPermission('forms.transfer') ? 'Generate Transfer Form' : 'You do not have permission to generate transfer forms' !!}">
                     <i class="fa-solid fa-right-left mr-1"></i>GENERATE TRANSFER FORM
                 </button>
@@ -204,7 +204,7 @@
                                 <button 
                                     @click="showModal = true; modalTemplate = 'unassign'; selectedAssetId = {{ $asset->id }}"
                                     class="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                    @disabled="{!! $employeeViewUser?->hasPermission('employees.update') ? '' : 'disabled' !!}"
+                                    :disabled="!{{ $employeeViewUser?->hasPermission('employees.update') ? 'true' : 'false' }}"
                                     title="{!! $employeeViewUser?->hasPermission('employees.update') ? 'Unassign' : 'You do not have permission to unassign assets' !!}">
                                     Unassign
                                 </button>

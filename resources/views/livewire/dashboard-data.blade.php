@@ -223,14 +223,14 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                            @disabled="{!! $dashboardUser?->hasPermission('assets.create') ? '' : 'disabled' !!}"
-                            @click="$dashboardUser?->hasPermission('assets.create') ? showModal = true, modalTemplate = 'create' : null"
+                            :disabled="!{{ $dashboardUser?->hasPermission('assets.create') ? 'true' : 'false' }}"
+                            @click="{{ $dashboardUser?->hasPermission('assets.create') ? 'showModal = true; modalTemplate = \'create\'' : 'null' }}"
                             title="{!! $dashboardUser?->hasPermission('assets.create') ? 'Add New Asset' : 'You do not have permission to add assets' !!}">
                             <i class="fa-solid fa-plus text-teal-400"></i> Add New Asset
                         </button>
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                            @disabled="{!! $dashboardUser?->hasPermission('employees.create') ? '' : 'disabled' !!}"
-                            @click="$dashboardUser?->hasPermission('employees.create') ? showModal = true, modalTemplate = 'employee' : null"
+                            :disabled="!{{ $dashboardUser?->hasPermission('employees.create') ? 'true' : 'false' }}"
+                            @click="{{ $dashboardUser?->hasPermission('employees.create') ? 'showModal = true; modalTemplate = \'employee\'' : 'null' }}"
                             title="{!! $dashboardUser?->hasPermission('employees.create') ? 'Add Employee' : 'You do not have permission to add employees' !!}">
                             <i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee
                         </button>
@@ -240,8 +240,8 @@
                             @csrf
                             <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
                             <button id="import-button" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                @disabled="{!! $dashboardUser?->hasPermission('assets.import') ? '' : 'disabled' !!}"
-                                @click="$dashboardUser?->hasPermission('assets.import') ? document.getElementById('import-file').click() : null"
+                                :disabled="!{{ $dashboardUser?->hasPermission('assets.import') ? 'true' : 'false' }}"
+                                @click="{{ $dashboardUser?->hasPermission('assets.import') ? 'document.getElementById(\'import-file\').click()' : 'null' }}"
                                 title="{!! $dashboardUser?->hasPermission('assets.import') ? 'Import Assets' : 'You do not have permission to import assets' !!}">
                                 <i class="fa-solid fa-file-import text-teal-400"></i> Import Assets
                             </button>
@@ -293,8 +293,8 @@
                         <!-- Export Assets -->
                         <button
                             class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                            @disabled="{!! $dashboardUser?->hasPermission('assets.export') ? '' : 'disabled' !!}"
-                            @click="$dashboardUser?->hasPermission('assets.export') ? showModal = true, modalTemplate = 'export-filter' : null"
+                            :disabled="!{{ $dashboardUser?->hasPermission('assets.export') ? 'true' : 'false' }}"
+                            @click="{{ $dashboardUser?->hasPermission('assets.export') ? 'showModal = true; modalTemplate = \'export-filter\'' : 'null' }}"
                             title="{!! $dashboardUser?->hasPermission('assets.export') ? 'Export Assets' : 'You do not have permission to export assets' !!}">
                             <i class="fa-solid fa-file-export text-teal-400"></i> Export Assets
                         </button>
@@ -304,8 +304,8 @@
                             @csrf
                             <input type="file" id="import-employee" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
                             <button id="import-button-btn" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                @disabled="{!! $dashboardUser?->hasPermission('employees.import') ? '' : 'disabled' !!}"
-                                @click="$dashboardUser?->hasPermission('employees.import') ? document.getElementById('import-employee').click() : null"
+                                :disabled="!{{ $dashboardUser?->hasPermission('employees.import') ? 'true' : 'false' }}"
+                                @click="{{ $dashboardUser?->hasPermission('employees.import') ? 'document.getElementById(\'import-employee\').click()' : 'null' }}"
                                 title="{!! $dashboardUser?->hasPermission('employees.import') ? 'Import Employees' : 'You do not have permission to import employees' !!}">
                                 <i class="fa-solid fa-file-import text-teal-400"></i> Import Employees
                             </button>
@@ -325,11 +325,11 @@
                                 });
                             }
                         </script>
-                        
+
                         <!-- Export Employees -->
                         <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                            @disabled="{!! $dashboardUser?->hasPermission('employees.export') ? '' : 'disabled' !!}"
-                            @click="$dashboardUser?->hasPermission('employees.export') ? window.location.href='/employees/export' : null"
+                            :disabled="!{{ $dashboardUser?->hasPermission('employees.export') ? 'true' : 'false' }}"
+                            @click="{{ $dashboardUser?->hasPermission('employees.export') ? 'window.location.href = \'/employees/export\'' : 'null' }}"
                             title="{!! $dashboardUser?->hasPermission('employees.export') ? 'Export Employees' : 'You do not have permission to export employees' !!}">
                             <i class="fa-solid fa-file-export text-teal-400"></i> Export Employees
                         </button>

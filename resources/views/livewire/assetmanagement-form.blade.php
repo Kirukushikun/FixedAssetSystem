@@ -474,8 +474,8 @@
                 @if($mode == 'edit' || $mode == 'view')
                     @php($assetFormUser = Auth::user())
                     <button class="px-5 py-3 bg-orange-400 rounded-lg font-bold text-white text-xs hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-400"
-                        @disabled="{!! $assetFormUser?->hasPermission('assets.repair') ? '' : 'disabled' !!}"
-                        @click="$assetFormUser?->hasPermission('assets.repair') ? modalTemplate = 'repair', showModal = true : null"
+                        :disabled="!{{ $assetFormUser?->hasPermission('assets.repair') ? 'true' : 'false' }}"
+                        @click="{{ $assetFormUser?->hasPermission('assets.repair') ? 'modalTemplate = \'repair\'; showModal = true' : 'null' }}"
                         title="{!! $assetFormUser?->hasPermission('assets.repair') ? 'Add Repair Record' : 'You do not have permission to add repair records' !!}">
                         ADD REPAIR RECORD
                     </button>

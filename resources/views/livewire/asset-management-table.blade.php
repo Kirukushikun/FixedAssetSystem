@@ -38,8 +38,8 @@
 
                 <button
                     class="flex items-center gap-2 px-4 py-2 bg-[#4fd1c5] hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#4fd1c5]"
-                    @disabled="{!! $currentUser?->hasPermission('assets.create') ? '' : 'disabled' !!}"
-                    @click="$currentUser?->hasPermission('assets.create') ? openModal('create') : null"
+                    :disabled="!{{ $currentUser?->hasPermission('assets.create') ? 'true' : 'false' }}"
+                    @click="{{ $currentUser?->hasPermission('assets.create') ? 'openModal(\'create\')' : 'null' }}"
                     title="{!! $currentUser?->hasPermission('assets.create') ? 'Add New Asset' : 'You do not have permission to add assets' !!}">
                     <i class="fa-solid fa-plus"></i>
                     Add Asset
@@ -48,7 +48,7 @@
 
                 <a href="{!! $currentUser?->hasPermission('assets.qr') ? '/assetmanagement/qr' : 'javascript:void(0)' !!}"
                     class="flex items-center gap-2 px-4 py-2 bg-indigo-400 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-400"
-                    @click="$currentUser?->hasPermission('assets.qr') || $event.preventDefault()"
+                    @click="{{ $currentUser?->hasPermission('assets.qr') ? 'true' : 'false' }} || $event.preventDefault()"
                     title="{!! $currentUser?->hasPermission('assets.qr') ? 'QR Code Management' : 'You do not have permission to manage QR codes' !!}">
                     <i class="fa-solid fa-qrcode"></i>
                     QR Codes
@@ -62,8 +62,8 @@
                             class="hidden" required>
                         <button type="button" id="asset-import-button" title="Import Assets"
                             class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            @disabled="{!! $currentUser?->hasPermission('assets.import') ? '' : 'disabled' !!}"
-                            @click="$currentUser?->hasPermission('assets.import') ? document.getElementById('asset-import-file').click() : null"
+                            :disabled="!{{ $currentUser?->hasPermission('assets.import') ? 'true' : 'false' }}"
+                            @click="{{ $currentUser?->hasPermission('assets.import') ? 'document.getElementById(\'asset-import-file\').click()' : 'null' }}"
                             title="{!! $currentUser?->hasPermission('assets.import') ? 'Import Assets' : 'You do not have permission to import assets' !!}">
                             <i class="fa-solid fa-file-import text-sm"></i>
                         </button>
@@ -71,24 +71,24 @@
 
                     <button type="button" title="Export Assets"
                         class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        @disabled="{!! $currentUser?->hasPermission('assets.export') ? '' : 'disabled' !!}"
-                        @click="$currentUser?->hasPermission('assets.export') ? openModal('export-filter') : null"
+                        :disabled="!{{ $currentUser?->hasPermission('assets.export') ? 'true' : 'false' }}"
+                        @click="{{ $currentUser?->hasPermission('assets.export') ? 'openModal(\'export-filter\')' : 'null' }}"
                         title="{!! $currentUser?->hasPermission('assets.export') ? 'Export Assets' : 'You do not have permission to export assets' !!}">
                         <i class="fa-solid fa-file-export text-sm"></i>
                     </button>
 
                     <button type="button" title="Export Audit Log"
                         class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        @disabled="{!! $currentUser?->hasPermission('audit.export') ? '' : 'disabled' !!}"
-                        @click="$currentUser?->hasPermission('audit.export') ? openModal('audit-log-filter') : null"
+                        :disabled="!{{ $currentUser?->hasPermission('audit.export') ? 'true' : 'false' }}"
+                        @click="{{ $currentUser?->hasPermission('audit.export') ? 'openModal(\'audit-log-filter\')' : 'null' }}"
                         title="{!! $currentUser?->hasPermission('audit.export') ? 'Export Audit Log' : 'You do not have permission to export audit logs' !!}">
                         <i class="fa-solid fa-clipboard-list text-sm"></i>
                     </button>
 
                     <button type="button" title="Export Repair Log"
                         class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        @disabled="{!! $currentUser?->hasPermission('reports.export') ? '' : 'disabled' !!}"
-                        @click="$currentUser?->hasPermission('reports.export') ? openModal('repair-log-filter') : null"
+                        :disabled="!{{ $currentUser?->hasPermission('reports.export') ? 'true' : 'false' }}"
+                        @click="{{ $currentUser?->hasPermission('reports.export') ? 'openModal(\'repair-log-filter\')' : 'null' }}"
                         title="{!! $currentUser?->hasPermission('reports.export') ? 'Export Repair Log' : 'You do not have permission to export repair logs' !!}">
                         <i class="fa-solid fa-tools text-sm"></i>
                     </button>
@@ -339,8 +339,8 @@
                                                     <li>
                                                         <button
                                                             class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            @disabled="{!! $currentUser?->hasPermission('assets.audit') ? '' : 'disabled' !!}"
-                                                            @click="$currentUser?->hasPermission('assets.audit') ? window.location.href='/assetmanagement/audit?targetID={{ encrypt($asset->id) }}' : null"
+                                                            :disabled="!{{ $currentUser?->hasPermission('assets.audit') ? 'true' : 'false' }}"
+                                                            @click="{{ $currentUser?->hasPermission('assets.audit') ? 'window.location.href = \'/assetmanagement/audit?targetID=' . encrypt($asset->id) : 'null' }}"
                                                             title="{!! $currentUser?->hasPermission('assets.audit') ? 'Audit' : 'You do not have permission to audit assets' !!}">
                                                             <i class="fa-solid fa-clipboard-check text-xs text-gray-400"></i> Audit
                                                         </button>
@@ -348,8 +348,8 @@
                                                     <li>
                                                         <button
                                                             class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            @disabled="{!! ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? '' : 'disabled' !!}"
-                                                            @click="($currentUser?->hasPermission('assets.update') && {{ $asset->status !== 'Disposed' ? 'true' : 'false' }}) ? window.location.href='/assetmanagement/edit?targetID={{ encrypt($asset->id) }}' : null"
+                                                            :disabled="!{{ ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? 'true' : 'false' }}"
+                                                            @click="{{ ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? 'window.location.href = \'/assetmanagement/edit?targetID=' . encrypt($asset->id) : 'null' }}"
                                                             title="{!! ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? 'Edit' : ($asset->status === 'Disposed' ? 'Cannot edit disposed assets' : 'You do not have permission to edit assets') !!}">
                                                             <i class="fa-solid fa-pen text-xs text-gray-400"></i> Edit
                                                         </button>

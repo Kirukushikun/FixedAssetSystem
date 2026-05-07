@@ -16,22 +16,22 @@
         <div class="flex space-x-1 rounded-t-lg overflow-hidden">
             <button type="button" class="px-5 py-2 font-medium rounded-t-lg border disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="tab === 'request' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
-                @disabled="{!! $user?->hasPermission('disposal.request') ? '' : 'disabled' !!}"
-                @click="$user?->hasPermission('disposal.request') ? tab = 'request', $wire.setTab('request') : null"
+                :disabled="!{{ $user?->hasPermission('disposal.request') ? 'true' : 'false' }}"
+                @click="{{ $user?->hasPermission('disposal.request') ? 'tab = \'request\'; $wire.setTab(\'request\')' : 'null' }}"
                 title="{!! $user?->hasPermission('disposal.request') ? 'Farm Request' : 'You do not have permission to submit disposal requests' !!}">
                 Farm Request
             </button>
             <button type="button" class="px-5 py-2 font-medium rounded-t-lg border disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="tab === 'approval' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
-                @disabled="{!! $user?->hasPermission('disposal.approve') ? '' : 'disabled' !!}"
-                @click="$user?->hasPermission('disposal.approve') ? tab = 'approval', $wire.setTab('approval') : null"
+                :disabled="!{{ $user?->hasPermission('disposal.approve') ? 'true' : 'false' }}"
+                @click="{{ $user?->hasPermission('disposal.approve') ? 'tab = \'approval\'; $wire.setTab(\'approval\')' : 'null' }}"
                 title="{!! $user?->hasPermission('disposal.approve') ? 'VP Approval' : 'You do not have permission to approve disposal requests' !!}">
                 VP Approval
             </button>
             <button type="button" class="px-5 py-2 font-medium rounded-t-lg border disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="tab === 'accounting' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
-                @disabled="{!! $user?->hasPermission('disposal.dispose') ? '' : 'disabled' !!}"
-                @click="$user?->hasPermission('disposal.dispose') ? tab = 'accounting', $wire.setTab('accounting') : null"
+                :disabled="!{{ $user?->hasPermission('disposal.dispose') ? 'true' : 'false' }}"
+                @click="{{ $user?->hasPermission('disposal.dispose') ? 'tab = \'accounting\'; $wire.setTab(\'accounting\')' : 'null' }}"
                 title="{!! $user?->hasPermission('disposal.dispose') ? 'Accounting' : 'You do not have permission to dispose assets' !!}">
                 Accounting
             </button>
