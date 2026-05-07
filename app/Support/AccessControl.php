@@ -20,6 +20,8 @@ class AccessControl
                 'assets.export' => 'Export assets',
                 'assets.qr' => 'Manage asset QR codes',
                 'assets.farm_scope' => 'Limit asset access to assigned farm',
+                'assets.repair' => 'Add repair records',
+                'assets.audit' => 'Add audit records',
             ],
             'employees' => [
                 'employees.view' => 'View employees',
@@ -156,6 +158,8 @@ class AccessControl
                 'name' => 'SME / Technical Evaluator',
                 'description' => 'Reviews asset condition and maintains technical review history.',
                 'permissions' => [
+                    'assets.view',
+                    'assets.repair',
                     'sme.view',
                     'sme.review',
                     'sme.history',
@@ -178,20 +182,11 @@ class AccessControl
                 ],
             ],
             'auditor' => [
-                'name' => 'Auditor / Viewer',
-                'description' => 'Read-only access to system records, reports, and audit logs.',
+                'name' => 'Auditor',
+                'description' => 'Views assets and adds audit records.',
                 'permissions' => [
-                    'dashboard.view',
                     'assets.view',
-                    'employees.view',
-                    'sme.insights.view',
-                    'disposal.history',
-                    'disposal.form.view',
-                    'forms.view',
-                    'reports.view',
-                    'reports.audit',
-                    'reports.disposal',
-                    'reports.sme',
+                    'assets.audit',
                 ],
             ],
         ];

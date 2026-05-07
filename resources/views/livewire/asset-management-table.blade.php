@@ -337,13 +337,21 @@
                                                             <i class="fa-solid fa-eye text-xs text-gray-400"></i> View
                                                         </button>
                                                     </li>
+                                                    @if ($currentUser?->hasPermission('assets.audit'))
+                                                        <li>
+                                                            <button
+                                                                class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                                                onclick="window.location.href='/assetmanagement/audit?targetID={{ encrypt($asset->id) }}'">
+                                                                <i class="fa-solid fa-clipboard-check text-xs text-gray-400"></i> Audit
+                                                            </button>
+                                                        </li>
+                                                    @endif
                                                     @if ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed')
                                                         <li>
                                                             <button
                                                                 class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                                                                 onclick="window.location.href='/assetmanagement/edit?targetID={{ encrypt($asset->id) }}'">
-                                                                <i class="fa-solid fa-pen text-xs text-gray-400"></i>
-                                                                Edit
+                                                                <i class="fa-solid fa-pen text-xs text-gray-400"></i> Edit
                                                             </button>
                                                         </li>
                                                     @endif

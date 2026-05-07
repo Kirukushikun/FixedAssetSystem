@@ -464,14 +464,19 @@
             <div class="self-end flex gap-3">
                 @if($mode == 'edit')
                     @if(!$targetAsset->assigned_id)
-                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" 
-                            @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button> 
-                    @else 
-                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500" 
-                            @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button> 
+                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
+                            @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button>
+                    @else
+                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
+                            @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button>
                     @endif
-                        <button class="px-5 py-3 bg-orange-400 rounded-lg font-bold text-white text-xs hover:bg-orange-500" 
+                @endif
+                @if($mode == 'edit' || $mode == 'view')
+                    @php($assetFormUser = Auth::user())
+                    @if($assetFormUser?->hasPermission('assets.repair'))
+                        <button class="px-5 py-3 bg-orange-400 rounded-lg font-bold text-white text-xs hover:bg-orange-500"
                             @click="modalTemplate = 'repair', showModal = true">ADD REPAIR RECORD</button>
+                    @endif
                 @endif 
                 @if($mode != 'view')
                     @if($mode == 'edit')
