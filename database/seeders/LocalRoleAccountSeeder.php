@@ -61,6 +61,34 @@ class LocalRoleAccountSeeder extends Seeder
                 'department' => 'AUDIT',
                 'is_admin' => false,
             ],
+            'purchasing' => [
+                'name' => 'Purchasing Test User',
+                'email' => 'purchasing@bfcgroup.org',
+                'farm' => 'BFC',
+                'department' => 'PURCHASING',
+                'is_admin' => false,
+            ],
+            'it' => [
+                'name' => 'IT Test User',
+                'email' => 'it@bfcgroup.org',
+                'farm' => 'BFC',
+                'department' => 'IT & SECURITY',
+                'is_admin' => false,
+            ],
+            'division_head' => [
+                'name' => 'Division Head Test User',
+                'email' => 'division.head@bfcgroup.org',
+                'farm' => 'BFC',
+                'department' => 'POULTRY',
+                'is_admin' => false,
+            ],
+            'senior_vp' => [
+                'name' => 'Senior VP Test User',
+                'email' => 'senior.vp@bfcgroup.org',
+                'farm' => 'BFC',
+                'department' => 'EXECUTIVE',
+                'is_admin' => false,
+            ],
         ];
 
         foreach ($accounts as $roleKey => $account) {

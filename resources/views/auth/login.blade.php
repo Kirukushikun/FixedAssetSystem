@@ -63,6 +63,10 @@
                               'HR' => 'hr@bfcgroup.org',
                               'SME' => 'sme@bfcgroup.org',
                               'Auditor' => 'auditor@bfcgroup.org',
+                              'Purchasing' => 'purchasing@bfcgroup.org',
+                              'IT' => 'it@bfcgroup.org',
+                              'Division Head' => 'division.head@bfcgroup.org',
+                              'Senior VP' => 'senior.vp@bfcgroup.org',
                          ] as $label => $email)
                               <button type="button"
                                    class="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2 hover:bg-gray-50"
