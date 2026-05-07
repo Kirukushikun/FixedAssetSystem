@@ -69,9 +69,7 @@
             </div>
         </div>
     </div>
-    @endif
 
-    @if($user?->hasPermission('disposal.approve'))
     <div class="card" x-show="tab === 'approval'">
         <div class="flex flex-col gap-4">
             <h2 class="text-lg font-bold">VP Approval Queue</h2>

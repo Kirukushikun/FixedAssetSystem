@@ -99,7 +99,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="input-group">
                                     <label>Condition Note</label>
-                                    <select wire:model="assetReviews.{{ $asset->id }}.condition_note" @if(!$user?->hasPermission('sme.review')) disabled @endif>
+                                    <select wire:model="assetReviews.{{ $asset->id }}.condition_note" :disabled="!{{ $user?->hasPermission('sme.review') ? 'true' : 'false' }}">
                                         <option value="">Select note...</option>
                                         <option value="Good">Good</option>
                                         <option value="Repair">Repair</option>
@@ -112,7 +112,7 @@
 
                                 <div class="input-group">
                                     <label>Recommended Flag</label>
-                                    <select wire:model="assetReviews.{{ $asset->id }}.recommended_flag" @if(!$user?->hasPermission('sme.review')) disabled @endif>
+                                    <select wire:model="assetReviews.{{ $asset->id }}.recommended_flag" :disabled="!{{ $user?->hasPermission('sme.review') ? 'true' : 'false' }}">
                                         <option value="">No direct flag</option>
                                         <option value="Pending Clearances">Pending Clearances</option>
                                         <option value="Damaged Asset">Damaged Asset</option>
@@ -125,12 +125,12 @@
 
                             <div class="input-group">
                                 <label>SME Remarks</label>
-                                <textarea rows="4" wire:model="assetReviews.{{ $asset->id }}.remarks" placeholder="Add observations, technical findings, or clearance notes..." @if(!$user?->hasPermission('sme.review')) disabled @endif></textarea>
+                                <textarea rows="4" wire:model="assetReviews.{{ $asset->id }}.remarks" placeholder="Add observations, technical findings, or clearance notes..." :disabled="!{{ $user?->hasPermission('sme.review') ? 'true' : 'false' }}"></textarea>
                             </div>
 
                             <div class="flex items-center justify-between gap-4 flex-wrap">
                                 <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-600">
-                                    <input type="checkbox" wire:model="assetReviews.{{ $asset->id }}.flagged_employee" @if(!$user?->hasPermission('sme.review')) disabled @endif>
+                                    <input type="checkbox" wire:model="assetReviews.{{ $asset->id }}.flagged_employee" :disabled="!{{ $user?->hasPermission('sme.review') ? 'true' : 'false' }}">
                                     Directly flag employee based on this review
                                 </label>
 
