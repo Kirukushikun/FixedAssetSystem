@@ -14,20 +14,33 @@
         <h1 class="text-lg font-bold">Disposal Workspace</h1>
         <p class="text-sm text-gray-400 mb-4">Handle farm disposal requests, VP approval, and accounting disposition from one place.</p>
         <div class="flex space-x-1 rounded-t-lg overflow-hidden">
-            @if($user?->hasPermission('disposal.request'))
-                <button type="button" class="px-5 py-2 font-medium rounded-t-lg border" :class="tab === 'request' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'" @click="tab = 'request'; $wire.setTab('request')">Farm Request</button>
-            @endif
-            @if($user?->hasPermission('disposal.approve'))
-                <button type="button" class="px-5 py-2 font-medium rounded-t-lg border" :class="tab === 'approval' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'" @click="tab = 'approval'; $wire.setTab('approval')">VP Approval</button>
-            @endif
-            @if($user?->hasPermission('disposal.dispose'))
-                <button type="button" class="px-5 py-2 font-medium rounded-t-lg border" :class="tab === 'accounting' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'" @click="tab = 'accounting'; $wire.setTab('accounting')">Accounting</button>
-            @endif
-            <button type="button" class="px-5 py-2 font-medium rounded-t-lg border" :class="tab === 'history' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'" @click="tab = 'history'; $wire.setTab('history')">History</button>
+            <button type="button" class="px-5 py-2 font-medium rounded-t-lg border disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="tab === 'request' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                @disabled="{!! $user?->hasPermission('disposal.request') ? '' : 'disabled' !!}"
+                @click="$user?->hasPermission('disposal.request') ? tab = 'request', $wire.setTab('request') : null"
+                title="{!! $user?->hasPermission('disposal.request') ? 'Farm Request' : 'You do not have permission to submit disposal requests' !!}">
+                Farm Request
+            </button>
+            <button type="button" class="px-5 py-2 font-medium rounded-t-lg border disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="tab === 'approval' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                @disabled="{!! $user?->hasPermission('disposal.approve') ? '' : 'disabled' !!}"
+                @click="$user?->hasPermission('disposal.approve') ? tab = 'approval', $wire.setTab('approval') : null"
+                title="{!! $user?->hasPermission('disposal.approve') ? 'VP Approval' : 'You do not have permission to approve disposal requests' !!}">
+                VP Approval
+            </button>
+            <button type="button" class="px-5 py-2 font-medium rounded-t-lg border disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="tab === 'accounting' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                @disabled="{!! $user?->hasPermission('disposal.dispose') ? '' : 'disabled' !!}"
+                @click="$user?->hasPermission('disposal.dispose') ? tab = 'accounting', $wire.setTab('accounting') : null"
+                title="{!! $user?->hasPermission('disposal.dispose') ? 'Accounting' : 'You do not have permission to dispose assets' !!}">
+                Accounting
+            </button>
+            <button type="button" class="px-5 py-2 font-medium rounded-t-lg border"
+                :class="tab === 'history' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                @click="tab = 'history'; $wire.setTab('history')">History</button>
         </div>
     </div>
 
-    @if($user?->hasPermission('disposal.request'))
     <div class="card" x-show="tab === 'request'">
         <div class="flex flex-col gap-4">
             <h2 class="text-lg font-bold">Submit Disposal Request</h2>
@@ -80,37 +93,45 @@
                             Approve
                         </button>
                     </div>
-                @endforeach
             @endif
         </div>
     </div>
-    @endif
 
-    @if($user?->hasPermission('disposal.dispose'))
     <div class="card" x-show="tab === 'accounting'">
         <div class="flex flex-col gap-4">
             <h2 class="text-lg font-bold">Accounting Disposal Queue</h2>
             @if($accountingRequests->isEmpty())
                 <p class="text-sm text-gray-400">No VP-approved assets waiting for disposal tagging.</p>
             @else
-                @foreach($accountingRequests as $request)
-                    <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
-                        <div class="flex-1">
-                            <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
-                            <p class="text-sm text-gray-500">{{ $request->reason }}</p>
-                            <p class="text-xs text-gray-400 mt-1">Approved by {{ $request->vp_approved_by_name ?: 'N/A' }} • {{ optional($request->vp_approved_at)->format('m/d/Y h:i A') }}</p>
-                        </div>
-                        <button type="button" wire:click="markDisposed({{ $request->id }})" wire:loading.attr="disabled" wire:target="markDisposed({{ $request->id }})"
-                            class="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm font-bold hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed">
-                            <span wire:loading.remove wire:target="markDisposed({{ $request->id }})">Mark Disposed</span>
-                            <span wire:loading.inline wire:target="markDisposed({{ $request->id }})">Processing...</span>
-                        </button>
-                    </div>
-                @endforeach
+                <table class="w-full border border-gray-300 border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500">
+                            <th class="border border-gray-300 text-left px-2 py-2">Asset</th>
+                            <th class="border border-gray-300 text-left px-2 py-2">Category</th>
+                            <th class="border border-gray-300 text-left px-2 py-2">Reason</th>
+                            <th class="border border-gray-300 text-left px-2 py-2">Requested By</th>
+                            <th class="border border-gray-300 text-left px-2 py-2">Approved By</th>
+                            <th class="border border-gray-300 text-left px-2 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($accountingRequests as $request)
+                            <tr>
+                                <td class="border border-gray-300 px-2 py-2">{{ $request->asset->ref_id }}</td>
+                                <td class="border border-gray-300 px-2 py-2">{{ $request->asset->sub_category }}</td>
+                                <td class="border border-gray-300 px-2 py-2">{{ $request->reason }}</td>
+                                <td class="border border-gray-300 px-2 py-2">{{ $request->requested_by_name }}</td>
+                                <td class="border border-gray-300 px-2 py-2">{{ $request->approved_by_name }}</td>
+                                <td class="border border-gray-300 px-2 py-2">
+                                    <button wire:click="disposeAsset({{ $request->asset->id }})" class="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">Dispose</button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             @endif
         </div>
     </div>
-    @endif
 
     <div class="card" x-show="tab === 'history'">
         <div class="flex flex-col gap-4">

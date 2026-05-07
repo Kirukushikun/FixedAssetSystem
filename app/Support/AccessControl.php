@@ -90,6 +90,7 @@ class AccessControl
                 'name' => 'Accounting',
                 'description' => 'Manages maintenance tables, updates fixed assets, prints inventory, generates QR codes, handles issuance/transfer/disposal.',
                 'permissions' => [
+                    'dashboard.view',
                     'assets.view',
                     'assets.repair',
                     'assets.update',
@@ -97,12 +98,15 @@ class AccessControl
                     'assets.qr',
                     'disposal.view',
                     'disposal.dispose',
+                    'settings.view',
                 ],
             ],
             'hr' => [
                 'name' => 'HR',
                 'description' => 'Processes exiting employees, unassigns assets, issues accountability forms, and manages employee details.',
                 'permissions' => [
+                    'dashboard.view',
+                    'assets.view',
                     'employees.view',
                     'employees.create',
                     'employees.update',
@@ -113,6 +117,7 @@ class AccessControl
                 'name' => 'Farm Manager',
                 'description' => 'Views farm-scoped assets and submits disposal requests for farm assets.',
                 'permissions' => [
+                    'dashboard.view',
                     'assets.view',
                     'assets.farm_scope',
                     'sme.insights.view',
@@ -128,6 +133,7 @@ class AccessControl
                 'name' => 'SME / Technical Evaluator',
                 'description' => 'Reviews asset condition and maintains technical review history.',
                 'permissions' => [
+                    'dashboard.view',
                     'assets.view',
                     'assets.repair',
                     'sme.view',
@@ -155,6 +161,7 @@ class AccessControl
                 'name' => 'Auditor',
                 'description' => 'Prints FA inventory and performs audits/inventory.',
                 'permissions' => [
+                    'dashboard.view',
                     'assets.view',
                     'assets.audit',
                     'assets.export',
@@ -164,42 +171,24 @@ class AccessControl
                 'name' => 'Purchasing',
                 'description' => 'Encodes new fixed assets, manages PMS/scheduling, updates maintenance tables, updates fixed assets, prints inventory, generates QR codes.',
                 'permissions' => [
+                    'dashboard.view',
+                    'assets.view',
                     'assets.create',
                     'assets.repair',
                     'assets.update',
                     'assets.export',
                     'assets.qr',
-                ],
-            ],
-            'it' => [
-                'name' => 'IT',
-                'description' => 'Creates users, sets access privileges, performs data backups, and maintains the system.',
-                'permissions' => [
-                    'users.create',
-                    'users.update',
-                    'system.backup',
-                    'settings.update',
+                    'settings.view',
                 ],
             ],
             'division_head' => [
                 'name' => 'Division Head / Manager',
                 'description' => 'Manages PMS updates/scheduling and views/confirms FA assignments.',
                 'permissions' => [
+                    'dashboard.view',
                     'assets.view',
                     'assets.repair',
                     'assets.update',
-                ],
-            ],
-            'senior_vp' => [
-                'name' => 'Senior VP',
-                'description' => 'Reviews and approves FA disposal, and prints FA inventory.',
-                'permissions' => [
-                    'assets.view',
-                    'assets.export',
-                    'disposal.view',
-                    'disposal.approve',
-                    'disposal.history',
-                    'disposal.form.view',
                 ],
             ],
         ];
