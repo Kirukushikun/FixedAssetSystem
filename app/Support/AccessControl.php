@@ -37,6 +37,10 @@ class AccessControl
                 'sme.history' => 'View SME review history',
                 'sme.insights.view' => 'View SME insights',
             ],
+            'transfer' => [
+                'transfer.request' => 'Request asset transfers',
+                'transfer.view' => 'View transfer workspace',
+            ],
             'disposal' => [
                 'disposal.view' => 'View disposal workspace',
                 'disposal.request' => 'Request asset disposal',
@@ -124,6 +128,8 @@ class AccessControl
                     'disposal.view',
                     'disposal.request',
                     'disposal.history',
+                    'transfer.view',
+                    'transfer.request',
                     'forms.view',
                     'reports.view',
                     'reports.farm_scope',

@@ -201,6 +201,7 @@ class AssetManagementForm extends Component
                 $query->latest()->limit(50);
             },
             'latestDisposalRequest',
+            'pendingTransferRequest',
             'assignedEmployee:id,employee_name,farm,department',
             'categoryDetails:code,name'
         ])->findOrFail($targetID);

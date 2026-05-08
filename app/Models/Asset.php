@@ -141,4 +141,14 @@ class Asset extends Model
     {
         return $this->hasOne(DisposalRequest::class)->latestOfMany();
     }
+
+    public function transferRequests()
+    {
+        return $this->hasMany(TransferRequest::class)->latest();
+    }
+
+    public function pendingTransferRequest()
+    {
+        return $this->hasOne(TransferRequest::class)->where('status', 'pending')->latestOfMany();
+    }
 }

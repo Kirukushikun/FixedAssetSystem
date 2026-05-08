@@ -80,6 +80,10 @@ Route::middleware('auth')->group(function () {
         return view('sme-workspace');
     })->middleware('permission:sme.view')->name('sme.workspace');
 
+    Route::get('/transfer-workspace', function () {
+        return view('transfer-workspace');
+    })->middleware('permission:transfer.view')->name('transfer.workspace');
+
     Route::get('/disposal-workspace', function () {
         return view('disposal-workspace');
     })->middleware('permission:disposal.view')->name('disposal.workspace');

@@ -50,6 +50,14 @@
                     <p>Asset Management</p>
                 </a>
             @endif
+            @if($navUser?->hasPermission('transfer.view'))
+                <a href="/transfer-workspace"
+                   data-tooltip="Transfer Workspace"
+                   class="{{ request()->is('transfer-workspace*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-arrow-right-arrow-left"></i></span>
+                    <p>Transfer Workspace</p>
+                </a>
+            @endif
             @if($navUser?->hasPermission('employees.view'))
                 <a href="/employees"
                    data-tooltip="Employees"
@@ -142,6 +150,9 @@
                         @case(request()->is('disposal-workspace*'))
                             Disposal Workspace
                             @break
+                        @case(request()->is('transfer-workspace*'))
+                            Transfer Workspace
+                            @break
                     @endswitch
                 </div>
 
@@ -160,6 +171,8 @@
                         SME Workspace
                     @elseif(request()->is('disposal-workspace*'))
                         Disposal Workspace
+                    @elseif(request()->is('transfer-workspace*'))
+                        Transfer Workspace
                     @endif
                 </div>
             </div>
