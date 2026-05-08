@@ -64,6 +64,12 @@
                 <input type="text" id="sub_category" value="{{$sub_category}}" readonly>
             </div>
 
+            @if($category_type !== 'IT')
+            <div class="input-group">
+                <label for="serial_no">Serial No: @error('serial_no')<span>This field is required</span>@enderror</label>
+                <input type="text" id="serial_no" class="{{ $errors->has('serial_no') ? '!border-red-400' : '' }}" wire:model="serial_no" {{$mode == 'view' ? 'readonly' : ''}}>
+            </div>
+            @endif
             <div class="input-group">
                 <label for="brand">Brand: @error('brand')<span>This field is required</span>@enderror</label>
                 <select id="brand" class="{{ $errors->has('brand') ? '!border-red-400' : '' }}" wire:model="brand" {{$mode == 'view' ? 'disabled' : ''}}>

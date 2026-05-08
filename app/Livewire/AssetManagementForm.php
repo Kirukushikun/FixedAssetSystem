@@ -35,19 +35,20 @@ class AssetManagementForm extends Component
     public $targetAsset;
 
     // GENERAL INFORMATION
-    public 
-        $ref_id, 
-        $category_type, 
+    public
+        $ref_id,
+        $category_type,
         $category,
         $sub_category,
-        
-        $brand, 
-        $model, 
+        $serial_no,
+
+        $brand,
+        $model,
         $status,
         $condition,
-        
-        $acquisition_date, 
-        $item_cost, 
+
+        $acquisition_date,
+        $item_cost,
         $depreciated_value,
         $usable_life;
     
@@ -209,16 +210,17 @@ class AssetManagementForm extends Component
             'category_type'     => $this->targetAsset->category_type,
             'category'          => $this->targetAsset->category,
             'sub_category'      => $this->targetAsset->sub_category,
-            
+            'serial_no'         => $this->targetAsset->serial_no,
+
             'brand' => $this->targetAsset->brand,
             'model' => $this->targetAsset->model,
             'status' => $this->targetAsset->status,
             'condition' => $this->targetAsset->condition,
 
             // FIX: Format the date properly for the input field
-            'acquisition_date' => $this->targetAsset->acquisition_date ? 
+            'acquisition_date' => $this->targetAsset->acquisition_date ?
                 \Carbon\Carbon::parse($this->targetAsset->acquisition_date)->format('Y-m-d') : null,
-            
+
             'item_cost' => $this->targetAsset->item_cost,
             'depreciated_value' => $this->targetAsset->depreciated_value,
             'usable_life' => $this->targetAsset->usable_life,
@@ -302,6 +304,7 @@ class AssetManagementForm extends Component
                 'category_type' => $this->category_type,
                 'category' => $this->categoryCodeImage[$this->category]->code,
                 'sub_category' => $this->sub_category,
+                'serial_no' => $this->serial_no,
 
                 'brand' => $this->brand,
                 'model' => $this->model,
@@ -397,6 +400,7 @@ class AssetManagementForm extends Component
                 'category_type' => $this->category_type,
                 'category' => $this->categoryCodeImage[$this->category]->code,
                 'sub_category' => $this->sub_category,
+                'serial_no' => $this->serial_no,
 
                 'brand' => $this->brand,
                 'model' => $this->model,

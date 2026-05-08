@@ -41,29 +41,21 @@ Route::middleware('auth')->group(function () {
         $sub_category = null;
 
         if ($mode == 'create') {
-            abort_unless(Auth::user()?->hasPermission('assets.create'), 403);
-
             $category_type = $request->category_type;
             $category = $request->category;
             $sub_category = $request->sub_category;
         } elseif ($mode == 'edit') {
-            abort_unless(Auth::user()?->hasPermission('assets.update'), 403);
-
             $targetID = decrypt($request->targetID);
         } elseif ($mode == 'view') {
-            abort_unless(Auth::user()?->hasPermission('assets.view'), 403);
-
             $targetID = decrypt($request->targetID);
         } elseif ($mode == 'audit') {
-            abort_unless(Auth::user()?->hasPermission('assets.audit'), 403);
-
             $targetID = decrypt($request->targetID);
         } else {
             abort(404);
         }
 
         return view('assetmanagement-view', compact('mode', 'targetID', 'category_type', 'category', 'sub_category'));
-    })->middleware('permission:assets.view,assets.audit');
+    })->middleware('permission:assets.view,assets.audit,assets.create,assets.update');
 
     Route::get('/employees', function () {
         return view('employees');

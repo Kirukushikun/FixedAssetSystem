@@ -339,8 +339,8 @@
                                                     <li>
                                                         <button
                                                             class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            :disabled="!{{ $currentUser?->hasPermission('assets.audit') ? 'true' : 'false' }}"
-                                                            @click="{{ $currentUser?->hasPermission('assets.audit') ? 'window.location.href = \'/assetmanagement/audit?targetID=' . encrypt($asset->id) : 'null' }}"
+                                                            @if(!$currentUser?->hasPermission('assets.audit')) disabled @endif
+                                                            @if($currentUser?->hasPermission('assets.audit')) onclick="window.location.href='/assetmanagement/audit?targetID={{ encrypt($asset->id) }}'" @endif
                                                             title="{!! $currentUser?->hasPermission('assets.audit') ? 'Audit' : 'You do not have permission to audit assets' !!}">
                                                             <i class="fa-solid fa-clipboard-check text-xs text-gray-400"></i> Audit
                                                         </button>
@@ -348,8 +348,8 @@
                                                     <li>
                                                         <button
                                                             class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            :disabled="!{{ ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? 'true' : 'false' }}"
-                                                            @click="{{ ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? 'window.location.href = \'/assetmanagement/edit?targetID=' . encrypt($asset->id) : 'null' }}"
+                                                            @if(!$currentUser?->hasPermission('assets.update') || $asset->status === 'Disposed') disabled @endif
+                                                            @if($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') onclick="window.location.href='/assetmanagement/edit?targetID={{ encrypt($asset->id) }}'" @endif
                                                             title="{!! ($currentUser?->hasPermission('assets.update') && $asset->status !== 'Disposed') ? 'Edit' : ($asset->status === 'Disposed' ? 'Cannot edit disposed assets' : 'You do not have permission to edit assets') !!}">
                                                             <i class="fa-solid fa-pen text-xs text-gray-400"></i> Edit
                                                         </button>

@@ -24,12 +24,13 @@ class Asset extends Model
         'category_type',
         'category',
         'sub_category',
+        'serial_no',
 
         'brand',
         'model',
         'status',
         'condition',
-        
+
         'acquisition_date',
         'item_cost',
         'depreciated_value',
