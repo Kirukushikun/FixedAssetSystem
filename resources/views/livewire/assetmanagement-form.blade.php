@@ -469,22 +469,29 @@
 
             <div class="self-end flex gap-3">
                 @if($mode == 'edit')
-                    @if(!$targetAsset->assigned_id)
-                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
-                            @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button>
-                    @else
-                        <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
-                            @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button>
+                    @php($assetFormUser = Auth::user())
+                    @if(!$assetFormUser?->hasRole('purchasing'))
+                        @if(!$targetAsset->assigned_id)
+                            <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
+                                @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button>
+                        @else
+                            <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
+                                @click="modalTemplate = 'transfer', showModal = true">TRANSFER ASSET</button>
+                        @endif
                     @endif
                 @endif
                 @if($mode == 'edit' || $mode == 'view')
                     @php($assetFormUser = Auth::user())
-                    <button class="px-5 py-3 bg-orange-400 rounded-lg font-bold text-white text-xs hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-400"
-                        :disabled="!{{ $assetFormUser?->hasPermission('assets.repair') ? 'true' : 'false' }}"
-                        @click="{{ $assetFormUser?->hasPermission('assets.repair') ? 'modalTemplate = \'repair\'; showModal = true' : 'null' }}"
-                        title="{!! $assetFormUser?->hasPermission('assets.repair') ? 'Add Repair Record' : 'You do not have permission to add repair records' !!}">
-                        ADD REPAIR RECORD
-                    </button>
+                    @if($mode == 'edit' || ($mode == 'view' && $assetFormUser?->hasRole('sme')))
+                        @if(!$assetFormUser?->hasRole('accounting'))
+                            <button class="px-5 py-3 bg-orange-400 rounded-lg font-bold text-white text-xs hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-400"
+                                :disabled="!{{ $assetFormUser?->hasPermission('assets.repair') ? 'true' : 'false' }}"
+                                @click="{{ $assetFormUser?->hasPermission('assets.repair') ? 'modalTemplate = \'repair\'; showModal = true' : 'null' }}"
+                                title="{!! $assetFormUser?->hasPermission('assets.repair') ? 'Add Repair Record' : 'You do not have permission to add repair records' !!}">
+                                ADD REPAIR RECORD
+                            </button>
+                        @endif
+                    @endif
                 @endif 
                 @if($mode != 'view')
                     @if($mode == 'edit')

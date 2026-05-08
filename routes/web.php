@@ -31,7 +31,9 @@ Route::middleware('auth')->group(function () {
         return view('assetmanagement');
     })->middleware('permission:assets.view');
 
-    Route::get('/assetmanagement/qr', \App\Livewire\QrManagement::class)->middleware('permission:assets.qr')->name('assets.qr');
+    Route::get('/assetmanagement/qr', function () {
+        return view('qr-management');
+    })->middleware('permission:assets.qr')->name('assets.qr');
     Route::get('/assetmanagement/qr/print', [AssetController::class, 'printQr'])->middleware('permission:assets.qr')->name('assets.qr.print');
 
     Route::get('/assetmanagement/{mode}', function (Request $request, $mode) {
