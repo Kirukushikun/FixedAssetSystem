@@ -94,11 +94,22 @@ class TransferWorkspace extends Component
 
     public function submitRequest()
     {
-        $this->validate([
+        $rules = [
             'requestAssetId' => 'required|exists:assets,id',
             'requestEmployeeId' => 'required|exists:employees,id',
             'requestReason' => 'required|string|max:500',
-        ]);
+        ];
+
+        if ($this->isExternalTransfer) {
+            if ($this->externalFarm) {
+                $rules['externalDepartment'] = 'required';
+            }
+            if ($this->externalDepartment) {
+                $rules['externalFarm'] = 'required';
+            }
+        }
+
+        $this->validate($rules);
 
         $asset = Asset::find($this->requestAssetId);
         $employee = Employee::find($this->requestEmployeeId);
@@ -118,6 +129,7 @@ class TransferWorkspace extends Component
         ]);
 
         $this->reset(['requestAssetId', 'requestEmployeeId', 'requestReason', 'showConfirmModal', 'isExternalTransfer', 'externalFarm', 'externalDepartment']);
+        $this->loadEmployees();
         $this->loadRequests();
         $this->dispatch('notif', type: 'success', header: 'Success', message: 'Transfer request submitted successfully.');
     }

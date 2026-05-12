@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: false, isExternalTransfer: @entangle('isExternalTransfer') }" x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))">
+<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: @entangle('showConfirmModal'), isExternalTransfer: @entangle('isExternalTransfer') }" x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))">
     @php($user = Auth::user())
 
     {{-- Tabs + Card unified block --}}
@@ -46,7 +46,7 @@
                 <div x-show="isExternalTransfer" class="grid grid-cols-2 gap-4">
                     <div class="input-group">
                         <label>Farm</label>
-                        <select wire:model.live="externalFarm">
+                        <select wire:model="externalFarm">
                             <option value="">Select farm...</option>
                             <option value="BFC">BFC</option>
                             <option value="BDL">BDL</option>
@@ -58,7 +58,7 @@
                     </div>
                     <div class="input-group">
                         <label>Department</label>
-                        <select wire:model.live="externalDepartment">
+                        <select wire:model="externalDepartment">
                             <option value="">Select department...</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->name }}">{{ $dept->name }}</option>
