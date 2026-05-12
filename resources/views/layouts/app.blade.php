@@ -58,6 +58,14 @@
                     <p>Transfer Workspace</p>
                 </a>
             @endif
+            @if($navUser?->hasPermission('analytics.view'))
+                <a href="/it-analytics"
+                   data-tooltip="IT Analytics"
+                   class="{{ request()->is('it-analytics*') ? 'active' : '' }}">
+                    <span><i class="fa-solid fa-chart-pie"></i></span>
+                    <p>IT Analytics</p>
+                </a>
+            @endif
             @if($navUser?->hasPermission('employees.view'))
                 <a href="/employees"
                    data-tooltip="Employees"
@@ -153,6 +161,9 @@
                         @case(request()->is('transfer-workspace*'))
                             Transfer Workspace
                             @break
+                        @case(request()->is('it-analytics*'))
+                            IT Analytics
+                            @break
                     @endswitch
                 </div>
 
@@ -173,6 +184,8 @@
                         Disposal Workspace
                     @elseif(request()->is('transfer-workspace*'))
                         Transfer Workspace
+                    @elseif(request()->is('it-analytics*'))
+                        IT Analytics
                     @endif
                 </div>
             </div>

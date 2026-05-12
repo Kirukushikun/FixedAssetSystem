@@ -65,6 +65,9 @@ class AccessControl
                 'reports.sme' => 'View SME reports',
                 'reports.farm_scope' => 'Limit reports to assigned farm',
             ],
+            'analytics' => [
+                'analytics.view' => 'View IT analytics dashboard',
+            ],
             'system' => [
                 'audit.view' => 'View audit logs',
                 'audit.export' => 'Export audit logs',
@@ -185,6 +188,7 @@ class AccessControl
                     'assets.export',
                     'assets.qr',
                     'settings.view',
+                    'analytics.view',
                 ],
             ],
             'division_head' => [

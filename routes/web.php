@@ -84,6 +84,10 @@ Route::middleware('auth')->group(function () {
         return view('transfer-workspace');
     })->middleware('permission:transfer.view')->name('transfer.workspace');
 
+    Route::get('/it-analytics', function () {
+        return view('it-analytics');
+    })->middleware('permission:analytics.view')->name('it.analytics');
+
     Route::get('/disposal-workspace', function () {
         return view('disposal-workspace');
     })->middleware('permission:disposal.view')->name('disposal.workspace');
