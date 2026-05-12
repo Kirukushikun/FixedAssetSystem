@@ -7,6 +7,7 @@
         openCategory: 'it',
         targetAsset: '',
     }"
+    x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
 >
     @php($dashboardUser = Auth::user())
     <!-- Summary Cards -->
@@ -341,10 +342,10 @@
 
 
     <!-- Backdrop -->
-    <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40"></div>
+    <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/30 z-40 modal-hidden"></div>
 
     <!-- Modal -->
-    <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" class="fixed inset-0 flex items-center justify-center z-50">
+    <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" class="fixed inset-0 flex items-center justify-center z-50 modal-hidden">
         <div class="relative bg-white p-10 rounded-lg shadow-lg">
             <div class="absolute right-7 top-7 text-gray-400 cursor-pointer hover:text-gray-800" @click="showModal = false; $wire.clear()"><i class="fa-solid fa-xmark"></i></div>
 

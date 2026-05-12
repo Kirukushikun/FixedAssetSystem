@@ -20,6 +20,11 @@
     display: none !important;
 }
 
+/* Hide modals until Alpine is ready */
+.modal-hidden {
+    display: none !important;
+}
+
 :root {
     --teal:        #4fd1c5;
     --teal-dark:   #38b2ac;

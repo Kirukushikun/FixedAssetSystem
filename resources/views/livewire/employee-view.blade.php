@@ -110,13 +110,11 @@
             title="{!! $employeeViewUser?->hasPermission('employees.update') ? 'Add New Flag' : 'You do not have permission to add flags' !!}">
             ADD NEW FLAG
         </button>
-                @if($flags->isNotEmpty())
-                    <button class="px-5 py-2 bg-green-600 rounded-lg font-bold text-white text-xs hover:bg-green-700 w-fit"
-                        @click="showModal = true; modalTemplate = 'resolveAll'">
-                        MARK ALL AS RESOLVED
-                    </button>
-                @endif
-            </div>
+        @if($flags->isNotEmpty())
+            <button class="px-5 py-2 bg-green-600 rounded-lg font-bold text-white text-xs hover:bg-green-700 w-fit"
+                @click="showModal = true; modalTemplate = 'resolveAll'">
+                MARK ALL AS RESOLVED
+            </button>
         @endif
     </div>
 

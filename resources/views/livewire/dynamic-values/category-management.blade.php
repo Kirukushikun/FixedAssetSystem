@@ -7,6 +7,7 @@
                 window.dispatchEvent(new CustomEvent('open-cat-modal'));
             }
         }"
+        x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
         style="display: contents"
     >
         <div class="card w-full flex flex-col gap-5">
@@ -149,6 +150,7 @@
         x-data="{ showModal: false }"
         x-on:open-cat-modal.window="showModal = true"
         x-on:keydown.escape.window="showModal = false"
+        x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
         style="display: contents"
     >
         {{-- Backdrop --}}
@@ -160,7 +162,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 bg-black/40 z-[70]"
+            class="fixed inset-0 bg-black/40 z-[70] modal-hidden"
             @click="showModal = false"
         ></div>
 
@@ -173,7 +175,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none"
+            class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden"
         >
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm pointer-events-auto">
 

@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5" x-data="{ tab: @entangle('tab'), showConfirm: false, confirmType: '', confirmId: null }">
+<div class="flex flex-col gap-5" x-data="{ tab: @entangle('tab'), showConfirm: false, confirmType: '', confirmId: null }" x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))">
     <div
         wire:loading.flex
         wire:target="submitRequest,approveRequest,markDisposed"
@@ -26,6 +26,12 @@
                 </button>
             @endif
             @if($user?->hasPermission('disposal.approve'))
+                <button type="button"
+                    class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
+                    :class="tab === 'division_head' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                    @click="tab = 'division_head'; $wire.setTab('division_head')">
+                    Division Head Approval
+                </button>
                 <button type="button"
                     class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                     :class="tab === 'approval' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
@@ -82,6 +88,31 @@
         @endif
 
         @if($user?->hasPermission('disposal.approve'))
+        <div class="card" x-show="tab === 'division_head'">
+            <div class="flex flex-col gap-4">
+                <h2 class="text-lg font-bold">Division Head Approval Queue</h2>
+                @if($divisionHeadRequests->isEmpty())
+                    <p class="text-sm text-gray-400">No pending disposal requests.</p>
+                @else
+                    @foreach($divisionHeadRequests as $request)
+                        <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
+                                <p class="text-sm text-gray-500">{{ $request->reason }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name ?: 'System' }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
+                                @if($request->attachment_path)
+                                    <a href="{{ Storage::url($request->attachment_path) }}" target="_blank" class="inline-block mt-2 text-xs text-blue-500 font-semibold">View attachment</a>
+                                @endif
+                            </div>
+                            <button type="button" @click="showConfirm = true; confirmType = 'approve'; confirmId = {{ $request->id }}"
+                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
+                                Approve
+                            </button>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
         <div class="card" x-show="tab === 'approval'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">VP Approval Queue</h2>
@@ -184,8 +215,8 @@
     </div>{{-- end flex-col --}}
 
     {{-- Confirm Modal --}}
-    <div x-cloak x-show="showConfirm" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70]" @click="showConfirm = false"></div>
-    <div x-cloak x-show="showConfirm" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
+    <div x-cloak x-show="showConfirm" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70] modal-hidden" @click="showConfirm = false"></div>
+    <div x-cloak x-show="showConfirm" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto">
             <h2 class="text-lg font-bold text-gray-800 mb-2" x-text="confirmType === 'request' ? 'Submit Disposal Request' : 'Approve Disposal Request'"></h2>
             <p class="text-sm text-gray-500 mb-6" x-text="confirmType === 'request' ? 'Are you sure you want to submit this asset for disposal approval?' : 'Are you sure you want to approve this disposal request?'"></p>

@@ -40,6 +40,7 @@ class AccessControl
             'transfer' => [
                 'transfer.request' => 'Request asset transfers',
                 'transfer.view' => 'View transfer workspace',
+                'transfer.approve' => 'Approve transfer requests',
             ],
             'disposal' => [
                 'disposal.view' => 'View disposal workspace',
@@ -188,17 +189,26 @@ class AccessControl
                     'assets.export',
                     'assets.qr',
                     'settings.view',
+                ],
+            ],
+            'it' => [
+                'name' => 'IT',
+                'description' => 'Manages IT assets and views IT analytics dashboard.',
+                'permissions' => [
+                    'dashboard.view',
+                    'assets.view',
                     'analytics.view',
                 ],
             ],
             'division_head' => [
                 'name' => 'Division Head / Manager',
-                'description' => 'Manages PMS updates/scheduling and views/confirms FA assignments.',
+                'description' => 'Manages PMS updates/scheduling and views/confirms FA assignments. Approves disposal and transfer requests.',
                 'permissions' => [
                     'dashboard.view',
                     'assets.view',
                     'assets.repair',
-                    'assets.update',
+                    'disposal.approve',
+                    'transfer.approve',
                 ],
             ],
         ];

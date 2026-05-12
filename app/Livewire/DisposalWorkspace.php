@@ -76,11 +76,11 @@ class DisposalWorkspace extends Component
                 'reason' => $this->reason,
                 'attachment_path' => $attachmentPath,
                 'attachment_name' => $attachmentName,
-                'status' => 'Pending VP Approval',
+                'status' => 'Pending Division Head Approval',
             ]);
 
             $this->reset(['requestAssetId', 'reason', 'attachment']);
-            $this->dispatch('notif', type: 'success', header: 'Request Submitted', message: 'Disposal request has been submitted for VP approval.');
+            $this->dispatch('notif', type: 'success', header: 'Request Submitted', message: 'Disposal request has been submitted for Division Head approval.');
         } catch (\Exception $e) {
             Log::error('Disposal request failed', [
                 'error' => $e->getMessage(),
@@ -101,18 +101,31 @@ class DisposalWorkspace extends Component
 
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
-            $request->update([
-                'status' => 'VP Approved',
-                'vp_approved_by_user_id' => Auth::id(),
-                'vp_approved_by_name' => Auth::user()?->name,
-                'vp_approved_at' => now(),
-            ]);
 
-            if ($request->asset) {
-                $request->asset->update(['status' => 'For Disposal']);
+            // Check if request is at Division Head approval stage
+            if ($request->status === 'Pending Division Head Approval') {
+                $request->update([
+                    'status' => 'Pending VP Approval',
+                    'division_head_approved_by_user_id' => Auth::id(),
+                    'division_head_approved_by_name' => Auth::user()?->name,
+                    'division_head_approved_at' => now(),
+                ]);
+
+                $this->dispatch('notif', type: 'success', header: 'Division Head Approval Complete', message: 'Request has been forwarded to VP for approval.');
+            } elseif ($request->status === 'Pending VP Approval') {
+                $request->update([
+                    'status' => 'VP Approved',
+                    'vp_approved_by_user_id' => Auth::id(),
+                    'vp_approved_by_name' => Auth::user()?->name,
+                    'vp_approved_at' => now(),
+                ]);
+
+                if ($request->asset) {
+                    $request->asset->update(['status' => 'For Disposal']);
+                }
+
+                $this->dispatch('notif', type: 'success', header: 'VP Approval Complete', message: 'Asset is now marked as For Disposal.');
             }
-
-            $this->dispatch('notif', type: 'success', header: 'VP Approval Complete', message: 'Asset is now marked as For Disposal.');
         } catch (\Exception $e) {
             Log::error('Disposal approval failed', ['error' => $e->getMessage(), 'request_id' => $requestId]);
             $this->dispatch('notif', type: 'failed', header: 'Approval Failed', message: 'Unable to approve disposal request.');
@@ -149,7 +162,7 @@ class DisposalWorkspace extends Component
     public function render()
     {
         // Get IDs of assets with active disposal requests
-        $assetsWithPendingRequests = DisposalRequest::whereIn('status', ['Pending VP Approval', 'VP Approved'])
+        $assetsWithPendingRequests = DisposalRequest::whereIn('status', ['Pending Division Head Approval', 'Pending VP Approval', 'VP Approved'])
             ->pluck('asset_id')
             ->toArray();
 
@@ -159,10 +172,11 @@ class DisposalWorkspace extends Component
             ->orderBy('ref_id')
             ->get();
 
+        $divisionHeadRequests = DisposalRequest::with('asset')->where('status', 'Pending Division Head Approval')->latest()->get();
         $vpRequests = DisposalRequest::with('asset')->where('status', 'Pending VP Approval')->latest()->get();
         $accountingRequests = DisposalRequest::with('asset')->where('status', 'VP Approved')->latest()->get();
         $history = DisposalRequest::with('asset')->latest()->get();
 
-        return view('livewire.disposal-workspace', compact('requestableAssets', 'vpRequests', 'accountingRequests', 'history'));
+        return view('livewire.disposal-workspace', compact('requestableAssets', 'divisionHeadRequests', 'vpRequests', 'accountingRequests', 'history'));
     }
 }

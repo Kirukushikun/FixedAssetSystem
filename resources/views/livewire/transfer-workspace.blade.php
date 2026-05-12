@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: false }">
+<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: false, isExternalTransfer: @entangle('isExternalTransfer') }" x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))">
     @php($user = Auth::user())
 
     {{-- Tabs + Card unified block --}}
@@ -39,17 +39,43 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="externalTransfer" wire:model="isExternalTransfer" class="w-4 h-4 text-teal-500 rounded border-gray-300 focus:ring-teal-500">
+                    <label for="externalTransfer" class="text-sm font-medium text-gray-700">External Transfer (Outside department/farm)</label>
+                </div>
+                <div x-show="isExternalTransfer" class="grid grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label>Farm</label>
+                        <select wire:model.live="externalFarm">
+                            <option value="">Select farm...</option>
+                            <option value="BFC">BFC</option>
+                            <option value="BDL">BDL</option>
+                            <option value="PFC">PFC</option>
+                            <option value="RH">RH</option>
+                            <option value="BBGC">BBGC</option>
+                            <option value="Hatchery">Hatchery</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Department</label>
+                        <select wire:model.live="externalDepartment">
+                            <option value="">Select department...</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
                 <div class="input-group">
                     <label>Transfer To</label>
                     <select wire:model="requestEmployeeId">
                         <option value="">Select employee...</option>
-                        @foreach($transferableAssets as $asset)
-                            @if($requestAssetId == $asset->id)
-                                <option value="{{ $asset->assignedEmployee->id }}">{{ $asset->assignedEmployee->employee_name }} (Current: {{ $asset->assignedEmployee->employee_name }})</option>
-                            @endif
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->employee_name }} ({{ $employee->farm }} - {{ $employee->department }})</option>
                         @endforeach
                     </select>
                 </div>
+
                 <div class="input-group">
                     <label>Reason / Justification</label>
                     <textarea rows="5" wire:model="requestReason" placeholder="State the reason for transfer request..."></textarea>
@@ -120,8 +146,8 @@
     </div>{{-- end flex-col --}}
 
     {{-- Confirm Modal --}}
-    <div x-cloak x-show="showConfirmModal" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70]" @click="showConfirmModal = false"></div>
-    <div x-cloak x-show="showConfirmModal" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
+    <div x-cloak x-show="showConfirmModal" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70] modal-hidden" @click="showConfirmModal = false"></div>
+    <div x-cloak x-show="showConfirmModal" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto">
             <h2 class="text-lg font-bold text-gray-800 mb-2">Submit Transfer Request</h2>
             <p class="text-sm text-gray-500 mb-6">Are you sure you want to submit this transfer request to Accounting?</p>

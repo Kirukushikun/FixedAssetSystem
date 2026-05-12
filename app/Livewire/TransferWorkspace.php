@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\TransferRequest;
+use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 
 class TransferWorkspace extends Component
@@ -13,16 +14,56 @@ class TransferWorkspace extends Component
     public $transferableAssets = [];
     public $pendingRequests;
     public $approvedRequests;
+    public $employees = [];
+    public $departments = [];
 
     public $requestAssetId = null;
     public $requestEmployeeId = null;
     public $requestReason = '';
     public $showConfirmModal = false;
+    public $isExternalTransfer = false;
+    public $externalFarm = '';
+    public $externalDepartment = '';
 
     public function mount()
     {
         $this->loadTransferableAssets();
         $this->loadRequests();
+        $this->loadEmployees();
+        $this->departments = Department::all();
+    }
+
+    private function loadEmployees()
+    {
+        $user = Auth::user();
+        
+        if ($this->isExternalTransfer && $this->externalFarm && $this->externalDepartment) {
+            // External transfer: filter by selected farm and department
+            $this->employees = Employee::where('farm', $this->externalFarm)
+                ->where('department', $this->externalDepartment)
+                ->get();
+        } elseif ($this->isExternalTransfer && $this->externalFarm) {
+            // External transfer: filter by selected farm only
+            $this->employees = Employee::where('farm', $this->externalFarm)->get();
+        } else {
+            // Internal transfer: show all employees in user's farm
+            $this->employees = Employee::where('farm', $user->farm)->get();
+        }
+    }
+
+    public function updatedIsExternalTransfer()
+    {
+        $this->loadEmployees();
+    }
+
+    public function updatedExternalFarm()
+    {
+        $this->loadEmployees();
+    }
+
+    public function updatedExternalDepartment()
+    {
+        $this->loadEmployees();
     }
 
     private function loadTransferableAssets()
@@ -39,13 +80,13 @@ class TransferWorkspace extends Component
     {
         $user = Auth::user();
         $this->pendingRequests = TransferRequest::where('requested_by', $user->id)
-            ->where('status', 'pending')
+            ->where('status', 'Pending Division Head Approval')
             ->with(['asset', 'requestedEmployee'])
             ->latest()
             ->get();
 
         $this->approvedRequests = TransferRequest::where('requested_by', $user->id)
-            ->where('status', 'approved')
+            ->where('status', 'Approved')
             ->with(['asset', 'requestedEmployee', 'approvedByUser'])
             ->latest()
             ->get();
@@ -70,10 +111,13 @@ class TransferWorkspace extends Component
             'requested_employee_id' => $this->requestEmployeeId,
             'requested_employee_name' => $employee->employee_name,
             'reason' => $this->requestReason,
-            'status' => 'pending',
+            'status' => 'Pending Division Head Approval',
+            'is_external' => $this->isExternalTransfer,
+            'external_farm' => $this->isExternalTransfer ? $this->externalFarm : null,
+            'external_department' => $this->isExternalTransfer ? $this->externalDepartment : null,
         ]);
 
-        $this->reset(['requestAssetId', 'requestEmployeeId', 'requestReason', 'showConfirmModal']);
+        $this->reset(['requestAssetId', 'requestEmployeeId', 'requestReason', 'showConfirmModal', 'isExternalTransfer', 'externalFarm', 'externalDepartment']);
         $this->loadRequests();
         $this->dispatch('notif', type: 'success', header: 'Success', message: 'Transfer request submitted successfully.');
     }

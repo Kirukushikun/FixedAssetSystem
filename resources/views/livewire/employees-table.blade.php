@@ -16,6 +16,7 @@
         }
     }"
     x-on:keydown.escape.window="closeModal()"
+    x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
 >
 
     {{-- ── Toolbar ── --}}
@@ -329,6 +330,7 @@
     "
     x-on:close-modal.window="showModal = false; modalTemplate = ''; targetEmployee = '';"
     x-on:keydown.escape.window="showModal = false; modalTemplate = ''; targetEmployee = '';"
+    x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
     style="display:contents"
 >
     {{-- Backdrop --}}
@@ -340,7 +342,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="fixed inset-0 bg-black/40 z-[70]"
+        class="fixed inset-0 bg-black/40 z-[70] modal-hidden"
         @click="showModal = false; modalTemplate = ''"
     ></div>
 
@@ -353,7 +355,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none"
+        class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden"
     >
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto max-h-[90vh] overflow-y-auto">
 

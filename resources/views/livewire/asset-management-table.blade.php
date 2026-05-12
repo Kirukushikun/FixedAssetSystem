@@ -19,7 +19,7 @@
             closeModal() {
                 window.dispatchEvent(new CustomEvent('close-modal'));
             }
-        }" x-on:keydown.escape.window="closeModal()">
+        }" x-on:keydown.escape.window="closeModal()" x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))">
 
         {{-- ── Toolbar ── --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -392,7 +392,7 @@
             <div x-show="showModal" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 z-[70]"
+                x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 z-[70] modal-hidden"
                 @click="showModal = false; modalTemplate = ''"></div>
 
             {{-- Modal panel --}}
@@ -400,7 +400,7 @@
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
-                class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
+                class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden">
                 <div
                     class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto max-h-[90vh] overflow-y-auto">
 
