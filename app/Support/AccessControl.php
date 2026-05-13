@@ -206,6 +206,7 @@ class AccessControl
                 'permissions' => [
                     'dashboard.view',
                     'assets.view',
+                    'assets.farm_scope',
                     'assets.repair',
                     'disposal.approve',
                     'transfer.approve',

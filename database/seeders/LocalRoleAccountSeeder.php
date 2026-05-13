@@ -26,10 +26,17 @@ class LocalRoleAccountSeeder extends Seeder
                 'department' => 'ACCOUNTING',
                 'is_admin' => false,
             ],
-            'farm_manager' => [
-                'name' => 'Farm Manager Test User',
-                'email' => 'farm.manager@bfcgroup.org',
-                'farm' => 'BFC',
+            'pfc_farm_manager' => [
+                'name' => 'PFC Farm Manager',
+                'email' => 'pfc.farmmanager@bfcgroup.org',
+                'farm' => 'PFC',
+                'department' => 'POULTRY',
+                'is_admin' => false,
+            ],
+            'bdl_farm_manager' => [
+                'name' => 'BDL Farm Manager',
+                'email' => 'bdl.farmmanager@bfcgroup.org',
+                'farm' => 'BDL',
                 'department' => 'POULTRY',
                 'is_admin' => false,
             ],
@@ -75,6 +82,20 @@ class LocalRoleAccountSeeder extends Seeder
                 'department' => 'POULTRY',
                 'is_admin' => false,
             ],
+            'pfc_division_head' => [
+                'name' => 'PFC Division Head',
+                'email' => 'pfc.divisionhead@bfcgroup.org',
+                'farm' => 'PFC',
+                'department' => 'POULTRY',
+                'is_admin' => false,
+            ],
+            'bdl_division_head' => [
+                'name' => 'BDL Division Head',
+                'email' => 'bdl.divisionhead@bfcgroup.org',
+                'farm' => 'BDL',
+                'department' => 'POULTRY',
+                'is_admin' => false,
+            ],
         ];
 
         foreach ($accounts as $roleKey => $account) {
@@ -90,7 +111,15 @@ class LocalRoleAccountSeeder extends Seeder
             );
 
             if (! $account['is_admin']) {
-                $role = Role::where('key', $roleKey)->first();
+                // Map role keys for new accounts
+                $roleKeyToUse = $roleKey;
+                if (in_array($roleKey, ['pfc_farm_manager', 'bdl_farm_manager'])) {
+                    $roleKeyToUse = 'farm_manager';
+                } elseif (in_array($roleKey, ['pfc_division_head', 'bdl_division_head'])) {
+                    $roleKeyToUse = 'division_head';
+                }
+
+                $role = Role::where('key', $roleKeyToUse)->first();
 
                 if ($role) {
                     $user->roles()->sync([$role->id]);

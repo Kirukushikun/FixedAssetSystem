@@ -341,6 +341,8 @@ class AssetManagementTable extends Component
      */
     public function render()
     {
+        $user = Auth::user();
+
         // Build query - select only needed columns
         $query = Asset::select([
             'id', 'ref_id', 'category_type', 'category', 'sub_category',
@@ -350,6 +352,11 @@ class AssetManagementTable extends Component
         ])
         ->where('is_deleted', false)
         ->where('is_archived', false);
+
+        // Auto-filter by farm for farm managers and division heads
+        if ($user->hasPermission('assets.farm_scope')) {
+            $query->where('farm', $user->farm);
+        }
 
         // Search filter
         if ($this->search) {
