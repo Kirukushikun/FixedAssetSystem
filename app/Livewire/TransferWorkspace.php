@@ -39,30 +39,41 @@ class TransferWorkspace extends Component
         
         if ($this->isExternalTransfer && $this->externalFarm && $this->externalDepartment) {
             // External transfer: filter by selected farm and department
-            $this->employees = Employee::where('farm', $this->externalFarm)
+            $this->employees = Employee::where('is_deleted', false)
+                ->where('farm', $this->externalFarm)
                 ->where('department', $this->externalDepartment)
                 ->get();
         } elseif ($this->isExternalTransfer && $this->externalFarm) {
             // External transfer: filter by selected farm only
-            $this->employees = Employee::where('farm', $this->externalFarm)->get();
+            $this->employees = Employee::where('is_deleted', false)
+                ->where('farm', $this->externalFarm)
+                ->get();
         } else {
             // Internal transfer: show all employees in user's farm
-            $this->employees = Employee::where('farm', $user->farm)->get();
+            $this->employees = Employee::where('is_deleted', false)
+                ->where('farm', $user->farm)
+                ->get();
         }
     }
 
     public function updatedIsExternalTransfer()
     {
+        $this->requestEmployeeId = null;
+        $this->externalFarm = '';
+        $this->externalDepartment = '';
         $this->loadEmployees();
     }
 
     public function updatedExternalFarm()
     {
+        $this->requestEmployeeId = null;
+        $this->externalDepartment = '';
         $this->loadEmployees();
     }
 
     public function updatedExternalDepartment()
     {
+        $this->requestEmployeeId = null;
         $this->loadEmployees();
     }
 

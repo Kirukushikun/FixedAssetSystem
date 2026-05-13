@@ -219,6 +219,9 @@ class DashboardData extends Component
                 'department' => $this->department,
             ]);
 
+            // Clear all caches to ensure employee data syncs across modules
+            \Illuminate\Support\Facades\Cache::flush();
+
             $this->reset(['employee_id', 'employee_name', 'position', 'farm', 'department']);
             $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
 

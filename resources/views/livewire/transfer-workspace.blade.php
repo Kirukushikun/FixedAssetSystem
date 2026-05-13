@@ -46,7 +46,7 @@
                 <div x-show="isExternalTransfer" class="grid grid-cols-2 gap-4">
                     <div class="input-group">
                         <label>Farm</label>
-                        <select wire:model="externalFarm">
+                        <select wire:model.change="externalFarm">
                             <option value="">Select farm...</option>
                             <option value="BFC">BFC</option>
                             <option value="BDL">BDL</option>
@@ -58,7 +58,7 @@
                     </div>
                     <div class="input-group">
                         <label>Department</label>
-                        <select wire:model="externalDepartment">
+                        <select wire:model.change="externalDepartment">
                             <option value="">Select department...</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->name }}">{{ $dept->name }}</option>
