@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: @entangle('showConfirmModal'), isExternalTransfer: @entangle('isExternalTransfer') }" x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))">
+<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: @entangle('showConfirmModal').live, confirmType: 'request', confirmId: null, isExternalTransfer: @entangle('isExternalTransfer').live }">
     @php($user = Auth::user())
 
     {{-- Tabs + Card unified block --}}
@@ -18,6 +18,20 @@
                 @click="tab = 'pending'">
                 Pending
             </button>
+            @if($user?->hasPermission('transfer.approve'))
+                <button type="button"
+                    class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
+                    :class="tab === 'division_head' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                    @click="tab = 'division_head'">
+                    Division Head Approval
+                </button>
+                <button type="button"
+                    class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
+                    :class="tab === 'vp' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                    @click="tab = 'vp'">
+                    VP Approval
+                </button>
+            @endif
             <button type="button"
                 class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                 :class="tab === 'history' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
@@ -32,56 +46,61 @@
                 <h2 class="text-lg font-bold">Submit Transfer Request</h2>
                 <div class="input-group">
                     <label>Asset</label>
-                    <select wire:model="requestAssetId">
+                    <select wire:model.live="requestAssetId">
                         <option value="">Select asset...</option>
                         @foreach($transferableAssets as $asset)
                             <option value="{{ $asset->id }}">{{ $asset->ref_id }} - {{ $asset->brand }} {{ $asset->model }} (Assigned to: {{ $asset->assignedEmployee->employee_name }})</option>
                         @endforeach
                     </select>
+                    @error('requestAssetId') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" id="externalTransfer" wire:model="isExternalTransfer" class="w-4 h-4 text-teal-500 rounded border-gray-300 focus:ring-teal-500">
+                    <input type="checkbox" id="externalTransfer" wire:model.live="isExternalTransfer" class="w-4 h-4 text-teal-500 rounded border-gray-300 focus:ring-teal-500">
                     <label for="externalTransfer" class="text-sm font-medium text-gray-700">External Transfer (Outside department/farm)</label>
                 </div>
                 <div x-show="isExternalTransfer" class="grid grid-cols-2 gap-4">
                     <div class="input-group">
                         <label>Farm</label>
-                        <select wire:model.change="externalFarm">
+                        <select wire:model.live="externalFarm">
                             <option value="">Select farm...</option>
                             <option value="BFC">BFC</option>
                             <option value="BDL">BDL</option>
                             <option value="PFC">PFC</option>
                             <option value="RH">RH</option>
                             <option value="BBGC">BBGC</option>
-                            <option value="Hatchery">HATCHERY</option>
+                            <option value="HATCHERY">HATCHERY</option>
                         </select>
                     </div>
                     <div class="input-group">
                         <label>Department</label>
-                        <select wire:model.change="externalDepartment">
+                        <select wire:model.live="externalDepartment">
                             <option value="">Select department...</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->name }}">{{ $dept->name }}</option>
                             @endforeach
                         </select>
+                        @error('externalDepartment') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
+                @error('externalFarm') <p class="text-xs text-red-500 -mt-2">{{ $message }}</p> @enderror
                 <div class="input-group">
                     <label>Transfer To</label>
-                    <select wire:model="requestEmployeeId">
+                    <select wire:model.live="requestEmployeeId">
                         <option value="">Select employee...</option>
                         @foreach($employees as $employee)
                             <option value="{{ $employee->id }}">{{ $employee->employee_name }} ({{ $employee->farm }} - {{ $employee->department }})</option>
                         @endforeach
                     </select>
+                    @error('requestEmployeeId') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="input-group">
                     <label>Reason / Justification</label>
-                    <textarea rows="5" wire:model="requestReason" placeholder="State the reason for transfer request..."></textarea>
+                    <textarea rows="5" wire:model.live="requestReason" placeholder="State the reason for transfer request..."></textarea>
+                    @error('requestReason') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="flex justify-end">
-                    <button type="button" @click="showConfirmModal = true"
+                    <button type="button" @click="confirmType = 'request'; confirmId = null; showConfirmModal = true"
                         class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600">
                         Submit Request
                     </button>
@@ -108,6 +127,54 @@
                 @endif
             </div>
         </div>
+
+        @if($user?->hasPermission('transfer.approve'))
+        <div class="card" x-show="tab === 'division_head'">
+            <div class="flex flex-col gap-4">
+                <h2 class="text-lg font-bold">Division Head Approval Queue</h2>
+                @if($divisionHeadRequests->isEmpty())
+                    <p class="text-sm text-gray-400">No pending transfer requests.</p>
+                @else
+                    @foreach($divisionHeadRequests as $request)
+                        <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
+                                <p class="text-sm text-gray-500">{{ $request->reason }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Transfer to {{ $request->requested_employee_name }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
+                            </div>
+                            <button type="button" @click="confirmType = 'approve'; confirmId = {{ $request->id }}; showConfirmModal = true"
+                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
+                                Approve
+                            </button>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+
+        <div class="card" x-show="tab === 'vp'">
+            <div class="flex flex-col gap-4">
+                <h2 class="text-lg font-bold">VP Approval Queue</h2>
+                @if($vpRequests->isEmpty())
+                    <p class="text-sm text-gray-400">No pending transfer requests.</p>
+                @else
+                    @foreach($vpRequests as $request)
+                        <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
+                                <p class="text-sm text-gray-500">{{ $request->reason }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Transfer to {{ $request->requested_employee_name }} • Division Head: {{ $request->division_head_approved_by_name ?: '—' }}</p>
+                            </div>
+                            <button type="button" @click="confirmType = 'approve'; confirmId = {{ $request->id }}; showConfirmModal = true"
+                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
+                                Approve
+                            </button>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+        @endif
 
         <div class="card" x-show="tab === 'history'">
             <div class="flex flex-col gap-4">
@@ -145,18 +212,20 @@
 
     </div>{{-- end flex-col --}}
 
-    {{-- Confirm Modal --}}
-    <div x-cloak x-show="showConfirmModal" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70] modal-hidden" @click="showConfirmModal = false"></div>
-    <div x-cloak x-show="showConfirmModal" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden">
+    <div x-cloak x-show="showConfirmModal" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70]" @click="showConfirmModal = false"></div>
+    <div x-cloak x-show="showConfirmModal" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto">
-            <h2 class="text-lg font-bold text-gray-800 mb-2">Submit Transfer Request</h2>
-            <p class="text-sm text-gray-500 mb-6">Are you sure you want to submit this transfer request to Accounting?</p>
+            <h2 class="text-lg font-bold text-gray-800 mb-2" x-text="confirmType === 'request' ? 'Submit Transfer Request' : 'Approve Transfer Request'"></h2>
+            <p class="text-sm text-gray-500 mb-6" x-text="confirmType === 'request' ? 'Are you sure you want to submit this transfer request?' : 'Are you sure you want to approve this transfer request?'"></p>
             <div class="flex justify-end gap-3">
                 <button type="button" @click="showConfirmModal = false" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
                 <button type="button"
-                    @click="submitRequest(); showConfirmModal = false"
+                    @click="confirmType === 'request' ? $wire.submitRequest() : $wire.approveRequest(confirmId)"
+                    wire:loading.attr="disabled"
+                    wire:target="submitRequest,approveRequest"
                     class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm font-bold hover:bg-teal-600">
-                    Confirm
+                    <span wire:loading.remove wire:target="submitRequest,approveRequest">Confirm</span>
+                    <span wire:loading wire:target="submitRequest,approveRequest">Processing...</span>
                 </button>
             </div>
         </div>

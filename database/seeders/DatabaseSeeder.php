@@ -139,7 +139,7 @@ class DatabaseSeeder extends Seeder
         $models = ['Inspiron', 'Pavilion', 'EOS', 'Galaxy', 'ThinkPad', 'VivoBook', 'IdeaPad', 'ProBook'];
         $conditions = ['Good', 'Defective', 'Repair', 'Replace'];
         $statuses = ['Available', 'Issued', 'Transferred', 'For Disposal', 'Disposed', 'Lost'];
-        $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'Hatchery'];
+        $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'HATCHERY'];
 
         $counter = 1;
         $year = date('Y');

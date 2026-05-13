@@ -85,7 +85,7 @@ class AssetManagementForm extends Component
     public $transferFarm = null;
     public $transferDepartment = null;
 
-    public $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'Hatchery'];
+    public $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'HATCHERY'];
     public $departments = [];
     public $location;
 

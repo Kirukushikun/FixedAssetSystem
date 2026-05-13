@@ -14,9 +14,21 @@ class TransferRequest extends Model
         'requested_employee_name',
         'reason',
         'status',
+        'division_head_approved_by_user_id',
+        'division_head_approved_by_name',
+        'division_head_approved_at',
         'approved_by',
         'approved_by_name',
         'approved_at',
+        'is_external',
+        'external_farm',
+        'external_department',
+    ];
+
+    protected $casts = [
+        'division_head_approved_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'is_external' => 'boolean',
     ];
 
     public function asset()

@@ -157,7 +157,7 @@
                                             <option value="PFC">PFC</option>
                                             <option value="RH">RH</option>
                                             <option value="BBGC">BBGC</option>
-                                            <option value="Hatchery">HATCHERY</option>
+                                            <option value="HATCHERY">HATCHERY</option>
                                         </select>
                                         <select wire:model.live="filterDepartment"
                                             class="text-sm rounded-lg border border-gray-200 px-2 py-1.5 outline-none focus:border-teal-400">
@@ -573,7 +573,7 @@
                                     <option value="PFC">PFC</option>
                                     <option value="RH">RH</option>
                                     <option value="BBGC">BBGC</option>
-                                    <option value="Hatchery">HATCHERY</option>
+                                    <option value="HATCHERY">HATCHERY</option>
                                 </select>
                             </div>
                         </div>

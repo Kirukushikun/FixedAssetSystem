@@ -169,7 +169,7 @@ class DashboardData extends Component
             'PFC' => 'POULTRYPURE FARMS',
             'RH' => 'RH FARMS',
             'BBGC' => 'BROOKSIDE BREEDING & GENETICS CORP.',    
-            'Hatchery' => 'HATCHERY', 
+            'HATCHERY' => 'HATCHERY', 
         ];
 
         $this->farmDistribution = [];

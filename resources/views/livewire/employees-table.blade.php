@@ -116,7 +116,7 @@
                                     <option value="PFC">PFC</option>
                                     <option value="RH">RH</option>
                                     <option value="BBGC">BBGC</option>
-                                    <option value="Hatchery">HATCHERY</option>
+                                    <option value="HATCHERY">HATCHERY</option>
                                 </select>
                             </div>
 
@@ -396,7 +396,7 @@
                             <option value="PFC">PFC</option>
                             <option value="RH">RH</option>
                             <option value="BBGC">BBGC</option>
-                            <option value="Hatchery">HATCHERY</option>
+                            <option value="HATCHERY">HATCHERY</option>
                         </select>
                     </div>
 
