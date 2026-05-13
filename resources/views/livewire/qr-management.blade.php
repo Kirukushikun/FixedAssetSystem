@@ -41,7 +41,7 @@
                     <option value="PFC">PFC</option>
                     <option value="RH">RH</option>
                     <option value="BBGC">BBGC</option>
-                    <option value="Hatchery">Hatchery</option>
+                    <option value="Hatchery">HATCHERY</option>
                 </select>
 
                 {{-- Printed Filter --}}

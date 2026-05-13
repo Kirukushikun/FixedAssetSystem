@@ -410,13 +410,13 @@
                 <div class="input-group">
                     <label>Farm:</label>
                     <select wire:model="farm">
-                        <option value=""></option>
+                        <option value="">Select farm...</option>
                         <option value="BFC">BFC</option>
                         <option value="BDL">BDL</option>
-                        <option value="BFC">BFC</option>
-                        <option value="BDL">BDL</option>
+                        <option value="PFC">PFC</option>
+                        <option value="RH">RH</option>
                         <option value="BBGC">BBGC</option>
-                        <option value="Hatchery">Hatchery</option>
+                        <option value="Hatchery">HATCHERY</option>
                     </select>
                 </div>
 
@@ -435,7 +435,7 @@
 
                     <button
                         type="button"
-                        @click="showModal = false; modalTemplate === 'create'; $wire.submit();"
+                        @click="showModal = false; modalTemplate === 'employee' ? $wire.submit() : null"
                         class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-800"
                     >
                         Confirm
@@ -485,6 +485,8 @@
                         <option value="BDL">BDL</option>
                         <option value="PFC">PFC</option>
                         <option value="RH">RH</option>
+                        <option value="BBGC">BBGC</option>
+                        <option value="Hatchery">HATCHERY</option>
                     </select>
                 </div>
 

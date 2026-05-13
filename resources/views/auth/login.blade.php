@@ -428,7 +428,7 @@
             </div>
         </div>
 
-        <div class="headline">
+        <!-- <div class="headline">
             <h2>Track every<br/><em>asset,</em><br/>everywhere.</h2>
             <p>A centralised platform for managing, monitoring, and auditing fixed assets across all business units.</p>
         </div>
@@ -446,7 +446,7 @@
                 <div class="num">Audit</div>
                 <div class="lbl">Ready</div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <!-- Right form panel -->
