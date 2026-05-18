@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 use App\Models\Employee;
 use App\Models\Department;
 
@@ -48,20 +49,25 @@ class EmployeesTable extends Component
 
     public $target;
     public $employee_id, $employee_name, $position, $farm, $department;
+    public bool $showModal = false;
+    public string $modalTemplate = '';
 
-    protected $rules = [
-        'employee_id'   => 'required|unique:employees,employee_id',
-        'employee_name' => 'required',
-        'position'      => 'required',
-        'farm'          => 'required',
-        'department'    => 'required',
-    ];
+    protected function rules()
+    {
+        return [
+            'employee_id'   => ['required', Rule::unique('employees', 'employee_id')->ignore($this->target)],
+            'employee_name' => 'required',
+            'position'      => 'required',
+            'farm'          => 'required',
+            'department'    => 'required',
+        ];
+    }
 
     public function targetID($id)
     {   
         $this->target = $id;
 
-        $employee = Employee::find($id);
+        $employee = Employee::findOrFail($id);
 
         $this->employee_id   = $employee->employee_id;
         $this->employee_name = $employee->employee_name;
@@ -70,23 +76,53 @@ class EmployeesTable extends Component
         $this->department    = $employee->department;
     }
 
+    public function openCreate()
+    {
+        $this->clear();
+        $this->modalTemplate = 'create';
+        $this->showModal = true;
+    }
+
+    public function openEdit($id)
+    {
+        $this->targetID($id);
+        $this->modalTemplate = 'edit';
+        $this->showModal = true;
+    }
+
+    public function openDelete($id)
+    {
+        $this->targetID($id);
+        $this->modalTemplate = 'delete';
+        $this->showModal = true;
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->modalTemplate = '';
+        $this->clear();
+    }
+
     public function submit()
     {
         try {
             $this->validate();
 
+            $employeeName = $this->employee_name;
+
             Employee::create([
                 'employee_id'   => $this->employee_id,
-                'employee_name' => $this->employee_name,
+                'employee_name' => $employeeName,
                 'position'      => $this->position,
                 'farm'          => $this->farm,
                 'department'    => $this->department,
             ]);
 
             $this->clearEmployeeCache();
-            $this->audit('Added Employee: ' . $this->employee_id . ' - ' . $this->employee_name);
-            $this->clear();
-            $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
+            $this->audit('Added Employee: ' . $this->employee_id . ' - ' . $employeeName);
+            $this->closeModal();
+            $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $employeeName . ' has been successfully added.');
 
         } catch (\Exception $e) {
             Log::error('Employee creation failed: ' . $e->getMessage());
@@ -112,11 +148,12 @@ class EmployeesTable extends Component
             $employee->farm          = $this->farm;
             $employee->department    = $this->department;
             $employee->save();
+            $employeeName = $employee->employee_name;
 
             $this->clearEmployeeCache();
             $this->audit('Updated Employee: ' . $employee->employee_id . ' - ' . $employee->employee_name);
-            $this->clear();
-            $this->noreloadNotif('success', 'Employee Updated', 'Employee ' . $this->employee_name . ' has been successfully updated.');
+            $this->closeModal();
+            $this->noreloadNotif('success', 'Employee Updated', 'Employee ' . $employeeName . ' has been successfully updated.');
 
         } catch (\Exception $e) {
             Log::error('Employee update failed: ' . $e->getMessage());
@@ -140,7 +177,7 @@ class EmployeesTable extends Component
             $employee->save();
             
             $this->clearEmployeeCache();
-            $this->clear();
+            $this->closeModal();
             $this->audit('Deleted Employee: ' . $employee->employee_id . ' - ' . $employeeName);    
             $this->noreloadNotif('success', 'Employee Deleted', 'Employee ' . $employeeName . ' has been successfully deleted.');
 

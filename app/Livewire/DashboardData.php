@@ -12,6 +12,7 @@ use App\Exports\AssetExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class DashboardData extends Component
 {   
@@ -42,13 +43,16 @@ class DashboardData extends Component
     public $export_categories = [];
     public $export_sub_categories = [];
 
-    protected $rules = [
-        'employee_id' => 'required',
-        'employee_name' => 'required',
-        'position' => 'required',
-        'farm' => 'required',
-        'department' => 'required',
-    ];
+    protected function rules()
+    {
+        return [
+            'employee_id' => ['required', Rule::unique('employees', 'employee_id')],
+            'employee_name' => 'required',
+            'position' => 'required',
+            'farm' => 'required',
+            'department' => 'required',
+        ];
+    }
 
     public function exportWithFilters()
     {
@@ -211,9 +215,11 @@ class DashboardData extends Component
         try {
             $this->validate();
 
+            $employeeName = $this->employee_name;
+
             Employee::create([
                 'employee_id' => $this->employee_id,
-                'employee_name' => $this->employee_name,
+                'employee_name' => $employeeName,
                 'position' => $this->position,
                 'farm' => $this->farm,
                 'department' => $this->department,
@@ -223,7 +229,7 @@ class DashboardData extends Component
             \Illuminate\Support\Facades\Cache::flush();
 
             $this->reset(['employee_id', 'employee_name', 'position', 'farm', 'department']);
-            $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $this->employee_name . ' has been successfully added.');
+            $this->noreloadNotif('success', 'Employee Added', 'Employee ' . $employeeName . ' has been successfully added.');
 
         } catch (\Exception $e) {
             Log::error('Employee creation failed: ' . $e->getMessage());

@@ -395,16 +395,19 @@
                 <div class="input-group">
                     <label>Employee ID:</label>
                     <input type="text" wire:model="employee_id" class="border rounded px-2 py-1 w-full" />
+                    @error('employee_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="input-group">
                     <label>Employee Name:</label>
                     <input type="text" wire:model="employee_name" class="border rounded px-2 py-1 w-full" />
+                    @error('employee_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="input-group">
                     <label>Position:</label>
                     <input type="text" wire:model="position" class="border rounded px-2 py-1 w-full" />
+                    @error('position') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="input-group">
@@ -418,6 +421,7 @@
                         <option value="BBGC">BBGC</option>
                         <option value="HATCHERY">HATCHERY</option>
                     </select>
+                    @error('farm') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="input-group">
@@ -428,6 +432,7 @@
                             <option value="{{ $dept }}">{{ $dept }}</option>
                         @endforeach
                     </select>
+                    @error('department') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="flex justify-end gap-3">

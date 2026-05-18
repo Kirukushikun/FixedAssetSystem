@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Livewire\WithPagination;
 use App\Models\History;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeView extends Component
 {   
@@ -30,7 +31,7 @@ class EmployeeView extends Component
     }
 
     public function mount($targetID){
-        $this->employee = Employee::find($targetID);
+        $this->employee = Employee::findOrFail($targetID);
     }
 
     public function submitFlag(){
@@ -192,17 +193,35 @@ class EmployeeView extends Component
 
     public function render()
     {   
-        $assets = Asset::where('is_deleted', false)->where('assigned_id', $this->employee->id)->latest()->paginate(10);
+        $employeeViewUser = Auth::user();
+        $canUpdateEmployees = (bool) $employeeViewUser?->hasPermission('employees.update');
+        $canViewForms = (bool) $employeeViewUser?->hasPermission('forms.view');
+        $canGenerateAccountabilityForm = (bool) $employeeViewUser?->hasPermission('forms.accountability');
+        $canGenerateTransferForm = (bool) $employeeViewUser?->hasPermission('forms.transfer');
+
+        $assets = Asset::where('is_deleted', false)
+            ->where('assigned_id', $this->employee->id)
+            ->latest()
+            ->paginate(10);
+
         $flags = Flag::where('target_id', $this->employee->id)->get();
         $smeReviews = AssetSmeReview::with('asset')
             ->where('employee_id', $this->employee->id)
             ->latest()
             ->get();
 
-        // Get categories as array with code as key
         $categoryCodeImage = Category::all()->keyBy('code');
 
-        return view('livewire.employee-view', compact('assets', 'flags', 'smeReviews', 'categoryCodeImage'));
+        return view('livewire.employee-view', compact(
+            'assets',
+            'flags',
+            'smeReviews',
+            'categoryCodeImage',
+            'canUpdateEmployees',
+            'canViewForms',
+            'canGenerateAccountabilityForm',
+            'canGenerateTransferForm'
+        ));
     }
 
     private function noreloadNotif($type, $header, $message)

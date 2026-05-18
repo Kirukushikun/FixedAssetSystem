@@ -7,16 +7,6 @@
 <div
     class="card content h-full flex flex-col gap-4"
     style="transform: none !important; will-change: auto;"
-    x-data="{
-        openModal(template) {
-            window.dispatchEvent(new CustomEvent('open-modal', { detail: { template, employee: '' } }));
-        },
-        closeModal() {
-            window.dispatchEvent(new CustomEvent('close-modal'));
-        }
-    }"
-    x-on:keydown.escape.window="closeModal()"
-    x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
 >
 
     {{-- ── Toolbar ── --}}
@@ -40,7 +30,7 @@
             {{-- ADD NEW EMPLOYEE --}}
             <button
                 class="flex items-center gap-2 px-4 py-2 bg-[#4fd1c5] hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition-colors"
-                @click="openModal('create')"
+                wire:click="openCreate"
                 title="Add New Employee"
             >
                 <i class="fa-solid fa-plus"></i>
@@ -269,7 +259,8 @@
                                             <li>
                                                 <button
                                                     class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                                                    @click="open = false; window.dispatchEvent(new CustomEvent('open-modal', { detail: { template: 'edit', employee: {{ $employee->id }} } })); $wire.targetID({{ $employee->id }})"
+                                                    @click="open = false"
+                                                    wire:click="openEdit({{ $employee->id }})"
                                                 >
                                                     <i class="fa-solid fa-pen text-xs text-gray-400"></i> Edit
                                                 </button>
@@ -277,7 +268,8 @@
                                             <li class="border-t border-gray-100">
                                                 <button
                                                     class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-500 flex items-center gap-2 transition-colors"
-                                                    @click="open = false; window.dispatchEvent(new CustomEvent('open-modal', { detail: { template: 'delete', employee: {{ $employee->id }} } })); $wire.targetID({{ $employee->id }})"
+                                                    @click="open = false"
+                                                    wire:click="openDelete({{ $employee->id }})"
                                                 >
                                                     <i class="fa-solid fa-trash text-xs"></i> Delete
                                                 </button>
@@ -318,58 +310,45 @@
      MODALS
      ================================================================ --}}
 <div
-    x-data="{
-        showModal: false,
-        modalTemplate: '',
-        targetEmployee: ''
-    }"
-    x-on:open-modal.window="
-        modalTemplate  = $event.detail.template;
-        targetEmployee = $event.detail.employee ?? '';
-        showModal      = true;
-    "
-    x-on:close-modal.window="showModal = false; modalTemplate = ''; targetEmployee = '';"
-    x-on:keydown.escape.window="showModal = false; modalTemplate = ''; targetEmployee = '';"
-    x-init="$el.querySelectorAll('.modal-hidden').forEach(el => el.classList.remove('modal-hidden'))"
     style="display:contents"
 >
     {{-- Backdrop --}}
     <div
-        x-show="showModal"
+        @if(! $showModal) style="display:none" @endif
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="fixed inset-0 bg-black/40 z-[70] modal-hidden"
-        @click="showModal = false; modalTemplate = ''"
+        class="fixed inset-0 bg-black/40 z-[70]"
+        wire:click="closeModal"
     ></div>
 
     {{-- Modal panel --}}
     <div
-        x-show="showModal"
+        @if(! $showModal) style="display:none" @endif
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none modal-hidden"
+        class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none"
     >
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto max-h-[90vh] overflow-y-auto">
 
             {{-- Close --}}
             <button
                 class="absolute right-5 top-5 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors z-10"
-                @click="showModal = false; modalTemplate = ''; targetEmployee = ''; $wire.clear()"
+                wire:click="closeModal"
             >
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
 
             {{-- Create / Edit --}}
-            <div class="p-8" x-show="modalTemplate === 'create' || modalTemplate === 'edit'">
-                <h2 class="text-lg font-bold text-gray-800 mb-6" x-text="modalTemplate === 'create' ? 'Add New Employee' : 'Edit Employee Details'"></h2>
+            <div class="p-8" @if(! in_array($modalTemplate, ['create', 'edit'], true)) style="display:none" @endif>
+                <h2 class="text-lg font-bold text-gray-800 mb-6">{{ $modalTemplate === 'create' ? 'Add New Employee' : 'Edit Employee Details' }}</h2>
 
                 <div class="space-y-4">
                     <div class="input-group">
@@ -414,22 +393,21 @@
                 <div class="flex justify-end gap-3 mt-6">
                     <button
                         type="button"
-                        @click="showModal = false; $wire.clear()"
+                        wire:click="closeModal"
                         class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
-                        @click="showModal = false; modalTemplate === 'create' ? $wire.submit() : $wire.update()"
+                        wire:click="{{ $modalTemplate === 'create' ? 'submit' : 'update' }}"
                         class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors"
-                        x-text="modalTemplate === 'create' ? 'Add Employee' : 'Save Changes'"
-                    ></button>
+                    >{{ $modalTemplate === 'create' ? 'Add Employee' : 'Save Changes' }}</button>
                 </div>
             </div>
 
             {{-- Delete Confirm --}}
-            <div class="p-8" x-show="modalTemplate === 'delete'">
+            <div class="p-8" @if($modalTemplate !== 'delete') style="display:none" @endif>
                 <div class="flex flex-col items-center gap-4 text-center">
                     <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                         <i class="fa-solid fa-trash text-red-500"></i>
@@ -441,14 +419,14 @@
                     <div class="flex gap-3 w-full mt-2">
                         <button
                             type="button"
-                            @click="showModal = false"
+                            wire:click="closeModal"
                             class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="button"
-                            @click="showModal = false; $wire.delete()"
+                            wire:click="delete"
                             class="flex-1 px-4 py-2 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors"
                         >
                             Delete
