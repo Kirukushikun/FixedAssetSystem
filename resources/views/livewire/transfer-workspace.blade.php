@@ -121,7 +121,13 @@
                             <div class="flex-1">
                                 <p class="font-bold text-gray-800">{{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}</p>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
-                                <p class="text-xs text-gray-400 mt-1">Transfer to: {{ $request->requested_employee_name }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    From: {{ $request->asset->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset->assignedEmployee->farm ?? '—' }} - {{ $request->asset->assignedEmployee->department ?? '—' }})
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    To: {{ $request->requested_employee_name }} ({{ $request->requestedEmployee->farm ?? '—' }} - {{ $request->requestedEmployee->department ?? '—' }})
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">{{ $request->created_at->format('m/d/Y h:i A') }}</p>
                             </div>
                             <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Pending</span>
                         </div>
@@ -142,7 +148,13 @@
                             <div class="flex-1">
                                 <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
-                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Transfer to {{ $request->requested_employee_name }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    From: {{ $request->asset?->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset?->assignedEmployee->farm ?? '—' }} - {{ $request->asset?->assignedEmployee->department ?? '—' }})
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    To: {{ $request->requested_employee_name }} ({{ $request->requestedEmployee->farm ?? '—' }} - {{ $request->requestedEmployee->department ?? '—' }})
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
                             </div>
                             <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
                                 class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
@@ -168,7 +180,13 @@
                             <div class="flex-1">
                                 <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
-                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Transfer to {{ $request->requested_employee_name }} • Division Head: {{ $request->division_head_approved_by_name ?: '—' }}</p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    From: {{ $request->asset?->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset?->assignedEmployee->farm ?? '—' }} - {{ $request->asset?->assignedEmployee->department ?? '—' }})
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    To: {{ $request->requested_employee_name }} ({{ $request->requestedEmployee->farm ?? '—' }} - {{ $request->requestedEmployee->department ?? '—' }})
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Division Head: {{ $request->division_head_approved_by_name ?: '—' }}</p>
                             </div>
                             <button type="button" wire:click="openConfirm('complete', {{ $request->id }})"
                                 class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600">
@@ -193,8 +211,9 @@
                                 <tr>
                                     <th>Asset</th>
                                     <th>Status</th>
+                                    <th>From</th>
+                                    <th>To</th>
                                     <th>Requested By</th>
-                                    <th>Transfer To</th>
                                     <th>Approved By</th>
                                 </tr>
                             </thead>
@@ -203,8 +222,9 @@
                                     <tr>
                                         <td>{{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}</td>
                                         <td>{{ $request->status }}</td>
+                                        <td>{{ $request->asset->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset->assignedEmployee->farm ?? '—' }} - {{ $request->asset->assignedEmployee->department ?? '—' }})</td>
+                                        <td>{{ $request->requested_employee_name }} ({{ $request->requestedEmployee->farm ?? '—' }} - {{ $request->requestedEmployee->department ?? '—' }})</td>
                                         <td>{{ $request->requested_by_name }}</td>
-                                        <td>{{ $request->requested_employee_name }}</td>
                                         <td>{{ $request->approved_by_name ?? '—' }}</td>
                                     </tr>
                                 @endforeach

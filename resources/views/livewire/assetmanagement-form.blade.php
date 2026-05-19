@@ -6,7 +6,7 @@
  >
      <div
          wire:loading.flex
-         wire:target="attachment,trySubmit,submit,update,transferAsset,assignAsset,addRepairRecord,resetChanges"
+         wire:target="attachment,trySubmit,submit,update,assignAsset,addRepairRecord,resetChanges"
          class="fixed inset-0 bg-black/30 z-[90] items-center justify-center"
      >
          <div class="bg-white px-5 py-4 rounded-lg shadow-lg flex items-center gap-3 text-sm font-semibold text-gray-700">
@@ -248,7 +248,7 @@
             <!-- LOCATION -->
             <div class="input-group">
                 <label>Location:</label>
-                @if($mode == 'view' || $mode == 'edit')
+                @if($mode == 'view')
                     <input type="text" wire:model="location" readonly>
                 @else
                     <input type="text" wire:model="location">
@@ -475,15 +475,6 @@
                             <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500"
                                 @click="modalTemplate = 'assign', showModal = true">ASSIGN ASSET</button>
                         @endif
-                    @else
-                        @if($assetFormUser?->hasRole('accounting'))
-                            <button class="px-5 py-3 bg-blue-400 rounded-lg font-bold text-white text-xs hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-400"
-                                :disabled="!{{ $targetAsset->pendingTransferRequest ? 'true' : 'false' }}"
-                                @click="{{ $targetAsset->pendingTransferRequest ? 'modalTemplate = \'transfer\'; showModal = true' : 'null' }}"
-                                title="{!! $targetAsset->pendingTransferRequest ? 'Transfer Asset' : 'No transfer request from Farm Manager' !!}">
-                                TRANSFER ASSET
-                            </button>
-                        @endif
                     @endif
                 @endif
                 @if($mode == 'edit' || $mode == 'view')
@@ -566,95 +557,6 @@
             </div>
             
             @if($mode != 'create')
-                <!-- SUBMIT MODAL -->
-                <div class="flex flex-col gap-4 w-[26rem]" x-show="modalTemplate === 'transfer'">
-                    @if($targetAsset->pendingTransferRequest)
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                        <p class="text-xs font-semibold text-blue-700 uppercase mb-2">Transfer Request Details</p>
-                        <div class="text-sm text-gray-700 space-y-1">
-                            <p><span class="font-semibold">Requested by:</span> {{ $targetAsset->pendingTransferRequest->requested_by_name }}</p>
-                            <p><span class="font-semibold">Transfer to:</span> {{ $targetAsset->pendingTransferRequest->requested_employee_name }}</p>
-                            <p><span class="font-semibold">Reason:</span> {{ $targetAsset->pendingTransferRequest->reason }}</p>
-                        </div>
-                    </div>
-                    @endif
-                    <div>
-                        <h2 class="text-xl font-semibold">Transfer Asset</h2>
-                        <p class="text-sm text-gray-400 mt-1">Move accountability to a new employee. Changes apply only after saving.</p>
-                    </div>
-
-                    <hr>
-
-                    <!-- Current Holder -->
-                    <div class="input-group">
-                        <label class="text-xs text-gray-500 uppercase font-semibold">Current Holder</label>
-                        <input type="text" value="{{$targetAsset->assigned_name ?? 'No current holder'}}" readonly class="bg-gray-50 text-gray-500">
-                    </div>
-
-                    <!-- New Holder -->
-                    <div class="input-group">
-                        <label class="text-xs text-gray-500 uppercase font-semibold">New Holder</label>
-                        @if($targetAsset->pendingTransferRequest)
-                            <input type="text" value="{{$targetAsset->pendingTransferRequest->requested_employee_name}}" readonly class="bg-blue-50 text-blue-700">
-                            <input type="hidden" wire:model="newHolder" value="{{$targetAsset->pendingTransferRequest->requested_employee_id}}">
-                        @else
-                            <select wire:model.live="newHolder">
-                                <option value="">Select employee...</option>
-                                @foreach ($employees as $emp)
-                                    @if($emp['id'] != $targetAsset->assigned_id)
-                                        <option value="{{ $emp['id'] }}">{{ $emp['employee_name'] }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        @endif
-                    </div>
-
-                    <!-- Employee Reference -->
-                    <div class="bg-gray-50 rounded-lg p-3 flex flex-col gap-3 border border-gray-200">
-                        <p class="text-xs font-semibold text-gray-400 uppercase">Employee Reference</p>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="input-group">
-                                <label class="text-xs text-gray-500">Farm</label>
-                                <input type="text" wire:model="transferFarm" readonly 
-                                    class="bg-white text-gray-600" placeholder="—">
-                            </div>
-                            <div class="input-group">
-                                <label class="text-xs text-gray-500">Department</label>
-                                <input type="text" wire:model="transferDepartment" readonly 
-                                    class="bg-white text-gray-600" placeholder="—">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Location -->
-                    <div class="input-group">
-                        <label class="text-xs text-gray-500 uppercase font-semibold">Location</label>
-                        <input type="text" wire:model="newLocation" placeholder="Enter new location">
-                    </div>
-
-                    <!-- Condition -->
-                    <div class="input-group">
-                        <label class="text-xs text-gray-500 uppercase font-semibold">Condition</label>
-                        <select wire:model="newCondition">
-                            <option value="">Select condition...</option>
-                            <option value="Good">Good</option>
-                            <option value="Repair">Repair</option>
-                            <option value="Defective">Defective</option>
-                            <option value="Replace">Replace</option>
-                        </select>
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-2">
-                        <button type="button" @click="showModal = false" 
-                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>
-                        <button type="button" @click="showModal = false; $wire.transferAsset()" wire:loading.attr="disabled" wire:target="transferAsset"
-                            class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
-                            <span wire:loading.remove wire:target="transferAsset">Confirm Transfer</span>
-                            <span wire:loading.inline wire:target="transferAsset">Processing...</span>
-                        </button>
-                    </div>
-                </div>
-
                 <div class="flex flex-col gap-4 w-[26rem]" x-show="modalTemplate === 'assign'">
                     <div>
                         <h2 class="text-xl font-semibold">Assign Asset</h2>

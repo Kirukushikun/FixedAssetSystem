@@ -83,23 +83,23 @@ class TransferWorkspace extends Component
         $user = Auth::user();
         $this->pendingRequests = TransferRequest::where('requested_by', $user->id)
             ->whereIn('status', ['DH Approval', 'For Transfer'])
-            ->with(['asset', 'requestedEmployee'])
+            ->with(['asset.assignedEmployee', 'requestedEmployee'])
             ->latest()
             ->get();
 
         $this->approvedRequests = TransferRequest::where('requested_by', $user->id)
             ->where('status', 'Transferred')
-            ->with(['asset', 'requestedEmployee', 'approvedByUser'])
+            ->with(['asset.assignedEmployee', 'requestedEmployee', 'approvedByUser'])
             ->latest()
             ->get();
 
         $this->divisionHeadRequests = TransferRequest::where('status', 'DH Approval')
-            ->with(['asset', 'requestedEmployee', 'requestedByUser'])
+            ->with(['asset.assignedEmployee', 'requestedEmployee', 'requestedByUser'])
             ->latest()
             ->get();
 
         $this->accountingRequests = TransferRequest::where('status', 'For Transfer')
-            ->with(['asset', 'requestedEmployee', 'requestedByUser'])
+            ->with(['asset.assignedEmployee', 'requestedEmployee', 'requestedByUser'])
             ->latest()
             ->get();
     }

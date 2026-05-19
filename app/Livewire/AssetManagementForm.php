@@ -82,14 +82,12 @@ class AssetManagementForm extends Component
     public $newHolder;
     public $newCondition;
     public $newLocation = null;
-    public $transferFarm = null;
-    public $transferDepartment = null;
 
     public $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'HATCHERY'];
     public $departments = [];
     public $location;
 
-    public $originalAssignedId; // tracks the original before any transfer preview
+    public $originalAssignedId;
 
     // Repair & Maintenance
     public $repairs;
@@ -201,7 +199,6 @@ class AssetManagementForm extends Component
                 $query->latest()->limit(50);
             },
             'latestDisposalRequest',
-            'pendingTransferRequest',
             'assignedEmployee:id,employee_name,farm,department',
             'categoryDetails:code,name'
         ])->findOrFail($targetID);
@@ -259,20 +256,6 @@ class AssetManagementForm extends Component
 
         if ($data) {
             $this->selectedEmployeeName = $data['employee_name'];
-            $this->farm = $data['farm'];
-            $this->department = $data['department'];
-        }
-    }
-
-    public function updatedNewHolder($value)
-    {
-        $employee = collect($this->employees)->firstWhere('id', (int) $value); // cast to int
-        if ($employee) {
-            $this->transferFarm = $employee['farm'];
-            $this->transferDepartment = $employee['department'];
-        } else {
-            $this->transferFarm = null;
-            $this->transferDepartment = null;
         }
     }
 
@@ -472,42 +455,6 @@ class AssetManagementForm extends Component
     /**
      * OPTIMIZED: Uses eager loading when refreshing history
      */
-    public function transferAsset()
-    {   
-        try {
-            $assignee = Employee::find($this->newHolder);
-
-            if (!$assignee) {
-                $this->noreloadNotif('failed', 'Transfer Failed', 'Selected employee not found.');
-                return;
-            }
-
-            $this->selectedEmployee = $assignee->id;
-            $this->selectedEmployeeName = $assignee->employee_name;
-            $this->targetAsset->assigned_id = $assignee->id;
-            $this->targetAsset->assigned_name = $assignee->employee_name;
-            $this->farm = $assignee->farm;
-            $this->department = $assignee->department;
-            $this->location = $this->newLocation; // <-- use newLocation instead of null
-
-            $this->reset(['newHolder', 'newCondition', 'newLocation', 'transferFarm', 'transferDepartment']);
-
-            $this->noreloadNotif('success', 'Transfer Preview Ready', 'Review the details and click SAVE to confirm the transfer.');
-
-        } catch (\Exception $e) {
-            Log::error('Asset transfer preview failed', [
-                'error' => $e->getMessage(),
-                'asset_id' => $this->targetAsset->id,
-                'user_id' => auth()->id()
-            ]);
-            
-            $this->noreloadNotif('failed', 'Transfer Failed', 'Unable to preview asset transfer. Please try again.');
-        }
-    }
-
-    /**
-     * OPTIMIZED: Uses eager loading when refreshing history
-     */
     public function assignAsset()
     {   
         try {
@@ -525,8 +472,9 @@ class AssetManagementForm extends Component
             $this->farm = $assignee->farm;
             $this->department = $assignee->department;
             $this->location = $this->newLocation; // <-- carry location from modal
+            $this->status = 'Issued';
 
-            $this->reset(['newHolder', 'newLocation', 'transferFarm', 'transferDepartment']);
+            $this->reset(['newHolder', 'newLocation']);
 
             $this->noreloadNotif('success', 'Assignment Preview Ready', 'Review the details and click SAVE to confirm.');
 
@@ -580,7 +528,7 @@ class AssetManagementForm extends Component
 
         $this->loadAssetData($this->targetAsset->id);
         $this->originalAssignedId = $this->targetAsset->assigned_id;
-        $this->reset(['newHolder', 'newCondition', 'newLocation', 'transferFarm', 'transferDepartment']);
+        $this->reset(['newHolder', 'newCondition', 'newLocation']);
         $this->noreloadNotif('success', 'Changes Reset', 'All unsaved changes have been discarded.');
     }
     

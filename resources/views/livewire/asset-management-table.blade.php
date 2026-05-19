@@ -177,6 +177,7 @@
                                         <option value="Available">Available</option>
                                         <option value="Issued">Issued</option>
                                         <option value="Transferred">Transferred</option>
+                                        <option value="For Transfer">For Transfer</option>
                                         <option value="For Disposal">For Disposal</option>
                                         <option value="Disposed">Disposed</option>
                                         <option value="Lost">Lost</option>
@@ -291,10 +292,11 @@
                                             'bg-[#48BB78]' => $asset->status === 'Available',
                                             'bg-[#ECC94B]' => $asset->status === 'Issued',
                                             'bg-[#4299E1]' => $asset->status === 'Transferred',
+                                            'bg-[#9F7AEA]' => $asset->status === 'For Transfer',
                                             'bg-[#ED8936]' => $asset->status === 'For Disposal',
                                             'bg-[#2D3748]' => $asset->status === 'Disposed',
                                             'bg-[#F56565]' => $asset->status === 'Lost',
-                                            'bg-gray-400' => ! in_array($asset->status, ['Available', 'Issued', 'Transferred', 'For Disposal', 'Disposed', 'Lost'], true),
+                                            'bg-gray-400' => ! in_array($asset->status, ['Available', 'Issued', 'Transferred', 'For Transfer', 'For Disposal', 'Disposed', 'Lost'], true),
                                         ])>
                                             {{ $asset->status }}
                                         </span>

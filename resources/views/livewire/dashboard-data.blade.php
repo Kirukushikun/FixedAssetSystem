@@ -81,7 +81,7 @@
             <h1 class="text-lg font-bold mt-5">Asset Status Overview</h1>
 
             <!-- Asset Status Overview -->
-            <div class="asset-statuses grid grid-cols-2 gap-7 mb-5">
+            <div class="asset-statuses grid grid-cols-3 gap-7 mb-5">
                 <!-- Available -->
                 <div class="flex flex-col gap-1">
                     <div class="label flex items-center gap-2">
@@ -120,6 +120,20 @@
                         <h1 class="text-lg font-bold">{{ number_format($statuses['transferred']) }}</h1>
                         <div class="bg-gray-200 w-full h-[4px] rounded-sm">
                             <div class="h-full bg-[#4299E1] rounded-sm" style="width: {{ $statusPercentages['transferred'] }}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- For Transfer -->
+                <div class="flex flex-col gap-1">
+                    <div class="label flex items-center gap-2">
+                        <i class="text-lg fa-solid fa-square text-[#9F7AEA]"></i>
+                        <p class="text-sm text-gray-400">For Transfer</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h1 class="text-lg font-bold">{{ number_format($statuses['for_transfer']) }}</h1>
+                        <div class="bg-gray-200 w-full h-[4px] rounded-sm">
+                            <div class="h-full bg-[#9F7AEA] rounded-sm" style="width: {{ $statusPercentages['for_transfer'] }}%"></div>
                         </div>
                     </div>
                 </div>
