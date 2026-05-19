@@ -15,13 +15,15 @@ class TransferWorkspace extends Component
     public $pendingRequests;
     public $approvedRequests;
     public $divisionHeadRequests;
-    public $vpRequests;
+    public $accountingRequests;
     public $departments = [];
 
     public $requestAssetId = null;
     public $requestEmployeeId = null;
     public $requestReason = '';
-    public $showConfirmModal = false;
+    public bool $showConfirmModal = false;
+    public string $confirmType = '';
+    public ?int $confirmId = null;
     public $isExternalTransfer = false;
     public $externalFarm = '';
     public $externalDepartment = '';
@@ -80,26 +82,57 @@ class TransferWorkspace extends Component
     {
         $user = Auth::user();
         $this->pendingRequests = TransferRequest::where('requested_by', $user->id)
-            ->where('status', 'Pending Division Head Approval')
+            ->whereIn('status', ['DH Approval', 'For Transfer'])
             ->with(['asset', 'requestedEmployee'])
             ->latest()
             ->get();
 
         $this->approvedRequests = TransferRequest::where('requested_by', $user->id)
-            ->where('status', 'Approved')
+            ->where('status', 'Transferred')
             ->with(['asset', 'requestedEmployee', 'approvedByUser'])
             ->latest()
             ->get();
 
-        $this->divisionHeadRequests = TransferRequest::where('status', 'Pending Division Head Approval')
+        $this->divisionHeadRequests = TransferRequest::where('status', 'DH Approval')
             ->with(['asset', 'requestedEmployee', 'requestedByUser'])
             ->latest()
             ->get();
 
-        $this->vpRequests = TransferRequest::where('status', 'Pending VP Approval')
+        $this->accountingRequests = TransferRequest::where('status', 'For Transfer')
             ->with(['asset', 'requestedEmployee', 'requestedByUser'])
             ->latest()
             ->get();
+    }
+
+    public function openConfirm(string $type, ?int $id = null)
+    {
+        $this->confirmType = $type;
+        $this->confirmId = $id;
+        $this->showConfirmModal = true;
+    }
+
+    public function closeConfirm()
+    {
+        $this->showConfirmModal = false;
+        $this->confirmType = '';
+        $this->confirmId = null;
+    }
+
+    public function confirmAction()
+    {
+        if ($this->confirmType === 'request') {
+            $this->submitRequest();
+            return;
+        }
+
+        if ($this->confirmType === 'approve' && $this->confirmId) {
+            $this->approveRequest($this->confirmId);
+            return;
+        }
+
+        if ($this->confirmType === 'complete' && $this->confirmId) {
+            $this->completeTransfer($this->confirmId);
+        }
     }
 
     public function submitRequest()
@@ -130,8 +163,8 @@ class TransferWorkspace extends Component
 
         $user = Auth::user();
         $initialStatus = $user?->hasRole('division_head')
-            ? 'Pending VP Approval'
-            : 'Pending Division Head Approval';
+            ? 'For Transfer'
+            : 'DH Approval';
 
         TransferRequest::create([
             'asset_id' => $this->requestAssetId,
@@ -146,7 +179,13 @@ class TransferWorkspace extends Component
             'external_department' => $this->isExternalTransfer ? $this->externalDepartment : null,
         ]);
 
-        $this->reset(['requestAssetId', 'requestEmployeeId', 'requestReason', 'showConfirmModal', 'isExternalTransfer', 'externalFarm', 'externalDepartment']);
+        if ($initialStatus === 'For Transfer') {
+            $asset?->update(['status' => 'For Transfer']);
+        }
+
+        $this->reset(['requestAssetId', 'requestEmployeeId', 'requestReason', 'isExternalTransfer', 'externalFarm', 'externalDepartment']);
+        $this->closeConfirm();
+        $this->loadTransferableAssets();
         $this->loadRequests();
         $this->dispatch('notif', type: 'success', header: 'Success', message: 'Transfer request submitted successfully.');
     }
@@ -160,41 +199,58 @@ class TransferWorkspace extends Component
 
         $request = TransferRequest::with(['asset', 'requestedEmployee'])->findOrFail($requestId);
 
-        if ($request->status === 'Pending Division Head Approval') {
+        if ($request->status === 'DH Approval') {
             $request->update([
-                'status' => 'Pending VP Approval',
+                'status' => 'For Transfer',
                 'division_head_approved_by_user_id' => Auth::id(),
                 'division_head_approved_by_name' => Auth::user()?->name,
                 'division_head_approved_at' => now(),
             ]);
 
+            $request->asset?->update(['status' => 'For Transfer']);
+            $this->closeConfirm();
+            $this->loadTransferableAssets();
             $this->loadRequests();
-            $this->dispatch('notif', type: 'success', header: 'Division Head Approval Complete', message: 'Transfer request has been forwarded to VP for approval.');
+            $this->dispatch('notif', type: 'success', header: 'Division Head Approval Complete', message: 'Transfer request has been forwarded to Accounting for completion.');
+            return;
+        }
+    }
+
+    public function completeTransfer($requestId)
+    {
+        if (! Auth::user()?->hasPermission('transfer.complete')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to complete transfer requests.');
             return;
         }
 
-        if ($request->status === 'Pending VP Approval') {
-            $request->update([
-                'status' => 'Approved',
-                'approved_by' => Auth::id(),
-                'approved_by_name' => Auth::user()?->name,
-                'approved_at' => now(),
-            ]);
+        $request = TransferRequest::with(['asset', 'requestedEmployee'])->findOrFail($requestId);
 
-            if ($request->asset && $request->requestedEmployee) {
-                $request->asset->update([
-                    'assigned_id' => $request->requestedEmployee->id,
-                    'assigned_name' => $request->requestedEmployee->employee_name,
-                    'farm' => $request->requestedEmployee->farm,
-                    'department' => $request->requestedEmployee->department,
-                    'status' => 'Transferred',
-                ]);
-            }
-
-            $this->loadTransferableAssets();
-            $this->loadRequests();
-            $this->dispatch('notif', type: 'success', header: 'VP Approval Complete', message: 'Asset transfer has been approved.');
+        if ($request->status !== 'For Transfer') {
+            $this->dispatch('notif', type: 'failed', header: 'Invalid Status', message: 'Only requests marked For Transfer can be completed.');
+            return;
         }
+
+        $request->update([
+            'status' => 'Transferred',
+            'approved_by' => Auth::id(),
+            'approved_by_name' => Auth::user()?->name,
+            'approved_at' => now(),
+        ]);
+
+        if ($request->asset && $request->requestedEmployee) {
+            $request->asset->update([
+                'assigned_id' => $request->requestedEmployee->id,
+                'assigned_name' => $request->requestedEmployee->employee_name,
+                'farm' => $request->requestedEmployee->farm,
+                'department' => $request->requestedEmployee->department,
+                'status' => 'Transferred',
+            ]);
+        }
+
+        $this->closeConfirm();
+        $this->loadTransferableAssets();
+        $this->loadRequests();
+        $this->dispatch('notif', type: 'success', header: 'Transfer Complete', message: 'Asset transfer has been completed.');
     }
 
     public function render()

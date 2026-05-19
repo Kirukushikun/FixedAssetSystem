@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5" x-data="{ tab: 'request', showConfirmModal: @entangle('showConfirmModal').live, confirmType: 'request', confirmId: null, isExternalTransfer: @entangle('isExternalTransfer').live }">
+<div class="flex flex-col gap-5" x-data="{ tab: 'request', isExternalTransfer: @entangle('isExternalTransfer').live }">
     @php($user = Auth::user())
 
     {{-- Tabs + Card unified block --}}
@@ -25,11 +25,13 @@
                     @click="tab = 'division_head'">
                     Division Head Approval
                 </button>
+            @endif
+            @if($user?->hasPermission('transfer.complete'))
                 <button type="button"
                     class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
-                    :class="tab === 'vp' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
-                    @click="tab = 'vp'">
-                    VP Approval
+                    :class="tab === 'accounting' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
+                    @click="tab = 'accounting'">
+                    Accounting
                 </button>
             @endif
             <button type="button"
@@ -100,7 +102,7 @@
                     @error('requestReason') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="flex justify-end">
-                    <button type="button" @click="confirmType = 'request'; confirmId = null; showConfirmModal = true"
+                    <button type="button" wire:click="openConfirm('request')"
                         class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600">
                         Submit Request
                     </button>
@@ -142,7 +144,7 @@
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
                                 <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Transfer to {{ $request->requested_employee_name }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
                             </div>
-                            <button type="button" @click="confirmType = 'approve'; confirmId = {{ $request->id }}; showConfirmModal = true"
+                            <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
                                 class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
                                 Approve
                             </button>
@@ -152,22 +154,25 @@
             </div>
         </div>
 
-        <div class="card" x-show="tab === 'vp'">
+        @endif
+
+        @if($user?->hasPermission('transfer.complete'))
+        <div class="card" x-show="tab === 'accounting'">
             <div class="flex flex-col gap-4">
-                <h2 class="text-lg font-bold">VP Approval Queue</h2>
-                @if($vpRequests->isEmpty())
+                <h2 class="text-lg font-bold">Accounting Transfer Queue</h2>
+                @if($accountingRequests->isEmpty())
                     <p class="text-sm text-gray-400">No pending transfer requests.</p>
                 @else
-                    @foreach($vpRequests as $request)
+                    @foreach($accountingRequests as $request)
                         <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
                             <div class="flex-1">
                                 <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
                                 <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • Transfer to {{ $request->requested_employee_name }} • Division Head: {{ $request->division_head_approved_by_name ?: '—' }}</p>
                             </div>
-                            <button type="button" @click="confirmType = 'approve'; confirmId = {{ $request->id }}; showConfirmModal = true"
-                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
-                                Approve
+                            <button type="button" wire:click="openConfirm('complete', {{ $request->id }})"
+                                class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600">
+                                Complete Transfer
                             </button>
                         </div>
                     @endforeach
@@ -212,20 +217,36 @@
 
     </div>{{-- end flex-col --}}
 
-    <div x-cloak x-show="showConfirmModal" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70]" @click="showConfirmModal = false"></div>
-    <div x-cloak x-show="showConfirmModal" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
+    <div @if(! $showConfirmModal) style="display:none" @endif class="fixed inset-0 bg-black/40 z-[70]" wire:click="closeConfirm"></div>
+    <div @if(! $showConfirmModal) style="display:none" @endif class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto">
-            <h2 class="text-lg font-bold text-gray-800 mb-2" x-text="confirmType === 'request' ? 'Submit Transfer Request' : 'Approve Transfer Request'"></h2>
-            <p class="text-sm text-gray-500 mb-6" x-text="confirmType === 'request' ? 'Are you sure you want to submit this transfer request?' : 'Are you sure you want to approve this transfer request?'"></p>
+            <h2 class="text-lg font-bold text-gray-800 mb-2">
+                @if($confirmType === 'request')
+                    Submit Transfer Request
+                @elseif($confirmType === 'complete')
+                    Complete Transfer
+                @else
+                    Approve Transfer Request
+                @endif
+            </h2>
+            <p class="text-sm text-gray-500 mb-6">
+                @if($confirmType === 'request')
+                    Are you sure you want to submit this transfer request?
+                @elseif($confirmType === 'complete')
+                    Are you sure you want to complete this transfer and reassign the asset?
+                @else
+                    Are you sure you want to approve this transfer request?
+                @endif
+            </p>
             <div class="flex justify-end gap-3">
-                <button type="button" @click="showConfirmModal = false" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button type="button" wire:click="closeConfirm" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
                 <button type="button"
-                    @click="confirmType === 'request' ? $wire.submitRequest() : $wire.approveRequest(confirmId)"
+                    wire:click="confirmAction"
                     wire:loading.attr="disabled"
-                    wire:target="submitRequest,approveRequest"
+                    wire:target="confirmAction"
                     class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm font-bold hover:bg-teal-600">
-                    <span wire:loading.remove wire:target="submitRequest,approveRequest">Confirm</span>
-                    <span wire:loading wire:target="submitRequest,approveRequest">Processing...</span>
+                    <span wire:loading.remove wire:target="confirmAction">Confirm</span>
+                    <span wire:loading wire:target="confirmAction">Processing...</span>
                 </button>
             </div>
         </div>
