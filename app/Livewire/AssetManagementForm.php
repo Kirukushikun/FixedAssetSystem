@@ -256,6 +256,8 @@ class AssetManagementForm extends Component
 
         if ($data) {
             $this->selectedEmployeeName = $data['employee_name'];
+            $this->farm = $data['farm'];
+            $this->department = $data['department'];
         }
     }
 
