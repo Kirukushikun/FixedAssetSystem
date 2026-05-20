@@ -277,6 +277,11 @@ class AssetManagementForm extends Component
         try {
             $this->validate();
 
+            // Set status to Issued if an assignee is selected during creation
+            if ($this->selectedEmployee) {
+                $this->status = 'Issued';
+            }
+
             $path = null;
             $originalName = null;
 
