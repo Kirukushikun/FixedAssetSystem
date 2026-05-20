@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5" x-data="{ tab: 'request', isExternalTransfer: @entangle('isExternalTransfer').live }">
+<div class="flex flex-col gap-5" x-data="{ tab: @entangle('defaultTab').live, isExternalTransfer: @entangle('isExternalTransfer').live }">
     @php($user = Auth::user())
 
     {{-- Tabs + Card unified block --}}
@@ -6,12 +6,14 @@
 
         {{-- Tab buttons --}}
         <div class="flex space-x-0.5">
+            @if(!$user?->hasRole('accounting'))
             <button type="button"
                 class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                 :class="tab === 'request' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
                 @click="tab = 'request'">
                 Request Transfer
             </button>
+            @endif
             <button type="button"
                 class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                 :class="tab === 'pending' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"

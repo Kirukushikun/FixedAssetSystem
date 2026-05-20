@@ -108,6 +108,7 @@ class AccessControl
                     'transfer.view',
                     'transfer.complete',
                     'disposal.view',
+                    'disposal.request',
                     'disposal.dispose',
                     'settings.view',
                 ],

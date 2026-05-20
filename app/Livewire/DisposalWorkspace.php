@@ -76,11 +76,12 @@ class DisposalWorkspace extends Component
                 'reason' => $this->reason,
                 'attachment_path' => $attachmentPath,
                 'attachment_name' => $attachmentName,
-                'status' => 'Pending Division Head Approval',
+                'status' => Auth::user()->hasRole('accounting') ? 'Pending VP Approval' : 'Pending Division Head Approval',
             ]);
 
             $this->reset(['requestAssetId', 'reason', 'attachment']);
-            $this->dispatch('notif', type: 'success', header: 'Request Submitted', message: 'Disposal request has been submitted for Division Head approval.');
+            $approvalStage = Auth::user()->hasRole('accounting') ? 'VP' : 'Division Head';
+            $this->dispatch('notif', type: 'success', header: 'Request Submitted', message: "Disposal request has been submitted for {$approvalStage} approval.");
         } catch (\Exception $e) {
             Log::error('Disposal request failed', [
                 'error' => $e->getMessage(),

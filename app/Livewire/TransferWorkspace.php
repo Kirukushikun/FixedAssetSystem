@@ -17,6 +17,7 @@ class TransferWorkspace extends Component
     public $divisionHeadRequests;
     public $accountingRequests;
     public $departments = [];
+    public $defaultTab = 'request';
 
     public $requestAssetId = null;
     public $requestEmployeeId = null;
@@ -30,6 +31,10 @@ class TransferWorkspace extends Component
 
     public function mount()
     {
+        $user = Auth::user();
+        if ($user->hasRole('accounting')) {
+            $this->defaultTab = 'accounting';
+        }
         $this->loadTransferableAssets();
         $this->loadRequests();
         $this->departments = Department::all();
