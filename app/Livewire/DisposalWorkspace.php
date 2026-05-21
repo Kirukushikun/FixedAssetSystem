@@ -7,7 +7,6 @@ use App\Models\Category;
 use App\Models\DisposalRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -16,15 +15,23 @@ class DisposalWorkspace extends Component
     use WithFileUploads;
 
     public $tab = 'request';
+
+    // Form fields
     public $requestAssetId = '';
     public $reason = '';
     public $attachment;
+
+    // Modal state — Livewire-owned so re-renders don't wipe it
+    public $showConfirmModal = false;
+    public $confirmType = '';
+    public $confirmId = null;
+
     public $categoryCodeImage;
 
     protected $rules = [
         'requestAssetId' => 'required',
-        'reason' => 'required|string|max:2000',
-        'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        'reason'         => 'required|string|max:2000',
+        'attachment'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
     ];
 
     public function mount()
@@ -36,6 +43,36 @@ class DisposalWorkspace extends Component
     {
         $this->tab = $tab;
     }
+
+    // ── Modal helpers ──────────────────────────────────────────
+
+    public function openConfirm($type, $id = null)
+    {
+        $this->confirmType = $type;
+        $this->confirmId   = $id;
+        $this->showConfirmModal = true;
+    }
+
+    public function closeConfirm()
+    {
+        $this->showConfirmModal = false;
+        $this->confirmType = '';
+        $this->confirmId   = null;
+    }
+
+    public function confirmAction()
+    {
+        match ($this->confirmType) {
+            'request' => $this->submitRequest(),
+            'approve' => $this->approveRequest($this->confirmId),
+            'dispose' => $this->markDisposed($this->confirmId),
+            default   => null,
+        };
+
+        $this->closeConfirm();
+    }
+
+    // ── Actions ────────────────────────────────────────────────
 
     public function submitRequest()
     {
@@ -49,13 +86,12 @@ class DisposalWorkspace extends Component
         try {
             $asset = Asset::findOrFail($this->requestAssetId);
 
-            // Check for existing pending request
             $existing = DisposalRequest::where('asset_id', $asset->id)
-                ->whereIn('status', ['Pending VP Approval', 'VP Approved'])
+                ->whereIn('status', ['Pending Division Head Approval', 'Pending VP Approval', 'VP Approved'])
                 ->first();
 
             if ($existing) {
-                $this->dispatch('notif', type: 'failed', header: 'Duplicate Request', message: 'This asset already has an active disposal request. Please wait for it to be processed.');
+                $this->dispatch('notif', type: 'failed', header: 'Duplicate Request', message: 'This asset already has an active disposal request.');
                 return;
             }
 
@@ -68,65 +104,67 @@ class DisposalWorkspace extends Component
             }
 
             DisposalRequest::create([
-                'asset_id' => $asset->id,
-                'requested_by_user_id' => Auth::id(),
-                'requested_by_name' => Auth::user()?->name,
-                'requester_farm' => Auth::user()?->farm,
-                'requester_department' => Auth::user()?->department,
-                'reason' => $this->reason,
-                'attachment_path' => $attachmentPath,
-                'attachment_name' => $attachmentName,
-                'status' => Auth::user()->hasRole('accounting') ? 'Pending VP Approval' : 'Pending Division Head Approval',
+                'asset_id'              => $asset->id,
+                'requested_by_user_id'  => Auth::id(),
+                'requested_by_name'     => Auth::user()?->name,
+                'requester_farm'        => Auth::user()?->farm,
+                'requester_department'  => Auth::user()?->department,
+                'reason'                => $this->reason,
+                'attachment_path'       => $attachmentPath,
+                'attachment_name'       => $attachmentName,
+                'status'                => Auth::user()->hasRole('accounting')
+                                            ? 'Pending VP Approval'
+                                            : 'Pending Division Head Approval',
             ]);
 
             $this->reset(['requestAssetId', 'reason', 'attachment']);
+
             $approvalStage = Auth::user()->hasRole('accounting') ? 'VP' : 'Division Head';
             $this->dispatch('notif', type: 'success', header: 'Request Submitted', message: "Disposal request has been submitted for {$approvalStage} approval.");
+
         } catch (\Exception $e) {
             Log::error('Disposal request failed', [
-                'error' => $e->getMessage(),
+                'error'    => $e->getMessage(),
                 'asset_id' => $this->requestAssetId,
-                'user_id' => Auth::id(),
+                'user_id'  => Auth::id(),
             ]);
-
             $this->dispatch('notif', type: 'failed', header: 'Request Failed', message: 'Unable to submit disposal request. Please try again.');
         }
     }
 
     public function approveRequest($requestId)
     {
-        if (!Auth::user()?->hasPermission('disposal.approve')) {
-            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to approve disposal requests.');
-            return;
-        }
-
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
 
-            // Check if request is at Division Head approval stage
             if ($request->status === 'Pending Division Head Approval') {
-                $request->update([
-                    'status' => 'Pending VP Approval',
-                    'division_head_approved_by_user_id' => Auth::id(),
-                    'division_head_approved_by_name' => Auth::user()?->name,
-                    'division_head_approved_at' => now(),
-                ]);
-
-                $this->dispatch('notif', type: 'success', header: 'Division Head Approval Complete', message: 'Request has been forwarded to VP for approval.');
-            } elseif ($request->status === 'Pending VP Approval') {
-                $request->update([
-                    'status' => 'VP Approved',
-                    'vp_approved_by_user_id' => Auth::id(),
-                    'vp_approved_by_name' => Auth::user()?->name,
-                    'vp_approved_at' => now(),
-                ]);
-
-                if ($request->asset) {
-                    $request->asset->update(['status' => 'For Disposal']);
+                if (!Auth::user()?->hasPermission('disposal.approve')) {
+                    $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to approve at this stage.');
+                    return;
                 }
+                $request->update([
+                    'status'                            => 'Pending VP Approval',
+                    'division_head_approved_by_user_id' => Auth::id(),
+                    'division_head_approved_by_name'    => Auth::user()?->name,
+                    'division_head_approved_at'         => now(),
+                ]);
+                $this->dispatch('notif', type: 'success', header: 'Approved', message: 'Request forwarded to VP for approval.');
 
+            } elseif ($request->status === 'Pending VP Approval') {
+                if (!Auth::user()?->hasPermission('disposal.vp_approve')) {
+                    $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to approve at this stage.');
+                    return;
+                }
+                $request->update([
+                    'status'                 => 'VP Approved',
+                    'vp_approved_by_user_id' => Auth::id(),
+                    'vp_approved_by_name'    => Auth::user()?->name,
+                    'vp_approved_at'         => now(),
+                ]);
+                $request->asset?->update(['status' => 'For Disposal']);
                 $this->dispatch('notif', type: 'success', header: 'VP Approval Complete', message: 'Asset is now marked as For Disposal.');
             }
+
         } catch (\Exception $e) {
             Log::error('Disposal approval failed', ['error' => $e->getMessage(), 'request_id' => $requestId]);
             $this->dispatch('notif', type: 'failed', header: 'Approval Failed', message: 'Unable to approve disposal request.');
@@ -143,17 +181,14 @@ class DisposalWorkspace extends Component
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
             $request->update([
-                'status' => 'Disposed',
-                'accounting_disposed_by_user_id' => Auth::id(),
-                'accounting_disposed_by_name' => Auth::user()?->name,
-                'disposed_at' => now(),
+                'status'                          => 'Disposed',
+                'accounting_disposed_by_user_id'  => Auth::id(),
+                'accounting_disposed_by_name'     => Auth::user()?->name,
+                'disposed_at'                     => now(),
             ]);
-
-            if ($request->asset) {
-                $request->asset->update(['status' => 'Disposed']);
-            }
-
+            $request->asset?->update(['status' => 'Disposed']);
             $this->dispatch('notif', type: 'success', header: 'Disposed', message: 'Asset has been officially marked as disposed.');
+
         } catch (\Exception $e) {
             Log::error('Mark disposed failed', ['error' => $e->getMessage(), 'request_id' => $requestId]);
             $this->dispatch('notif', type: 'failed', header: 'Update Failed', message: 'Unable to mark asset as disposed.');
@@ -162,22 +197,31 @@ class DisposalWorkspace extends Component
 
     public function render()
     {
-        // Get IDs of assets with active disposal requests
-        $assetsWithPendingRequests = DisposalRequest::whereIn('status', ['Pending Division Head Approval', 'Pending VP Approval', 'VP Approved'])
-            ->pluck('asset_id')
-            ->toArray();
+        $assetsWithActiveRequests = DisposalRequest::whereIn('status', [
+            'Pending Division Head Approval',
+            'Pending VP Approval',
+            'VP Approved',
+        ])->pluck('asset_id')->toArray();
 
         $requestableAssets = Asset::where('is_deleted', false)
             ->whereNotIn('status', ['Disposed', 'For Disposal'])
-            ->whereNotIn('id', $assetsWithPendingRequests)
+            ->whereNotIn('id', $assetsWithActiveRequests)
+            ->where('farm', Auth::user()->farm)           // NEW
+            // ->where('department', Auth::user()->department) // NEW
             ->orderBy('ref_id')
             ->get();
 
         $divisionHeadRequests = DisposalRequest::with('asset')->where('status', 'Pending Division Head Approval')->latest()->get();
-        $vpRequests = DisposalRequest::with('asset')->where('status', 'Pending VP Approval')->latest()->get();
-        $accountingRequests = DisposalRequest::with('asset')->where('status', 'VP Approved')->latest()->get();
-        $history = DisposalRequest::with('asset')->latest()->get();
+        $vpRequests           = DisposalRequest::with('asset')->where('status', 'Pending VP Approval')->latest()->get();
+        $accountingRequests   = DisposalRequest::with('asset')->where('status', 'VP Approved')->latest()->get();
+        $history              = DisposalRequest::with('asset')->latest()->get();
 
-        return view('livewire.disposal-workspace', compact('requestableAssets', 'divisionHeadRequests', 'vpRequests', 'accountingRequests', 'history'));
+        return view('livewire.disposal-workspace', compact(
+            'requestableAssets',
+            'divisionHeadRequests',
+            'vpRequests',
+            'accountingRequests',
+            'history'
+        ));
     }
 }
