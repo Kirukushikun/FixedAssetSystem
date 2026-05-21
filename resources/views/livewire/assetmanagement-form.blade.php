@@ -421,6 +421,7 @@
                                     <th class="border border-gray-300 text-left px-2 py-2">Cost</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Notes</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Source</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Report</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -438,7 +439,20 @@
                                                 <i class="fa-solid {{ ($repair->source ?? 'Internal') === 'Internal' ? 'fa-building' : 'fa-truck' }} text-[10px]"></i>
                                                 {{ $repair->source ?? 'Internal' }}
                                             </span>
-                                        </td>                                    
+                                        </td>     
+                                        <td class="border border-gray-300 px-2 py-2">
+                                            @if($repair->service_report_path)
+                                                <button wire:click="openServiceReport({{ $repair->id }}, 'view')"
+                                                    class="px-2 py-1 bg-blue-400 text-white rounded text-xs font-semibold hover:bg-blue-500">
+                                                    <i class="fa-solid fa-eye text-[10px] mr-1"></i>View
+                                                </button>
+                                            @else
+                                                <button wire:click="openServiceReport({{ $repair->id }}, 'upload')"
+                                                    class="px-2 py-1 bg-orange-400 text-white rounded text-xs font-semibold hover:bg-orange-500">
+                                                    <i class="fa-solid fa-upload text-[10px] mr-1"></i>Upload
+                                                </button>
+                                            @endif
+                                        </td>                               
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -673,7 +687,126 @@
                     </a>
                 </div>
             @endif
+            
         </div>
 
     </div>
+
+    {{-- Service Report Modal --}}
+@if($showServiceReportModal)
+    {{-- Backdrop --}}
+    <div class="fixed inset-0 bg-black/30 z-[90]" wire:click="closeServiceReport"></div>
+
+    {{-- Panel --}}
+    <div class="fixed inset-0 z-[100] flex items-center justify-center px-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-8 flex flex-col gap-5">
+
+            {{-- Close --}}
+            <button class="absolute right-5 top-5 text-gray-400 hover:text-gray-700"
+                wire:click="closeServiceReport">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            @if($serviceReportMode === 'upload')
+                <div>
+                    <h2 class="text-lg font-semibold">Upload Service Report</h2>
+                    <p class="text-sm text-gray-400 mt-1">Attach the completed service report for this repair entry.</p>
+                </div>
+
+                <hr>
+
+                <div class="input-group">
+                    <label class="text-xs text-gray-500 uppercase font-semibold">Remarks / Additional Notes</label>
+                    <textarea wire:model="serviceReportRemarks" rows="3"
+                        placeholder="Any notes from the technician or findings..."></textarea>
+                    @error('serviceReportRemarks')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs text-gray-500 uppercase font-semibold">
+                        Service Report File
+                        @error('serviceReportFile')
+                            <span class="text-red-500 ml-1 normal-case">{{ $message }}</span>
+                        @enderror
+                    </label>
+                    <div class="flex w-full border border-gray-300 rounded-md overflow-hidden text-sm">
+                        <button type="button"
+                            wire:loading.attr="disabled"
+                            wire:target="serviceReportFile"
+                            class="bg-gray-600 text-white px-4 py-2 hover:bg-gray-500 disabled:opacity-60"
+                            @click="$refs.srFile.click()">
+                            <span wire:loading.remove wire:target="serviceReportFile">Choose File</span>
+                            <span wire:loading.inline-flex wire:target="serviceReportFile"
+                                class="items-center gap-2">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Uploading...
+                            </span>
+                        </button>
+                        <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                            {{ $serviceReportFile ? $serviceReportFile->getClientOriginalName() : 'No file chosen (PDF, JPG, PNG — max 5MB)' }}
+                        </div>
+                        <input x-ref="srFile" type="file" class="hidden"
+                            wire:model="serviceReportFile"
+                            accept=".pdf,.jpg,.jpeg,.png">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" wire:click="closeServiceReport"
+                        class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">
+                        Cancel
+                    </button>
+                    <button type="button" wire:click="submitServiceReport"
+                        wire:loading.attr="disabled"
+                        wire:target="submitServiceReport"
+                        class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 text-sm font-semibold disabled:opacity-60">
+                        <span wire:loading.remove wire:target="submitServiceReport">Save Report</span>
+                        <span wire:loading.inline wire:target="submitServiceReport">Saving...</span>
+                    </button>
+                </div>
+
+            @elseif($serviceReportMode === 'view' && $viewingRepair)
+                <div>
+                    <h2 class="text-lg font-semibold">Service Report</h2>
+                    <p class="text-sm text-gray-400 mt-1">
+                        {{ \Carbon\Carbon::parse($viewingRepair->date)->format('m/d/Y') }}
+                        — {{ $viewingRepair->type }}
+                    </p>
+                </div>
+
+                <hr>
+
+                <div class="flex flex-col gap-1">
+                    <p class="text-xs text-gray-400 uppercase font-semibold">Remarks</p>
+                    <p class="text-sm text-gray-700">
+                        {{ $viewingRepair->service_report_remarks ?: 'No remarks provided.' }}
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <p class="text-xs text-gray-400 uppercase font-semibold">Attached File</p>
+                    <div class="flex w-full border border-gray-300 rounded-md overflow-hidden text-sm">
+                        <a href="{{ Storage::url($viewingRepair->service_report_path) }}"
+                            target="_blank"
+                            class="bg-gray-600 text-white px-4 py-2 hover:bg-gray-500">
+                            View File
+                        </a>
+                        <div class="flex-1 bg-gray-50 text-gray-500 px-4 py-2">
+                            {{ $viewingRepair->service_report_name }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="button" wire:click="closeServiceReport"
+                        class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">
+                        Close
+                    </button>
+                </div>
+            @endif
+
+        </div>
+    </div>
+@endif
 </div>

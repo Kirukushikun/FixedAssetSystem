@@ -99,6 +99,14 @@ class AssetManagementForm extends Component
     public $repair_notes = '';
     public $latestDisposalRequest;
 
+    // Service Report
+    public $showServiceReportModal = false;
+    public $serviceReportMode = null;      // 'upload' or 'view'
+    public $serviceReportRepairId = null;
+    public $serviceReportFile = null;
+    public $serviceReportRemarks = '';
+    public $viewingRepair = null;
+
     // RULES FOR VALIDATION
     protected $rules = [
         'ref_id' => 'required',
@@ -578,6 +586,55 @@ class AssetManagementForm extends Component
         $this->showConfirmModal = false;
 
         $this->noreloadNotif('success', 'Repair Record Added', 'The repair/maintenance record has been saved successfully.');
+    }
+
+    public function openServiceReport($repairId, $mode)
+    {
+        $this->serviceReportRepairId = $repairId;
+        $this->serviceReportMode = $mode;
+        $this->serviceReportRemarks = '';
+        $this->serviceReportFile = null;
+
+        if ($mode === 'view') {
+            $this->viewingRepair = $this->repairs->firstWhere('id', $repairId);
+        }
+
+        $this->showServiceReportModal = true;
+    }
+
+    public function closeServiceReport()
+    {
+        $this->showServiceReportModal = false;
+        $this->serviceReportMode = null;
+        $this->serviceReportRepairId = null;
+        $this->serviceReportFile = null;
+        $this->serviceReportRemarks = '';
+        $this->viewingRepair = null;
+    }
+
+    public function submitServiceReport()
+    {
+        $this->validate([
+            'serviceReportFile'    => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'serviceReportRemarks' => 'nullable|string|max:1000',
+        ]);
+
+        $repair = AssetRepair::findOrFail($this->serviceReportRepairId);
+
+        $path         = $this->serviceReportFile->store('service_reports', 'public');
+        $originalName = $this->serviceReportFile->getClientOriginalName();
+
+        $repair->update([
+            'service_report_path'    => $path,
+            'service_report_name'    => $originalName,
+            'service_report_remarks' => $this->serviceReportRemarks,
+        ]);
+
+        // Refresh repair list so the button flips to View immediately
+        $this->repairs = $this->targetAsset->repairs()->orderByDesc('date')->get();
+
+        $this->closeServiceReport();
+        $this->noreloadNotif('success', 'Report Uploaded', 'Service report has been saved successfully.');
     }
 
     public function resetChanges()

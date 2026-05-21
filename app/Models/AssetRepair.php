@@ -13,6 +13,9 @@ class AssetRepair extends Model
         'cost',
         'notes',
         'source',
+        'service_report_path',
+        'service_report_name',
+        'service_report_remarks',
     ];
 
     public function asset()

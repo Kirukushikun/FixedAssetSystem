@@ -19,6 +19,10 @@ return new class extends Migration
             $table->decimal('cost', 10, 2)->nullable();
             $table->text('notes')->nullable();
             $table->string('source');
+
+            $table->string('service_report_path')->nullable();
+            $table->string('service_report_name')->nullable();
+            $table->text('service_report_remarks')->nullable();
             $table->timestamps();
         });
     }
