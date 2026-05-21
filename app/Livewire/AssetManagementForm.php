@@ -562,7 +562,7 @@ class AssetManagementForm extends Component
             'type' => $this->repair_type,
             'cost' => $this->repair_cost ?: null,
             'notes' => $this->repair_notes,
-            'source' => Auth::user()->position == 'Purchasing' ? 'External' : 'Internal',
+            'source' => Auth::user()->hasRole('purchasing') ? 'External' : 'Internal',
         ]);
 
         // Refresh the table

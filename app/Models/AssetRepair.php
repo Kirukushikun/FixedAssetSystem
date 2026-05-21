@@ -12,6 +12,7 @@ class AssetRepair extends Model
         'type',
         'cost',
         'notes',
+        'source',
     ];
 
     public function asset()
