@@ -653,28 +653,6 @@
                         <textarea wire:model="repair_notes" rows="3" placeholder="Describe the repair or maintenance done..."></textarea>
                     </div>
 
-                    <div class="input-group">
-                        <label class="text-xs text-gray-500 uppercase font-semibold">Fixer Source</label>
-                        <div class="flex rounded-md overflow-hidden border border-gray-300 text-sm font-semibold">
-                            <label class="flex-1 flex items-center justify-center gap-2 px-4 py-2 cursor-pointer transition-colors"
-                                :class="$wire.repair_source === 'Internal' 
-                                    ? 'bg-teal-500 text-white' 
-                                    : 'bg-white text-gray-500 hover:bg-gray-50'">
-                                <input type="radio" wire:model="repair_source" value="Internal" class="hidden">
-                                <i class="fa-solid fa-building text-xs"></i>
-                                Internal
-                            </label>
-                            <label class="flex-1 flex items-center justify-center gap-2 px-4 py-2 cursor-pointer border-l border-gray-300 transition-colors"
-                                :class="$wire.repair_source === 'External' 
-                                    ? 'bg-orange-400 text-white' 
-                                    : 'bg-white text-gray-500 hover:bg-gray-50'">
-                                <input type="radio" wire:model="repair_source" value="External" class="hidden">
-                                <i class="fa-solid fa-truck text-xs"></i>
-                                External
-                            </label>
-                        </div>
-                    </div>
-
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="showModal = false" 
                             class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm">Cancel</button>

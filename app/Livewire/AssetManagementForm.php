@@ -97,7 +97,6 @@ class AssetManagementForm extends Component
     public $repair_type = '';
     public $repair_cost = '';
     public $repair_notes = '';
-    public $repair_source = 'Internal';
     public $latestDisposalRequest;
 
     // RULES FOR VALIDATION
@@ -555,7 +554,6 @@ class AssetManagementForm extends Component
             'repair_type' => 'required|string',
             'repair_cost' => 'nullable|numeric|min:0',
             'repair_notes' => 'nullable|string|max:1000',
-            'repair_source' => 'required|in:Internal,External',
         ]);
 
         AssetRepair::create([
@@ -564,7 +562,7 @@ class AssetManagementForm extends Component
             'type' => $this->repair_type,
             'cost' => $this->repair_cost ?: null,
             'notes' => $this->repair_notes,
-            'source' => $this->repair_source,
+            'source' => Auth::user()->position == 'Purchasing' ? 'External' : 'Internal',
         ]);
 
         // Refresh the table

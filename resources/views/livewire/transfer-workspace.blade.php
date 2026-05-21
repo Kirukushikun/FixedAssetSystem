@@ -121,7 +121,10 @@
                     @foreach($pendingRequests as $request)
                         <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
                             <div class="flex-1">
-                                <p class="font-bold text-gray-800">{{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}</p>
+                                <a href="/assetmanagement/view?targetID={{ encrypt($request->asset->id) }}"
+                                    class="font-bold text-gray-800 hover:text-teal-500 hover:underline transition-colors">
+                                        {{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}
+                                </a>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
                                 <p class="text-xs text-gray-400 mt-1">
                                     From: {{ $request->asset->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset->assignedEmployee->farm ?? '—' }} - {{ $request->asset->assignedEmployee->department ?? '—' }})
@@ -148,7 +151,10 @@
                     @foreach($divisionHeadRequests as $request)
                         <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
                             <div class="flex-1">
-                                <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
+                                <a href="/assetmanagement/view?targetID={{ encrypt($request->asset->id) }}"
+                                    class="font-bold text-gray-800 hover:text-teal-500 hover:underline transition-colors">
+                                        {{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}
+                                </a>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
                                 <p class="text-xs text-gray-400 mt-1">
                                     From: {{ $request->asset?->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset?->assignedEmployee->farm ?? '—' }} - {{ $request->asset?->assignedEmployee->department ?? '—' }})
@@ -180,7 +186,10 @@
                     @foreach($accountingRequests as $request)
                         <div class="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
                             <div class="flex-1">
-                                <p class="font-bold text-gray-800">{{ $request->asset?->ref_id }} - {{ $request->asset?->brand }} {{ $request->asset?->model }}</p>
+                                <a href="/assetmanagement/view?targetID={{ encrypt($request->asset->id) }}"
+                                    class="font-bold text-gray-800 hover:text-teal-500 hover:underline transition-colors">
+                                        {{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}
+                                </a>
                                 <p class="text-sm text-gray-500">{{ $request->reason }}</p>
                                 <p class="text-xs text-gray-400 mt-1">
                                     From: {{ $request->asset?->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset?->assignedEmployee->farm ?? '—' }} - {{ $request->asset?->assignedEmployee->department ?? '—' }})
