@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('type'); // PMS, Regular Maintenance, Repair
             $table->decimal('cost', 10, 2)->nullable();
             $table->text('notes')->nullable();
+            $table->string('source')->default('Internal');
             $table->timestamps();
         });
     }

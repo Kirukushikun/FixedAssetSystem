@@ -1,9 +1,21 @@
-<div class="flex flex-col gap-5">
+<div class="flex flex-col gap-5" x-data="{ showConfirm: false, confirmAssetId: null }">
+    <div
+        wire:loading.flex
+        wire:target="saveReview"
+        class="fixed inset-0 bg-black/30 z-[90] items-center justify-center"
+    >
+        <div class="bg-white px-5 py-4 rounded-lg shadow-lg flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <i class="fa-solid fa-spinner fa-spin text-teal-500"></i>
+            <span>Saving review...</span>
+        </div>
+    </div>
+
     @php($user = Auth::user())
     <div class="card flex flex-col gap-4">
         <div>
             <h1 class="text-lg font-bold">Subject Matter Expert Workspace</h1>
             <p class="text-sm text-gray-400">Select an employee, review assigned assets, add condition insights, and flag directly when needed.</p>
+            <p class="text-xs text-amber-500 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>This workspace is intended for employee clearance purposes only.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -135,7 +147,7 @@
                                 </label>
 
                                 @if($user?->hasPermission('sme.review'))
-                                    <button type="button" wire:click="saveReview({{ $asset->id }})" class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600 transition-colors">
+                                    <button type="button" @click="showConfirm = true; confirmAssetId = {{ $asset->id }}" class="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-bold hover:bg-teal-600 transition-colors">
                                         <i class="fa-solid fa-floppy-disk mr-2"></i>Save Review
                                     </button>
                                 @endif
@@ -146,4 +158,21 @@
             @endif
         </div>
     @endif
+
+    {{-- Confirm Modal --}}
+    <div x-cloak x-show="showConfirm" x-transition.opacity class="fixed inset-0 bg-black/40 z-[70]" @click="showConfirm = false"></div>
+    <div x-cloak x-show="showConfirm" x-transition class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto">
+            <h2 class="text-lg font-bold text-gray-800 mb-2">Save SME Review</h2>
+            <p class="text-sm text-gray-500 mb-6">Are you sure you want to save this review? If the flag option is checked, a flag record will also be created for this employee.</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" @click="showConfirm = false" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button type="button"
+                    @click="$wire.saveReview(confirmAssetId); showConfirm = false"
+                    class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm font-bold hover:bg-teal-600">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

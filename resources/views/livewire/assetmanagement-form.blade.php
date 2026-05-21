@@ -420,6 +420,7 @@
                                     <th class="border border-gray-300 text-left px-2 py-2">Type</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Cost</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Notes</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Source</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -429,6 +430,15 @@
                                         <td class="border border-gray-300 px-2 py-2">{{ $repair->type }}</td>
                                         <td class="border border-gray-300 px-2 py-2">{{ $repair->cost ? '₱' . number_format($repair->cost, 2) : '—' }}</td>
                                         <td class="border border-gray-300 px-2 py-2">{{ $repair->notes ?? '—' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
+                                                {{ ($repair->source ?? 'Internal') === 'Internal' 
+                                                    ? 'bg-teal-100 text-teal-700' 
+                                                    : 'bg-orange-100 text-orange-700' }}">
+                                                <i class="fa-solid {{ ($repair->source ?? 'Internal') === 'Internal' ? 'fa-building' : 'fa-truck' }} text-[10px]"></i>
+                                                {{ $repair->source ?? 'Internal' }}
+                                            </span>
+                                        </td>                                    
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -641,6 +651,28 @@
                     <div class="input-group">
                         <label class="text-xs text-gray-500 uppercase font-semibold">Notes</label>
                         <textarea wire:model="repair_notes" rows="3" placeholder="Describe the repair or maintenance done..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Fixer Source</label>
+                        <div class="flex rounded-md overflow-hidden border border-gray-300 text-sm font-semibold">
+                            <label class="flex-1 flex items-center justify-center gap-2 px-4 py-2 cursor-pointer transition-colors"
+                                :class="$wire.repair_source === 'Internal' 
+                                    ? 'bg-teal-500 text-white' 
+                                    : 'bg-white text-gray-500 hover:bg-gray-50'">
+                                <input type="radio" wire:model="repair_source" value="Internal" class="hidden">
+                                <i class="fa-solid fa-building text-xs"></i>
+                                Internal
+                            </label>
+                            <label class="flex-1 flex items-center justify-center gap-2 px-4 py-2 cursor-pointer border-l border-gray-300 transition-colors"
+                                :class="$wire.repair_source === 'External' 
+                                    ? 'bg-orange-400 text-white' 
+                                    : 'bg-white text-gray-500 hover:bg-gray-50'">
+                                <input type="radio" wire:model="repair_source" value="External" class="hidden">
+                                <i class="fa-solid fa-truck text-xs"></i>
+                                External
+                            </label>
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-2">

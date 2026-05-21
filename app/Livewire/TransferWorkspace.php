@@ -79,6 +79,7 @@ class TransferWorkspace extends Component
             ->where('is_archived', false)
             ->whereNotNull('assigned_id')
             ->where('status', '!=', 'Disposed')
+            ->where('farm', Auth::user()->farm)
             ->with(['assignedEmployee:id,employee_name,farm,department'])
             ->get();
     }
