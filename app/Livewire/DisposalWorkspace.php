@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Asset;
 use App\Models\Category;
 use App\Models\DisposalRequest;
+use App\Models\History;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -180,13 +181,47 @@ class DisposalWorkspace extends Component
 
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
-            $request->update([
-                'status'                          => 'Disposed',
-                'accounting_disposed_by_user_id'  => Auth::id(),
-                'accounting_disposed_by_name'     => Auth::user()?->name,
-                'disposed_at'                     => now(),
+            $asset   = $request->asset;
+
+            if (!$asset) {
+                $this->dispatch('notif', type: 'failed', header: 'Error', message: 'Asset not found.');
+                return;
+            }
+
+            // Record last assignee in history before clearing
+            if ($asset->assigned_id) {
+                \App\Models\History::create([
+                    'asset_id'      => $asset->id,
+                    'assignee_id'   => $asset->assigned_id,
+                    'assignee_name' => $asset->assigned_name,
+                    'status'        => 'Disposed',
+                    'condition'     => 'Defective',
+                    'farm'          => $asset->farm,
+                    'department'    => $asset->department,
+                    'location'      => $asset->location,
+                    'action'        => 'Last Assignee Before Disposal',
+                ]);
+            }
+
+            // Clear assignment and mark asset as disposed
+            $asset->update([
+                'status'        => 'Disposed',
+                'condition'     => 'Defective',
+                'assigned_id'   => null,
+                'assigned_name' => null,
+                'farm'          => null,
+                'department'    => null,
+                'location'      => null,
             ]);
-            $request->asset?->update(['status' => 'Disposed']);
+
+            // Update the disposal request record only
+            $request->update([
+                'status'                         => 'Disposed',
+                'accounting_disposed_by_user_id' => Auth::id(),
+                'accounting_disposed_by_name'    => Auth::user()?->name,
+                'disposed_at'                    => now(),
+            ]);
+
             $this->dispatch('notif', type: 'success', header: 'Disposed', message: 'Asset has been officially marked as disposed.');
 
         } catch (\Exception $e) {

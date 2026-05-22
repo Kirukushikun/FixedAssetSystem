@@ -111,6 +111,7 @@ class AccessControl
                     'disposal.view',
                     'disposal.request',
                     'disposal.dispose',
+                    'disposal.form.view',
                     'settings.view',
                 ],
             ],
