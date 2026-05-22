@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\TransferRequest;
 use App\Models\Department;
+use App\Models\History;
 use Illuminate\Support\Facades\Auth;
 
 class TransferWorkspace extends Component
@@ -251,6 +252,21 @@ class TransferWorkspace extends Component
                 'farm' => $request->requestedEmployee->farm,
                 'department' => $request->requestedEmployee->department,
                 'status' => 'Transferred',
+            ]);
+        }
+
+        // Record transfer in history
+        if ($request->asset) {
+            History::create([
+                'asset_id' => $request->asset->id,
+                'assignee_id' => $request->requestedEmployee->id,
+                'assignee_name' => $request->requestedEmployee->employee_name,
+                'status' => $request->asset->status,
+                'condition' => $request->asset->condition,
+                'farm' => $request->requestedEmployee->farm,
+                'department' => $request->requestedEmployee->department,
+                'location' => $request->requestedEmployee->location,
+                'action' => 'Transfer',
             ]);
         }
 
