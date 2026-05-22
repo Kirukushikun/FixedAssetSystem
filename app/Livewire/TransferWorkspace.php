@@ -245,6 +245,7 @@ class TransferWorkspace extends Component
 
         if ($request->asset && $request->requestedEmployee) {
             $request->asset->update([
+                'location' => null,
                 'assigned_id' => $request->requestedEmployee->id,
                 'assigned_name' => $request->requestedEmployee->employee_name,
                 'farm' => $request->requestedEmployee->farm,
