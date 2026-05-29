@@ -438,5 +438,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->command->info('Department seeded successfully!');
+
+        $this->call(AnalyticsTestSeeder::class);
     }
 }
