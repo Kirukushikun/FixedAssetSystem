@@ -350,7 +350,7 @@
                                     <th class="border border-gray-300 text-left px-2 py-2">Farm</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Department</th>
                                     <th class="border border-gray-300 text-left px-2 py-2">Action</th>
-                                    <th class="border border-gray-300 text-left px-2 py-2">Date Issued</th>
+                                    <th class="border border-gray-300 text-left px-2 py-2">Transaction Date</th>
                                 </tr>
                             </thead>
                             <tbody>
