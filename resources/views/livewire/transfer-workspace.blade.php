@@ -14,12 +14,14 @@
                 Request Transfer
             </button>
             @endif
+            @if(!$user?->hasRole('accounting'))
             <button type="button"
                 class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                 :class="tab === 'pending' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
                 @click="tab = 'pending'">
                 Pending
             </button>
+            @endif
             @if($user?->hasPermission('transfer.approve'))
                 <button type="button"
                     class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
@@ -36,12 +38,14 @@
                     Accounting
                 </button>
             @endif
+            @if(!$user?->hasRole('accounting'))
             <button type="button"
                 class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                 :class="tab === 'history' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
                 @click="tab = 'history'">
                 History
             </button>
+            @endif
         </div>
 
         {{-- Card panels --}}
@@ -112,6 +116,7 @@
             </div>
         </div>
 
+        @if(!$user?->hasRole('accounting'))
         <div class="card" x-show="tab === 'pending'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Pending Requests</h2>
@@ -140,6 +145,7 @@
                 @endif
             </div>
         </div>
+        @endif
 
         @if($user?->hasPermission('transfer.approve'))
         <div class="card" x-show="tab === 'division_head'">
@@ -210,6 +216,7 @@
         </div>
         @endif
 
+        @if(!$user?->hasRole('accounting'))
         <div class="card" x-show="tab === 'history'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Transfer History</h2>
@@ -245,6 +252,8 @@
                 @endif
             </div>
         </div>
+
+        @endif
 
     </div>{{-- end flex-col --}}
 

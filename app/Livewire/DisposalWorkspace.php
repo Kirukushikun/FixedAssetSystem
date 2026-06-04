@@ -181,7 +181,13 @@ class DisposalWorkspace extends Component
 
         try {
             $request = DisposalRequest::with('asset')->findOrFail($requestId);
-            $asset   = $request->asset;
+
+            if ($request->status !== 'VP Approved') {
+                $this->dispatch('notif', type: 'failed', header: 'Not Allowed', message: 'This asset can only be disposed after VP approval.');
+                return;
+            }
+
+            $asset = $request->asset;
 
             if (!$asset) {
                 $this->dispatch('notif', type: 'failed', header: 'Error', message: 'Asset not found.');
