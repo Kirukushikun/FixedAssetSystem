@@ -60,10 +60,10 @@
             @endif
             @if($navUser?->hasPermission('analytics.view'))
                 <a href="/it-analytics"
-                   data-tooltip="IT Analytics"
+                   data-tooltip="Analytics"
                    class="{{ request()->is('it-analytics*') ? 'active' : '' }}">
                     <span><i class="fa-solid fa-chart-pie"></i></span>
-                    <p>IT Analytics</p>
+                    <p>Analytics</p>
                 </a>
             @endif
             @if($navUser?->hasPermission('employees.view'))
@@ -162,7 +162,7 @@
                             Transfer Workspace
                             @break
                         @case(request()->is('it-analytics*'))
-                            IT Analytics
+                            Analytics
                             @break
                     @endswitch
                 </div>
@@ -185,7 +185,7 @@
                     @elseif(request()->is('transfer-workspace*'))
                         Transfer Workspace
                     @elseif(request()->is('it-analytics*'))
-                        IT Analytics
+                        Analytics
                     @endif
                 </div>
             </div>

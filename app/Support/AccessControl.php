@@ -69,7 +69,7 @@ class AccessControl
                 'reports.farm_scope' => 'Limit reports to assigned farm',
             ],
             'analytics' => [
-                'analytics.view' => 'View IT analytics dashboard',
+                'analytics.view' => 'View analytics dashboard',
             ],
             'system' => [
                 'audit.view' => 'View audit logs',
@@ -199,7 +199,7 @@ class AccessControl
             ],
             'it' => [
                 'name' => 'IT',
-                'description' => 'Manages IT assets and views IT analytics dashboard.',
+                'description' => 'Manages IT assets and views analytics dashboard.',
                 'permissions' => [
                     'dashboard.view',
                     'assets.view',

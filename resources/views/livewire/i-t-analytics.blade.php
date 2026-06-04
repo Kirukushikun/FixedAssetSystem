@@ -21,7 +21,7 @@
     {{-- Header --}}
     <div class="flex items-start justify-between gap-4 flex-wrap">
         <div>
-            <h1 class="text-lg font-bold">IT Analytics Dashboard</h1>
+            <h1 class="text-lg font-bold">Analytics Dashboard</h1>
             <p class="text-sm text-gray-400">Real-time metrics and AI-powered insights for overall asset health, costs, and performance across all farms.</p>
         </div>
         <div class="input-group min-w-[180px]">
