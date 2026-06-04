@@ -221,7 +221,6 @@
                                 <th class="border border-gray-300 text-left px-2 py-2">Category</th>
                                 <th class="border border-gray-300 text-left px-2 py-2">Reason</th>
                                 <th class="border border-gray-300 text-left px-2 py-2">Requested By</th>
-                                <th class="border border-gray-300 text-left px-2 py-2">Division Head</th>
                                 <th class="border border-gray-300 text-left px-2 py-2">VP Approved</th>
                                 <th class="border border-gray-300 text-left px-2 py-2">Action</th>
                             </tr>
@@ -234,13 +233,6 @@
                                     <td class="border border-gray-300 px-2 py-2">{{ $request->asset->sub_category }}</td>
                                     <td class="border border-gray-300 px-2 py-2">{{ $request->reason }}</td>
                                     <td class="border border-gray-300 px-2 py-2">{{ $request->requested_by_name }}</td>
-                                    <td class="border border-gray-300 px-2 py-2">
-                                        @if($request->division_head_approved_by_name)
-                                            <span class="text-green-600 font-semibold">{{ $request->division_head_approved_by_name }}</span>
-                                        @else
-                                            <span class="text-gray-400">—</span>
-                                        @endif
-                                    </td>
                                     <td class="border border-gray-300 px-2 py-2">
                                         @if($vpApproved)
                                             <span class="text-green-600 font-semibold">{{ $request->vp_approved_by_name }}</span>
