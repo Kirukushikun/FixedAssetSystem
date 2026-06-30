@@ -39,6 +39,7 @@ class AssetMigrationTemplateExport implements
                 'Juan Dela Cruz',   // Assigned To (full name of employee, leave blank if unassigned)
                 'BFC',              // Farm: BFC / BDL / PFC / RH / BBGC / HATCHERY
                 'IT Department',    // Department (leave blank if unknown)
+                'Server Room A',    // Location (specific room, area, or building, leave blank if unknown)
                 'SAMPLE ROW — DELETE THIS ROW BEFORE IMPORTING', // Remarks
             ],
         ]);
@@ -60,6 +61,7 @@ class AssetMigrationTemplateExport implements
             'Assigned To',
             'Farm',
             'Department',
+            'Location',
             'Remarks',
         ];
     }

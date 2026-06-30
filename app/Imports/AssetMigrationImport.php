@@ -95,6 +95,7 @@ class AssetMigrationImport implements
             'assigned_id'      => $assignedId,
             'farm'             => strtoupper(trim((string) ($r['farm'] ?? ''))),
             'department'       => trim((string) ($r['department'] ?? '')) ?: null,
+            'location'         => trim((string) ($r['location'] ?? ''))   ?: null,
             'remarks'          => trim((string) ($r['remarks'] ?? ''))    ?: null,
         ]);
 
