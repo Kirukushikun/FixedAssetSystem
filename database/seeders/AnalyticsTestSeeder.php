@@ -72,9 +72,13 @@ class AnalyticsTestSeeder extends Seeder
         foreach ($farmCounts as $farm => $count) {
             $depts = $farmDepts[$farm];
             for ($i = 0; $i < $count; $i++) {
+                $name = $firstNames[($counter - 1) % count($firstNames)]
+                      . ' '
+                      . $lastNames[($counter - 1) % count($lastNames)]
+                      . ' ' . sprintf('%03d', $counter);
                 DB::table('employees')->insert([
                     'employee_id'   => sprintf('EMP-%04d', $counter++),
-                    'employee_name' => $firstNames[array_rand($firstNames)] . ' ' . $lastNames[array_rand($lastNames)],
+                    'employee_name' => $name,
                     'position'      => $positions[array_rand($positions)],
                     'farm'          => $farm,
                     'department'    => $depts[array_rand($depts)],

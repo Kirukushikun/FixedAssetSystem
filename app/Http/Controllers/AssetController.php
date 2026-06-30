@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Resources\AssetResource;
 use App\Exports\AssetExport;
+use App\Exports\AssetMigrationTemplateExport;
 use App\Imports\AssetImport;
+use App\Imports\AssetMigrationImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -37,9 +39,37 @@ class AssetController extends Controller
         Excel::import($import, $request->file('file'));
 
         session()->flash('notif', [
-            'type' => 'success',
-            'header' => 'Import Successful',
-            'message' => "Import finished: {$import->createdCount} new rows, {$import->updatedCount} updated."
+            'type'    => 'success',
+            'header'  => 'System Import Complete',
+            'message' => "{$import->createdCount} created, {$import->updatedCount} updated, {$import->skippedCount} skipped.",
+        ]);
+
+        return back();
+    }
+
+    public function downloadMigrationTemplate()
+    {
+        return Excel::download(
+            new AssetMigrationTemplateExport(),
+            'asset-migration-template.xlsx'
+        );
+    }
+
+    public function migrationImport(Request $request)
+    {
+        ini_set('max_execution_time', 300);
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        $import = new AssetMigrationImport();
+        Excel::import($import, $request->file('file'));
+
+        session()->flash('notif', [
+            'type'    => 'success',
+            'header'  => 'Migration Import Complete',
+            'message' => "{$import->createdCount} assets added, {$import->skippedCount} skipped (duplicates or missing required fields).",
         ]);
 
         return back();

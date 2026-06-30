@@ -227,6 +227,47 @@
         </div>
     </div>
 
+    {{-- 6-Month Trend --}}
+    <div class="card flex flex-col gap-4">
+        <h2 class="text-base font-bold">6-Month Trend</h2>
+        @if(empty($metrics['monthlyTrend']))
+            <p class="text-sm text-gray-400">No trend data available.</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border border-gray-200 border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500">
+                            <th class="border border-gray-200 text-left px-3 py-2">Month</th>
+                            <th class="border border-gray-200 text-right px-3 py-2">Acquired</th>
+                            <th class="border border-gray-200 text-right px-3 py-2">Repairs</th>
+                            <th class="border border-gray-200 text-right px-3 py-2">Repair Cost</th>
+                            <th class="border border-gray-200 text-right px-3 py-2">Disposals</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($metrics['monthlyTrend'] as $month => $row)
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-200 px-3 py-2 font-medium text-gray-700">{{ $month }}</td>
+                                <td class="border border-gray-200 px-3 py-2 text-right {{ $row['acquired'] > 0 ? 'text-teal-600 font-semibold' : 'text-gray-400' }}">
+                                    {{ $row['acquired'] ?: '—' }}
+                                </td>
+                                <td class="border border-gray-200 px-3 py-2 text-right {{ $row['repairs'] > 0 ? 'text-orange-500 font-semibold' : 'text-gray-400' }}">
+                                    {{ $row['repairs'] ?: '—' }}
+                                </td>
+                                <td class="border border-gray-200 px-3 py-2 text-right {{ $row['repairCost'] > 0 ? 'text-orange-500 font-semibold' : 'text-gray-400' }}">
+                                    {{ $row['repairCost'] > 0 ? '₱' . number_format($row['repairCost'], 0) : '—' }}
+                                </td>
+                                <td class="border border-gray-200 px-3 py-2 text-right {{ $row['disposed'] > 0 ? 'text-red-500 font-semibold' : 'text-gray-400' }}">
+                                    {{ $row['disposed'] ?: '—' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
     {{-- AI Insights Panel --}}
     <div class="card flex flex-col gap-4">
         <div class="flex items-start justify-between gap-4 flex-wrap">
@@ -289,6 +330,67 @@
                     </div>
                 </div>
                 <div class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{{ $aiInsights }}</div>
+
+                @if(!empty($insightSnapshot))
+                <div x-data="{ open: false }" class="mt-4 border-t border-teal-100 pt-3">
+                    <button @click="open = !open"
+                        class="flex items-center gap-2 text-xs text-teal-600 font-semibold hover:text-teal-700 transition-colors">
+                        <i class="fa-solid fa-database"></i>
+                        <span x-text="open ? 'Hide data snapshot' : 'View data snapshot used for this analysis'"></span>
+                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="open" x-transition class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Total Assets</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['total'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Issued</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['issued'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Available</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['available'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Disposed</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['disposed'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Utilization</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['utilization'] ?? 0 }}%</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Needs Attention</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['needsAttention'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Near EOL</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['nearEndOfLife'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Overdue Audits</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['overdueAudits'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Flagged Assets</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['assetsWithFlags'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Repairs (YTD)</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $insightSnapshot['repairsThisYear'] ?? '-' }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Repair Cost</p>
+                            <p class="text-sm font-bold text-gray-700">&#8369;{{ number_format($insightSnapshot['repairCostThisYear'] ?? 0, 0) }}</p>
+                        </div>
+                        <div class="bg-white border border-teal-100 rounded-lg px-3 py-2">
+                            <p class="text-xs text-gray-400">Avg Cost</p>
+                            <p class="text-sm font-bold text-gray-700">&#8369;{{ number_format($insightSnapshot['avgCost'] ?? 0, 0) }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         @else
             <div class="rounded-xl bg-gray-50 border border-dashed border-gray-200 p-10 flex flex-col items-center justify-center gap-3 text-center">

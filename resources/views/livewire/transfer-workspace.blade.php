@@ -27,7 +27,7 @@
                     class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                     :class="tab === 'division_head' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
                     @click="tab = 'division_head'">
-                    Division Head Approval
+                    DH Approval
                 </button>
             @endif
             @if($user?->hasPermission('transfer.complete'))
@@ -38,18 +38,10 @@
                     Accounting
                 </button>
             @endif
-            @if(!$user?->hasRole('accounting'))
-            <button type="button"
-                class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
-                :class="tab === 'history' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
-                @click="tab = 'history'">
-                History
-            </button>
-            @endif
         </div>
 
         {{-- Card panels --}}
-        <div class="card rounded-tl-none" x-show="tab === 'request'">
+        <div class="card !rounded-tl-none" x-show="tab === 'request'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Submit Transfer Request</h2>
                 <div class="input-group">
@@ -117,7 +109,7 @@
         </div>
 
         @if(!$user?->hasRole('accounting'))
-        <div class="card" x-show="tab === 'pending'">
+        <div class="card !rounded-tl-none" x-show="tab === 'pending'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Pending Requests</h2>
                 @if($pendingRequests->isEmpty())
@@ -139,7 +131,11 @@
                                 </p>
                                 <p class="text-xs text-gray-400 mt-1">{{ $request->created_at->format('m/d/Y h:i A') }}</p>
                             </div>
-                            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Pending</span>
+                            @if($request->status === 'Rejected')
+                                <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold shrink-0">Rejected</span>
+                            @else
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold shrink-0">Pending</span>
+                            @endif
                         </div>
                     @endforeach
                 @endif
@@ -148,9 +144,9 @@
         @endif
 
         @if($user?->hasPermission('transfer.approve'))
-        <div class="card" x-show="tab === 'division_head'">
+        <div class="card !rounded-tl-none" x-show="tab === 'division_head'">
             <div class="flex flex-col gap-4">
-                <h2 class="text-lg font-bold">Division Head Approval Queue</h2>
+                <h2 class="text-lg font-bold">DH Approval Queue</h2>
                 @if($divisionHeadRequests->isEmpty())
                     <p class="text-sm text-gray-400">No pending transfer requests.</p>
                 @else
@@ -170,10 +166,16 @@
                                 </p>
                                 <p class="text-xs text-gray-400 mt-1">Requested by {{ $request->requested_by_name }} • {{ $request->created_at->format('m/d/Y h:i A') }}</p>
                             </div>
-                            <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
-                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
-                                Approve
-                            </button>
+                            <div class="flex flex-col gap-2 shrink-0">
+                                <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
+                                    class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
+                                    Approve
+                                </button>
+                                <button type="button" wire:click="openConfirm('reject', {{ $request->id }})"
+                                    class="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-bold hover:bg-red-200">
+                                    Reject
+                                </button>
+                            </div>
                         </div>
                     @endforeach
                 @endif
@@ -183,7 +185,7 @@
         @endif
 
         @if($user?->hasPermission('transfer.complete'))
-        <div class="card" x-show="tab === 'accounting'">
+        <div class="card !rounded-tl-none" x-show="tab === 'accounting'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Accounting Transfer Queue</h2>
                 @if($accountingRequests->isEmpty())
@@ -216,44 +218,6 @@
         </div>
         @endif
 
-        @if(!$user?->hasRole('accounting'))
-        <div class="card" x-show="tab === 'history'">
-            <div class="flex flex-col gap-4">
-                <h2 class="text-lg font-bold">Transfer History</h2>
-                @if($approvedRequests->isEmpty())
-                    <p class="text-sm text-gray-400">No approved transfer requests yet.</p>
-                @else
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Asset</th>
-                                    <th>Status</th>
-                                    <th>From</th>
-                                    <th>To</th>
-                                    <th>Requested By</th>
-                                    <th>Approved By</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($approvedRequests as $request)
-                                    <tr>
-                                        <td>{{ $request->asset->ref_id }} - {{ $request->asset->brand }} {{ $request->asset->model }}</td>
-                                        <td>{{ $request->status }}</td>
-                                        <td>{{ $request->asset->assignedEmployee->employee_name ?? '—' }} ({{ $request->asset->assignedEmployee->farm ?? '—' }} - {{ $request->asset->assignedEmployee->department ?? '—' }})</td>
-                                        <td>{{ $request->requested_employee_name }} ({{ $request->requestedEmployee->farm ?? '—' }} - {{ $request->requestedEmployee->department ?? '—' }})</td>
-                                        <td>{{ $request->requested_by_name }}</td>
-                                        <td>{{ $request->approved_by_name ?? '—' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        @endif
 
     </div>{{-- end flex-col --}}
 
@@ -261,21 +225,17 @@
     <div @if(! $showConfirmModal) style="display:none" @endif class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto">
             <h2 class="text-lg font-bold text-gray-800 mb-2">
-                @if($confirmType === 'request')
-                    Submit Transfer Request
-                @elseif($confirmType === 'complete')
-                    Complete Transfer
-                @else
-                    Approve Transfer Request
+                @if($confirmType === 'request') Submit Transfer Request
+                @elseif($confirmType === 'complete') Complete Transfer
+                @elseif($confirmType === 'reject') Reject Transfer Request
+                @else Approve Transfer Request
                 @endif
             </h2>
             <p class="text-sm text-gray-500 mb-6">
-                @if($confirmType === 'request')
-                    Are you sure you want to submit this transfer request?
-                @elseif($confirmType === 'complete')
-                    Are you sure you want to complete this transfer and reassign the asset?
-                @else
-                    Are you sure you want to approve this transfer request?
+                @if($confirmType === 'request') Are you sure you want to submit this transfer request?
+                @elseif($confirmType === 'complete') Are you sure you want to complete this transfer and reassign the asset?
+                @elseif($confirmType === 'reject') Are you sure you want to reject this request? The asset will remain with its current holder.
+                @else Are you sure you want to approve this transfer request?
                 @endif
             </p>
             <div class="flex justify-end gap-3">

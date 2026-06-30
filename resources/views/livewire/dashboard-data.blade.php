@@ -250,66 +250,72 @@
                             <i class="fa-solid fa-user-plus text-teal-400"></i> Add Employee
                         </button>
 
-                        <!-- Import Assets -->
-                        <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data">
+                        {{-- Hidden import forms — triggered from the import-type choice modal --}}
+                        <form id="import-form" action="/assets/import" method="POST" enctype="multipart/form-data" class="hidden"> 
                             @csrf
-                            <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden" required>
-                            <button id="import-button" class="w-full bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                :disabled="!{{ $dashboardUser?->hasPermission('assets.import') ? 'true' : 'false' }}"
-                                @click="{{ $dashboardUser?->hasPermission('assets.import') ? 'document.getElementById(\'import-file\').click()' : 'null' }}"
-                                title="{!! $dashboardUser?->hasPermission('assets.import') ? 'Import Assets' : 'You do not have permission to import assets' !!}">
-                                <i class="fa-solid fa-file-import text-teal-400"></i> Import Assets
-                            </button>
+                            <input type="file" id="import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden">
+                        </form>
+                        <form id="migration-import-form" action="/assets/migration-import" method="POST" enctype="multipart/form-data" class="hidden">
+                            @csrf
+                            <input type="file" id="migration-import-file" name="file" accept=".xlsx,.xls,.csv" class="hidden">
                         </form>
 
-                        <!-- Loading Modal Backdrop -->
-                        <div 
-                                id="import-loading-backdrop"
-                                class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-                        >
-                                <div class="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center gap-4 min-w-[300px]">
-                                    <!-- Spinner -->
-                                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-teal-500"></div>
-                                    
-                                    <!-- Text -->
-                                    <div class="text-center">
-                                        <h3 class="text-lg font-semibold text-gray-800 mb-1">Importing Assets</h3>
-                                        <p class="text-sm text-gray-500">Please wait while we process your file...</p>
-                                    </div>
+                        <!-- Loading backdrop (shared by both import types) -->
+                        <div id="import-loading-backdrop" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                            <div class="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center gap-4 min-w-[300px]">
+                                <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-teal-500"></div>
+                                <div class="text-center">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Importing Assets</h3>
+                                    <p class="text-sm text-gray-500">Please wait while we process your file...</p>
                                 </div>
+                            </div>
                         </div>
 
                         <script>
-                                const importButton = document.getElementById('import-button');
+                            (function() {
+                                const backdrop = document.getElementById('import-loading-backdrop');
+
                                 const importFile = document.getElementById('import-file');
                                 const importForm = document.getElementById('import-form');
-                                const loadingBackdrop = document.getElementById('import-loading-backdrop');
-
-                                if (importButton && importFile && importForm) {
-                                    importButton.addEventListener('click', () => {
-                                        importFile.click();
-                                    });
-
+                                if (importFile && importForm) {
                                     importFile.addEventListener('change', () => {
                                         if (importFile.files.length > 0) {
-                                            loadingBackdrop?.classList.remove('hidden');
+                                            backdrop?.classList.remove('hidden');
                                             importForm.submit();
                                         }
                                     });
+                                }
 
-                                    window.addEventListener('pageshow', (event) => {
-                                        if (event.persisted) {
-                                            loadingBackdrop?.classList.add('hidden');
+                                const migFile = document.getElementById('migration-import-file');
+                                const migForm = document.getElementById('migration-import-form');
+                                if (migFile && migForm) {
+                                    migFile.addEventListener('change', () => {
+                                        if (migFile.files.length > 0) {
+                                            backdrop?.classList.remove('hidden');
+                                            migForm.submit();
                                         }
                                     });
                                 }
+
+                                window.addEventListener('pageshow', (e) => {
+                                    if (e.persisted) backdrop?.classList.add('hidden');
+                                });
+                            })();
                         </script>
 
-                        <!-- Export Assets -->
+                        <!-- Import Assets button → opens choice modal -->
+                        <button class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            :disabled="!{{ $dashboardUser?->hasPermission('assets.import') ? 'true' : 'false' }}"
+                            @click="{{ $dashboardUser?->hasPermission('assets.import') ? 'showModal = true; modalTemplate = \'import-type\'' : 'null' }}"
+                            title="{!! $dashboardUser?->hasPermission('assets.import') ? 'Import Assets' : 'You do not have permission to import assets' !!}">
+                            <i class="fa-solid fa-file-import text-teal-400"></i> Import Assets
+                        </button>
+
+                        <!-- Export Assets button → opens choice modal -->
                         <button
                             class="bg-white rounded-md p-3 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                             :disabled="!{{ $dashboardUser?->hasPermission('assets.export') ? 'true' : 'false' }}"
-                            @click="{{ $dashboardUser?->hasPermission('assets.export') ? 'showModal = true; modalTemplate = \'export-filter\'' : 'null' }}"
+                            @click="{{ $dashboardUser?->hasPermission('assets.export') ? 'showModal = true; modalTemplate = \'export-type\'' : 'null' }}"
                             title="{!! $dashboardUser?->hasPermission('assets.export') ? 'Export Assets' : 'You do not have permission to export assets' !!}">
                             <i class="fa-solid fa-file-export text-teal-400"></i> Export Assets
                         </button>
@@ -460,6 +466,84 @@
                         Confirm
                     </button>
                 </div>
+            </div>
+
+            <!-- Import Type Choice Modal -->
+            <div class="flex flex-col gap-4 w-[22rem]" x-show="modalTemplate === 'import-type'">
+                <h2 class="text-xl font-semibold">Import Assets</h2>
+                <p class="text-sm text-gray-500 -mt-2">Choose how you want to import assets into the system.</p>
+
+                <div class="border border-gray-200 rounded-xl p-4 hover:border-teal-400 hover:bg-teal-50 transition-colors cursor-pointer"
+                     @click="showModal = false; modalTemplate = ''; document.getElementById('import-file').click()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-database text-teal-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">System Import</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Restore from a system export. Reference IDs and all fields preserved exactly.</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 ml-auto shrink-0 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-xl p-4 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                     @click="showModal = false; modalTemplate = ''; document.getElementById('migration-import-file').click()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-file-arrow-up text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Migration Import</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Import from the fill-in migration template. Category names and Reference IDs are handled automatically.</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 ml-auto shrink-0 text-xs"></i>
+                    </div>
+                </div>
+
+                <button type="button" @click="showModal = false; modalTemplate = ''"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-md text-sm font-semibold text-gray-600 hover:bg-gray-100">
+                    Cancel
+                </button>
+            </div>
+
+            <!-- Export Type Choice Modal -->
+            <div class="flex flex-col gap-4 w-[22rem]" x-show="modalTemplate === 'export-type'">
+                <h2 class="text-xl font-semibold">Export / Download</h2>
+                <p class="text-sm text-gray-500 -mt-2">Choose what you want to export or download.</p>
+
+                <div class="border border-gray-200 rounded-xl p-4 hover:border-teal-400 hover:bg-teal-50 transition-colors cursor-pointer"
+                     @click="modalTemplate = 'export-filter'">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-file-export text-teal-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">System Export</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Full export including Reference IDs. Use for backup or migrating to another deployment.</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 ml-auto shrink-0 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-xl p-4 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                     @click="showModal = false; modalTemplate = ''; window.location.href = '/assets/migration-template'">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-file-arrow-down text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Migration Template</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Download a blank fill-in form for entering data from an old system. Has a sample row showing the correct format.</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 ml-auto shrink-0 text-xs"></i>
+                    </div>
+                </div>
+
+                <button type="button" @click="showModal = false; modalTemplate = ''"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-md text-sm font-semibold text-gray-600 hover:bg-gray-100">
+                    Cancel
+                </button>
             </div>
 
             <!-- Export Filter Modal -->

@@ -3,86 +3,86 @@
 namespace App\Exports;
 
 use App\Models\Asset;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AssetExport implements FromCollection, WithHeadings
+/**
+ * Full system backup export — includes all DB fields (ref_id, category code, assigned_id).
+ * Use this for system-to-system migration or creating a restorable backup.
+ * The exported file can be re-imported via System Import.
+ */
+class AssetExport implements
+    FromCollection,
+    WithHeadings,
+    WithStyles,
+    ShouldAutoSize
 {
-    protected $filters;
+    protected array $filters;
 
     public function __construct(array $filters = [])
     {
         $this->filters = $filters;
     }
 
-    /**
-     * Return the collection of data to export
-     */
-    public function collection()
+    public function collection(): Collection
     {
         $query = Asset::where('is_deleted', false);
 
-        // Apply filters
         if (!empty($this->filters['category_type'])) {
             $query->where('category_type', $this->filters['category_type']);
         }
-
         if (!empty($this->filters['category'])) {
             $query->where('category', $this->filters['category']);
         }
-
         if (!empty($this->filters['sub_category'])) {
             $query->where('sub_category', 'like', '%' . $this->filters['sub_category'] . '%');
         }
-
         if (!empty($this->filters['farm'])) {
             $query->where('farm', $this->filters['farm']);
         }
-
         if (!empty($this->filters['department'])) {
             $query->where('department', $this->filters['department']);
         }
 
-        // Age filter (based on acquisition_date)
         if (!empty($this->filters['age_min']) || !empty($this->filters['age_max'])) {
             $query->whereNotNull('acquisition_date');
-
             if (!empty($this->filters['age_min'])) {
-                $maxDate = Carbon::now()->subYears($this->filters['age_min']);
-                $query->where('acquisition_date', '<=', $maxDate);
+                $query->where('acquisition_date', '<=', Carbon::now()->subYears((int) $this->filters['age_min']));
             }
-
             if (!empty($this->filters['age_max'])) {
-                $minDate = Carbon::now()->subYears($this->filters['age_max']);
-                $query->where('acquisition_date', '>=', $minDate);
+                $query->where('acquisition_date', '>=', Carbon::now()->subYears((int) $this->filters['age_max']));
             }
         }
 
-        return $query->select(
-            'ref_id',
-            'category_type',
-            'category',
-            'sub_category',
-            'brand',
-            'model',
-            'status',
-            'condition',
-            'acquisition_date',
-            'item_cost',
-            'depreciated_value',
-            'usable_life',
-            'assigned_name',
-            'assigned_id',
-            'farm',
-            'department',
-            'remarks'
-        )->get();
+        return $query->get()->map(fn ($a) => [
+            $a->ref_id,
+            $a->category_type,
+            $a->category,          // stored code (e.g. 'COMP'), not human name
+            $a->sub_category,
+            $a->brand,
+            $a->model,
+            $a->serial_no,
+            $a->status,
+            $a->condition,
+            $a->acquisition_date?->format('Y-m-d'),
+            $a->item_cost,
+            $a->depreciated_value,
+            $a->usable_life,
+            $a->assigned_name,
+            $a->assigned_id,       // FK — preserved for system restore
+            $a->farm,
+            $a->department,
+            $a->location,
+            $a->remarks,
+        ]);
     }
 
-    /**
-     * Define the column headings
-     */
     public function headings(): array
     {
         return [
@@ -92,6 +92,7 @@ class AssetExport implements FromCollection, WithHeadings
             'Sub Category',
             'Brand',
             'Model',
+            'Serial Number',
             'Status',
             'Condition',
             'Acquisition Date',
@@ -102,7 +103,18 @@ class AssetExport implements FromCollection, WithHeadings
             'Assigned ID',
             'Farm',
             'Department',
-            'Remarks'
+            'Location',
+            'Remarks',
+        ];
+    }
+
+    public function styles(Worksheet $sheet): array
+    {
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => '1A535C']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'CBF0EE']],
+            ],
         ];
     }
 }

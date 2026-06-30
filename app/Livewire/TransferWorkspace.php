@@ -8,13 +8,13 @@ use App\Models\Employee;
 use App\Models\TransferRequest;
 use App\Models\Department;
 use App\Models\History;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 
 class TransferWorkspace extends Component
 {
     public $transferableAssets = [];
     public $pendingRequests;
-    public $approvedRequests;
     public $divisionHeadRequests;
     public $accountingRequests;
     public $departments = [];
@@ -87,25 +87,26 @@ class TransferWorkspace extends Component
 
     private function loadRequests()
     {
-        $user = Auth::user();
+        $user      = Auth::user();
+        $farmScope = fn($q) => $q->when(
+            !$user->is_admin,
+            fn($q) => $q->whereHas('asset', fn($q) => $q->where('farm', $user->farm))
+        );
+
         $this->pendingRequests = TransferRequest::where('requested_by', $user->id)
-            ->whereIn('status', ['DH Approval', 'For Transfer'])
+            ->whereIn('status', ['DH Approval', 'For Transfer', 'Rejected'])
             ->with(['asset.assignedEmployee', 'requestedEmployee'])
             ->latest()
             ->get();
 
-        $this->approvedRequests = TransferRequest::where('requested_by', $user->id)
-            ->where('status', 'Transferred')
-            ->with(['asset.assignedEmployee', 'requestedEmployee', 'approvedByUser'])
-            ->latest()
-            ->get();
-
         $this->divisionHeadRequests = TransferRequest::where('status', 'DH Approval')
+            ->tap($farmScope)
             ->with(['asset.assignedEmployee', 'requestedEmployee', 'requestedByUser'])
             ->latest()
             ->get();
 
         $this->accountingRequests = TransferRequest::where('status', 'For Transfer')
+            ->tap($farmScope)
             ->with(['asset.assignedEmployee', 'requestedEmployee', 'requestedByUser'])
             ->latest()
             ->get();
@@ -139,6 +140,11 @@ class TransferWorkspace extends Component
 
         if ($this->confirmType === 'complete' && $this->confirmId) {
             $this->completeTransfer($this->confirmId);
+            return;
+        }
+
+        if ($this->confirmType === 'reject' && $this->confirmId) {
+            $this->rejectRequest($this->confirmId);
         }
     }
 
@@ -194,6 +200,17 @@ class TransferWorkspace extends Component
         $this->closeConfirm();
         $this->loadTransferableAssets();
         $this->loadRequests();
+
+        $notifPermission = $user?->hasRole('division_head') ? 'transfer.complete' : 'transfer.approve';
+        NotificationService::notifyByPermission(
+            $notifPermission,
+            'transfer',
+            'New Transfer Request',
+            "{$asset?->ref_id} — to {$employee->employee_name} — submitted by {$user->name}",
+            '/transfer-workspace',
+            Auth::id()
+        );
+
         $this->dispatch('notif', type: 'success', header: 'Success', message: 'Transfer request submitted successfully.');
     }
 
@@ -215,12 +232,38 @@ class TransferWorkspace extends Component
             ]);
 
             $request->asset?->update(['status' => 'For Transfer']);
+            NotificationService::notifyByPermission(
+                'transfer.complete',
+                'transfer',
+                'Transfer Ready for Completion',
+                "{$request->asset?->ref_id} approved by Division Head — ready for accounting to complete.",
+                '/transfer-workspace',
+                Auth::id()
+            );
             $this->closeConfirm();
             $this->loadTransferableAssets();
             $this->loadRequests();
             $this->dispatch('notif', type: 'success', header: 'Division Head Approval Complete', message: 'Transfer request has been forwarded to Accounting for completion.');
             return;
         }
+    }
+
+    public function rejectRequest($requestId)
+    {
+        if (!Auth::user()?->hasPermission('transfer.approve')) {
+            $this->dispatch('notif', type: 'failed', header: 'Access Denied', message: 'You do not have permission to reject transfer requests.');
+            return;
+        }
+
+        $request = TransferRequest::with('asset')->findOrFail($requestId);
+
+        $request->update(['status' => 'Rejected']);
+        $request->asset?->update(['status' => 'Issued']);
+
+        $this->closeConfirm();
+        $this->loadTransferableAssets();
+        $this->loadRequests();
+        $this->dispatch('notif', type: 'success', header: 'Request Rejected', message: 'Transfer request has been rejected.');
     }
 
     public function completeTransfer($requestId)

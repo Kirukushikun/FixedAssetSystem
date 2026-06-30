@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 use App\Models\Asset;
+use App\Models\AssetInvestigation;
 use App\Models\AssetRepair;
 use App\Models\Employee;
 use App\Models\History;
@@ -98,6 +99,10 @@ class AssetManagementForm extends Component
     public $repair_cost = '';
     public $repair_notes = '';
     public $latestDisposalRequest;
+    public $activeInvestigation = null;
+    public $investigationNotes = '';
+    public bool $showResolveModal = false;
+    public string $resolveAction = '';
 
     // Service Report
     public $showServiceReportModal = false;
@@ -122,7 +127,7 @@ class AssetManagementForm extends Component
         'acquisition_date' => 'required',
         'item_cost' => 'nullable',
         'depreciated_value' => 'nullable',
-        'usable_life' => 'nullable',
+        'usable_life' => 'nullable|integer|min:1',
 
         'attachment' => 'nullable|file|mimes:pdf|max:5120'
     ];
@@ -258,7 +263,10 @@ class AssetManagementForm extends Component
         $this->audits = $this->targetAsset->audits;
         $this->repairs = $this->targetAsset->repairs;
         $this->latestDisposalRequest = $this->targetAsset->latestDisposalRequest;
-
+        $this->activeInvestigation = AssetInvestigation::where('asset_id', $this->targetAsset->id)
+            ->where('status', 'Investigating')
+            ->latest()
+            ->first();
     }
 
     public function updatedSelectedEmployee($value)
@@ -328,7 +336,7 @@ class AssetManagementForm extends Component
                 'acquisition_date' => $this->acquisition_date,
                 'item_cost' => $this->item_cost,
                 'depreciated_value' => $this->depreciated_value,
-                'usable_life' => $this->usable_life,
+                'usable_life' => $this->usable_life ? (string)(int)$this->usable_life : null,
 
                 'technical_data' => json_encode($this->technicaldata),
 
@@ -424,7 +432,7 @@ class AssetManagementForm extends Component
                 'acquisition_date' => $this->acquisition_date,
                 'item_cost' => $this->item_cost,
                 'depreciated_value' => $this->depreciated_value,
-                'usable_life' => $this->usable_life,
+                'usable_life' => $this->usable_life ? (string)(int)$this->usable_life : null,
 
                 // Save assignment details
                 'assigned_id' => $assignedId,
@@ -460,7 +468,23 @@ class AssetManagementForm extends Component
             }
 
             // Audit Trail
-            $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category); 
+            $this->audit('Updated Asset: ' . $this->targetAsset->ref_id . ' - ' . $this->targetAsset->category_type . ' / ' . $this->targetAsset->category . ' / ' . $this->targetAsset->sub_category);
+
+            // Auto-open investigation when status is set to Lost
+            if ($this->status === 'Lost') {
+                $hasOpen = AssetInvestigation::where('asset_id', $this->targetAsset->id)
+                    ->where('status', 'Investigating')
+                    ->exists();
+
+                if (!$hasOpen) {
+                    AssetInvestigation::create([
+                        'asset_id'           => $this->targetAsset->id,
+                        'status'             => 'Investigating',
+                        'opened_by_user_id'  => Auth::id(),
+                        'opened_by_name'     => Auth::user()?->name,
+                    ]);
+                }
+            }
 
             DB::commit();
 
@@ -649,8 +673,60 @@ class AssetManagementForm extends Component
         $this->noreloadNotif('success', 'Changes Reset', 'All unsaved changes have been discarded.');
     }
     
+    // ── Lost asset investigation ──────────────────────────────────
+
+    public function openResolveModal(string $action): void
+    {
+        $this->resolveAction   = $action;
+        $this->investigationNotes = '';
+        $this->showResolveModal = true;
+    }
+
+    public function closeResolveModal(): void
+    {
+        $this->showResolveModal = false;
+        $this->resolveAction   = '';
+        $this->investigationNotes = '';
+    }
+
+    public function resolveInvestigation(): void
+    {
+        if (!$this->activeInvestigation) return;
+
+        $resolution = $this->resolveAction === 'found' ? 'Found' : 'Written Off';
+        $newStatus  = $this->resolveAction === 'found' ? 'Available' : 'Disposed';
+
+        $this->activeInvestigation->update([
+            'status'              => 'Resolved',
+            'resolution'          => $resolution,
+            'notes'               => $this->investigationNotes ?: null,
+            'resolved_by_user_id' => Auth::id(),
+            'resolved_by_name'    => Auth::user()?->name,
+            'resolved_at'         => now(),
+        ]);
+
+        $this->targetAsset->update(['status' => $newStatus]);
+        $this->status = $newStatus;
+
+        History::create([
+            'asset_id'      => $this->targetAsset->id,
+            'assignee_id'   => $this->targetAsset->assigned_id,
+            'assignee_name' => $this->targetAsset->assigned_name,
+            'status'        => $newStatus,
+            'condition'     => $this->targetAsset->condition,
+            'farm'          => $this->targetAsset->farm,
+            'department'    => $this->targetAsset->department,
+            'location'      => $this->targetAsset->location,
+            'action'        => "Investigation Resolved: {$resolution}",
+        ]);
+
+        $this->activeInvestigation = null;
+        $this->closeResolveModal();
+        $this->noreloadNotif('success', 'Investigation Resolved', "Asset marked as {$resolution}. Status updated to {$newStatus}.");
+    }
+
     public function render()
-    {   
+    {
         return view('livewire.assetmanagement-form');
     }
 

@@ -11,6 +11,7 @@ use App\Models\Flag;
 use App\Models\TransferRequest;
 use App\Services\OpenRouterService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -25,6 +26,7 @@ class ITAnalytics extends Component
     public ?string $insightSavedAt     = null;
     public ?string $insightSavedBy     = null;
     public bool    $insightIsFromToday = false;
+    public array   $insightSnapshot    = [];
 
     public function mount(): void
     {
@@ -35,6 +37,7 @@ class ITAnalytics extends Component
     {
         $this->aiError = '';
         $this->showRegenerateConfirm = false;
+        Cache::forget('analytics_metrics_' . ($this->filterFarm ?: 'all'));
         $this->loadLatestInsight();
     }
 
@@ -68,11 +71,12 @@ class ITAnalytics extends Component
 
     public function clearInsights(): void
     {
-        $this->aiInsights        = '';
-        $this->aiError           = '';
-        $this->insightSavedAt    = null;
-        $this->insightSavedBy    = null;
+        $this->aiInsights         = '';
+        $this->aiError            = '';
+        $this->insightSavedAt     = null;
+        $this->insightSavedBy     = null;
         $this->insightIsFromToday = false;
+        $this->insightSnapshot    = [];
     }
 
     // ── Core generation + save ───────────────────────────────────
@@ -113,16 +117,27 @@ class ITAnalytics extends Component
             $this->insightSavedAt     = $latest->created_at->format('M d, Y g:i A');
             $this->insightSavedBy     = $latest->generated_by_name;
             $this->insightIsFromToday = $latest->created_at->isToday();
+            $this->insightSnapshot    = $latest->metrics_snapshot ?? [];
         } else {
             $this->aiInsights         = '';
             $this->insightSavedAt     = null;
             $this->insightSavedBy     = null;
             $this->insightIsFromToday = false;
+            $this->insightSnapshot    = [];
         }
     }
 
     // ── Metric computation ────────────────────────────────────────
     private function computeMetrics(): array
+    {
+        $cacheKey = 'analytics_metrics_' . ($this->filterFarm ?: 'all');
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () {
+            return $this->fetchMetrics();
+        });
+    }
+
+    private function fetchMetrics(): array
     {
         $farm = $this->filterFarm;
 
@@ -189,11 +204,27 @@ class ITAnalytics extends Component
             ->map(fn($c) => (float) preg_replace('/[^0-9.]/', '', $c ?? '0'))
             ->sum();
 
-        $nearEndOfLife = $base()
+        $highRepairAssets = $repairBase()
+            ->whereYear('date', now()->year)
+            ->with('asset:id,ref_id,brand,model')
+            ->get(['asset_id', 'cost'])
+            ->groupBy('asset_id')
+            ->map(fn($repairs) => [
+                'ref_id' => optional($repairs->first()->asset)->ref_id,
+                'label'  => optional($repairs->first()->asset)->brand . ' ' . optional($repairs->first()->asset)->model,
+                'total'  => $repairs->sum(fn($r) => (float) preg_replace('/[^0-9.]/', '', $r->cost ?? '0')),
+                'count'  => $repairs->count(),
+            ])
+            ->sortByDesc('total')
+            ->take(5)
+            ->values()
+            ->toArray();
+
+        $nearEndOfLifeCollection = $base()
             ->whereNotNull('acquisition_date')
             ->whereNotNull('usable_life')
             ->where('usable_life', '!=', '')
-            ->get(['acquisition_date', 'usable_life'])
+            ->get(['ref_id', 'brand', 'model', 'acquisition_date', 'usable_life'])
             ->filter(function ($asset) {
                 $years = (int) $asset->usable_life;
                 if (!$years || !$asset->acquisition_date) return false;
@@ -201,9 +232,25 @@ class ITAnalytics extends Component
                 $diff = now()->diffInMonths($eol, false);
                 return $diff >= 0 && $diff <= 12;
             })
-            ->count();
+            ->map(function ($asset) {
+                $eol   = $asset->acquisition_date->copy()->addYears((int) $asset->usable_life);
+                $months = (int) now()->diffInMonths($eol, false);
+                return ['ref_id' => $asset->ref_id, 'label' => "{$asset->brand} {$asset->model}", 'months' => $months];
+            })
+            ->values();
 
-        $needsAttention = $base()->whereIn('condition', ['Defective', 'Replace'])->count();
+        $nearEndOfLife       = $nearEndOfLifeCollection->count();
+        $nearEndOfLifeAssets = $nearEndOfLifeCollection->take(10)->toArray();
+
+        $needsAttentionCollection = $base()
+            ->whereIn('condition', ['Defective', 'Replace'])
+            ->get(['ref_id', 'brand', 'model', 'condition']);
+
+        $needsAttention       = $needsAttentionCollection->count();
+        $needsAttentionAssets = $needsAttentionCollection->take(10)
+            ->map(fn($a) => ['ref_id' => $a->ref_id, 'label' => "{$a->brand} {$a->model}", 'condition' => $a->condition])
+            ->values()
+            ->toArray();
 
         $flaggedIds      = Flag::pluck('target_id')->unique()->toArray();
         $assetsWithFlags = $flaggedIds
@@ -229,13 +276,48 @@ class ITAnalytics extends Component
         ->whereIn('status', ['DH Approval', 'For Transfer'])
         ->count();
 
+        // Month-over-month trend for last 6 months
+        $monthlyTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $label = $month->format('M Y');
+
+            $acquired = $base()
+                ->whereYear('acquisition_date', $month->year)
+                ->whereMonth('acquisition_date', $month->month)
+                ->count();
+
+            $repairs = $repairBase()
+                ->whereYear('date', $month->year)
+                ->whereMonth('date', $month->month)
+                ->count();
+
+            $repairCost = $repairBase()
+                ->whereYear('date', $month->year)
+                ->whereMonth('date', $month->month)
+                ->pluck('cost')
+                ->map(fn($c) => (float) preg_replace('/[^0-9.]/', '', $c ?? '0'))
+                ->sum();
+
+            $disposed = DisposalRequest::where('status', 'Disposed')
+                ->whereYear('disposed_at', $month->year)
+                ->whereMonth('disposed_at', $month->month)
+                ->when($farm, fn($q) => $q->whereHas('asset', fn($q) => $q->where('farm', $farm)))
+                ->count();
+
+            $monthlyTrend[$label] = compact('acquired', 'repairs', 'repairCost', 'disposed');
+        }
+
         return compact(
             'total', 'issued', 'available', 'disposed', 'utilization',
             'conditions', 'statuses', 'byFarm', 'byDepartment',
             'avgCost', 'totalCost',
             'repairsThisYear', 'repairCostThisYear',
-            'nearEndOfLife', 'needsAttention', 'assetsWithFlags',
-            'overdueAudits', 'activeDisposals', 'activeTransfers'
+            'nearEndOfLife', 'nearEndOfLifeAssets',
+            'needsAttention', 'needsAttentionAssets',
+            'highRepairAssets',
+            'assetsWithFlags', 'overdueAudits', 'activeDisposals', 'activeTransfers',
+            'monthlyTrend'
         );
     }
 
@@ -274,6 +356,18 @@ Keep your total response under 380 words. Be direct and practical — avoid padd
         $farmStr = collect($m['byFarm'])->map(fn($v, $k) => "{$k}: {$v}")->implode(' | ');
         $deptStr = collect($m['byDepartment'])->take(5)->map(fn($v, $k) => "{$k}: {$v}")->implode(' | ');
 
+        $eolList = collect($m['nearEndOfLifeAssets'])
+            ->map(fn($a) => "{$a['ref_id']} ({$a['label']}, {$a['months']}mo left)")
+            ->implode(', ');
+
+        $defectList = collect($m['needsAttentionAssets'])
+            ->map(fn($a) => "{$a['ref_id']} ({$a['label']}, {$a['condition']})")
+            ->implode(', ');
+
+        $repairList = collect($m['highRepairAssets'])
+            ->map(fn($a) => "{$a['ref_id']} ({$a['label']}, {$a['count']} repairs, ₱" . number_format($a['total'], 0) . ")")
+            ->implode(', ');
+
         return "FIXED ASSET REPORT — " . now()->format('F d, Y') . " | Scope: {$scope}
 
 OVERVIEW
@@ -288,14 +382,22 @@ TOP DEPARTMENTS: {$deptStr}
 
 MAINTENANCE — Year to Date
 Repair Incidents: {$m['repairsThisYear']} | Total Repair Cost: ₱" . number_format($m['repairCostThisYear'], 2) . "
+" . ($repairList ? "Highest Repair Cost Assets: {$repairList}" : '') . "
 
 RISK INDICATORS
 Assets Defective or Needing Replacement: {$m['needsAttention']}
+" . ($defectList ? "Affected: {$defectList}" : '') . "
 Near End of Life (within 12 months): {$m['nearEndOfLife']}
+" . ($eolList ? "Affected: {$eolList}" : '') . "
 Assets Linked to Flagged Employees: {$m['assetsWithFlags']}
 Overdue Audits: {$m['overdueAudits']}
 Active Disposal Requests: {$m['activeDisposals']}
-Active Transfer Requests: {$m['activeTransfers']}";
+Active Transfer Requests: {$m['activeTransfers']}
+
+6-MONTH TREND (Month | Acquired | Repairs | Repair Cost | Disposals)
+" . collect($m['monthlyTrend'])->map(
+    fn($v, $k) => "{$k}: acquired={$v['acquired']}, repairs={$v['repairs']}, repair_cost=₱" . number_format($v['repairCost'], 0) . ", disposals={$v['disposed']}"
+)->implode("\n");
     }
 
     public function render()

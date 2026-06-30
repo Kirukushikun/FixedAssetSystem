@@ -462,6 +462,46 @@
                     @endif
                 </div>
 
+                @if($activeInvestigation || $status === 'Lost')
+                <div class="input-group">
+                    <label class="block mb-2 font-medium flex items-center gap-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        Lost Asset Investigation
+                    </label>
+                    @if($activeInvestigation)
+                        <div class="rounded-xl border border-red-200 bg-red-50 p-4 flex flex-col gap-3">
+                            <div class="flex items-start justify-between gap-4 flex-wrap">
+                                <div>
+                                    <p class="text-sm font-semibold text-red-700">Status: Under Investigation</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">
+                                        Opened by {{ $activeInvestigation->opened_by_name ?? '—' }}
+                                        on {{ $activeInvestigation->created_at->format('M d, Y h:i A') }}
+                                    </p>
+                                    @if($activeInvestigation->notes)
+                                        <p class="text-xs text-gray-600 mt-1 italic">{{ $activeInvestigation->notes }}</p>
+                                    @endif
+                                </div>
+                                @php($invUser = Auth::user())
+                                @if($invUser?->hasPermission('assets.edit'))
+                                <div class="flex gap-2 shrink-0">
+                                    <button type="button" wire:click="openResolveModal('found')"
+                                        class="px-3 py-1.5 bg-teal-500 text-white text-xs font-bold rounded-lg hover:bg-teal-600">
+                                        Mark as Found
+                                    </button>
+                                    <button type="button" wire:click="openResolveModal('written_off')"
+                                        class="px-3 py-1.5 bg-gray-700 text-white text-xs font-bold rounded-lg hover:bg-gray-800">
+                                        Write Off
+                                    </button>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-xs text-gray-400">Asset is marked as Lost. Save to automatically open an investigation record.</p>
+                    @endif
+                </div>
+                @endif
+
                 <div class="input-group">
                     <label class="block mb-2 font-medium">Disposal Record:</label>
                     @if($latestDisposalRequest)
@@ -806,6 +846,56 @@
                 </div>
             @endif
 
+        </div>
+    </div>
+@endif
+
+{{-- Resolve Investigation Modal --}}
+@if($showResolveModal)
+    <div class="fixed inset-0 bg-black/40 z-[70]" wire:click="closeResolveModal"></div>
+    <div class="fixed inset-0 z-[80] flex items-center justify-center px-4 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pointer-events-auto flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                    {{ $resolveAction === 'found' ? 'bg-teal-100' : 'bg-gray-700' }}">
+                    <i class="fa-solid {{ $resolveAction === 'found' ? 'fa-magnifying-glass text-teal-600' : 'fa-ban text-white' }} text-sm"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">
+                        {{ $resolveAction === 'found' ? 'Mark Asset as Found' : 'Write Off Asset' }}
+                    </h2>
+                    <p class="text-xs text-gray-400">
+                        {{ $resolveAction === 'found'
+                            ? 'Asset status will be reset to Available.'
+                            : 'Asset will be permanently marked as Disposed.' }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-semibold text-gray-700">Resolution Notes <span class="text-gray-400 font-normal">(optional)</span></label>
+                <textarea wire:model="investigationNotes" rows="3"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                    placeholder="Add any notes about the resolution..."></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" wire:click="closeResolveModal"
+                    class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="button"
+                    wire:click="resolveInvestigation"
+                    wire:loading.attr="disabled"
+                    wire:target="resolveInvestigation"
+                    class="px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-60
+                        {{ $resolveAction === 'found' ? 'bg-teal-500 hover:bg-teal-600' : 'bg-gray-700 hover:bg-gray-800' }}">
+                    <span wire:loading.remove wire:target="resolveInvestigation">
+                        {{ $resolveAction === 'found' ? 'Confirm Found' : 'Confirm Write-Off' }}
+                    </span>
+                    <span wire:loading wire:target="resolveInvestigation">
+                        <i class="fa-solid fa-spinner fa-spin mr-1"></i>Saving...
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 @endif

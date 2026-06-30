@@ -23,7 +23,7 @@
                     class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                     :class="tab === 'request' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
                     @click="tab = 'request'; $wire.setTab('request')">
-                    Farm Request
+                    Disposal Request
                 </button>
             @endif
             @if($user?->hasPermission('disposal.approve'))
@@ -31,7 +31,7 @@
                     class="px-5 py-2 font-medium rounded-t-lg border -mb-px z-10"
                     :class="tab === 'division_head' ? 'bg-white text-gray-800 border-gray-200 border-b-white' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'"
                     @click="tab = 'division_head'; $wire.setTab('division_head')">
-                    Division Head Approval
+                    DH Approval
                 </button>
             @endif
             @if($user?->hasPermission('disposal.vp_approve'))
@@ -60,7 +60,7 @@
 
         {{-- Farm Request --}}
         @if($user?->hasPermission('disposal.request'))
-        <div class="card rounded-tl-none" x-show="tab === 'request'">
+        <div class="card !rounded-tl-none" x-show="tab === 'request'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Submit Disposal Request</h2>
 
@@ -134,9 +134,9 @@
 
         {{-- Division Head --}}
         @if($user?->hasPermission('disposal.approve'))
-        <div class="card" x-show="tab === 'division_head'">
+        <div class="card !rounded-tl-none" x-show="tab === 'division_head'">
             <div class="flex flex-col gap-4">
-                <h2 class="text-lg font-bold">Division Head Approval Queue</h2>
+                <h2 class="text-lg font-bold">DH Approval Queue</h2>
                 @if($divisionHeadRequests->isEmpty())
                     <p class="text-sm text-gray-400">No pending disposal requests.</p>
                 @else
@@ -158,10 +158,16 @@
                                     </a>
                                 @endif
                             </div>
-                            <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
-                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600 shrink-0">
-                                Approve
-                            </button>
+                            <div class="flex flex-col gap-2 shrink-0">
+                                <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
+                                    class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
+                                    Approve
+                                </button>
+                                <button type="button" wire:click="openConfirm('reject', {{ $request->id }})"
+                                    class="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-bold hover:bg-red-200">
+                                    Reject
+                                </button>
+                            </div>
                         </div>
                     @endforeach
                 @endif
@@ -171,7 +177,7 @@
 
         {{-- VP Approval --}}
         @if($user?->hasPermission('disposal.vp_approve'))
-        <div class="card" x-show="tab === 'approval'">
+        <div class="card !rounded-tl-none" x-show="tab === 'approval'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">VP Approval Queue</h2>
                 @if($vpRequests->isEmpty())
@@ -195,10 +201,16 @@
                                     </a>
                                 @endif
                             </div>
-                            <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
-                                class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600 shrink-0">
-                                Approve
-                            </button>
+                            <div class="flex flex-col gap-2 shrink-0">
+                                <button type="button" wire:click="openConfirm('approve', {{ $request->id }})"
+                                    class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600">
+                                    Approve
+                                </button>
+                                <button type="button" wire:click="openConfirm('reject', {{ $request->id }})"
+                                    class="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-bold hover:bg-red-200">
+                                    Reject
+                                </button>
+                            </div>
                         </div>
                     @endforeach
                 @endif
@@ -208,15 +220,37 @@
 
         {{-- Accounting --}}
         @if($user?->hasPermission('disposal.dispose'))
-        <div class="card" x-show="tab === 'accounting'">
+        <div class="card !rounded-tl-none" x-show="tab === 'accounting'">
             <div class="flex flex-col gap-4">
-                <h2 class="text-lg font-bold">Accounting Disposal Queue</h2>
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <h2 class="text-lg font-bold">Accounting Disposal Queue</h2>
+                    @if(!$accountingRequests->isEmpty())
+                        <button
+                            wire:click="openConfirm('bulk_dispose')"
+                            @disabled(empty($selectedDisposals))
+                            class="px-4 py-2 text-sm font-bold rounded-lg transition-colors
+                                {{ !empty($selectedDisposals)
+                                    ? 'bg-red-500 text-white hover:bg-red-600'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}">
+                            Dispose Selected
+                            @if(!empty($selectedDisposals))
+                                ({{ count($selectedDisposals) }})
+                            @endif
+                        </button>
+                    @endif
+                </div>
                 @if($accountingRequests->isEmpty())
                     <p class="text-sm text-gray-400">No VP-approved assets waiting for disposal tagging.</p>
                 @else
                     <table class="w-full border border-gray-300 border-collapse text-sm">
                         <thead>
                             <tr class="bg-gray-50 text-gray-500">
+                                <th class="border border-gray-300 px-2 py-2 w-8">
+                                    <input type="checkbox"
+                                        wire:model.live="selectAllDisposals"
+                                        class="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-400"
+                                        title="Select all">
+                                </th>
                                 <th class="border border-gray-300 text-left px-2 py-2">Asset</th>
                                 <th class="border border-gray-300 text-left px-2 py-2">Category</th>
                                 <th class="border border-gray-300 text-left px-2 py-2">Reason</th>
@@ -228,7 +262,13 @@
                         <tbody>
                             @foreach($accountingRequests as $request)
                                 @php($vpApproved = !empty($request->vp_approved_by_name))
-                                <tr>
+                                <tr class="{{ in_array((string)$request->id, $selectedDisposals) ? 'bg-red-50' : '' }}">
+                                    <td class="border border-gray-300 px-2 py-2 text-center">
+                                        <input type="checkbox"
+                                            wire:model.live="selectedDisposals"
+                                            value="{{ $request->id }}"
+                                            class="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-400">
+                                    </td>
                                     <td class="border border-gray-300 px-2 py-2 font-mono text-xs">{{ $request->asset->ref_id }}</td>
                                     <td class="border border-gray-300 px-2 py-2">{{ $request->asset->sub_category }}</td>
                                     <td class="border border-gray-300 px-2 py-2">{{ $request->reason }}</td>
@@ -262,7 +302,7 @@
         @endif
 
         {{-- History --}}
-        <div class="card" x-show="tab === 'history'">
+        <div class="card !rounded-tl-none" x-show="tab === 'history'">
             <div class="flex flex-col gap-4">
                 <h2 class="text-lg font-bold">Disposal History</h2>
                 @if($history->isEmpty())
@@ -312,6 +352,8 @@
                 <h2 class="text-lg font-bold text-gray-800 mb-2">
                     @if($confirmType === 'request') Submit Disposal Request
                     @elseif($confirmType === 'dispose') Mark Asset as Disposed
+                    @elseif($confirmType === 'bulk_dispose') Bulk Dispose {{ count($selectedDisposals) }} Asset(s)
+                    @elseif($confirmType === 'reject') Reject Disposal Request
                     @else Approve Disposal Request
                     @endif
                 </h2>
@@ -319,6 +361,8 @@
                 <p class="text-sm text-gray-500 mb-6">
                     @if($confirmType === 'request') Are you sure you want to submit this asset for disposal approval?
                     @elseif($confirmType === 'dispose') This will permanently mark the asset as Disposed. This cannot be undone.
+                    @elseif($confirmType === 'bulk_dispose') This will permanently mark {{ count($selectedDisposals) }} selected asset(s) as Disposed. This cannot be undone.
+                    @elseif($confirmType === 'reject') Are you sure you want to reject this request? The asset status will be reset to Available.
                     @else Are you sure you want to approve this disposal request?
                     @endif
                 </p>

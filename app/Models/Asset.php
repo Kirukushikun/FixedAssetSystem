@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\History;
 use App\Models\AssetRepair;
 use App\Models\AssetSmeReview;
+use App\Models\AssetInvestigation;
 use App\Models\DisposalRequest;
 
 class Asset extends Model
@@ -150,5 +151,10 @@ class Asset extends Model
     public function pendingTransferRequest()
     {
         return $this->hasOne(TransferRequest::class)->where('status', 'pending')->latestOfMany();
+    }
+
+    public function investigation()
+    {
+        return $this->hasOne(AssetInvestigation::class)->where('status', 'Investigating')->latestOfMany();
     }
 }

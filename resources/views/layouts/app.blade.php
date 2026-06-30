@@ -167,31 +167,37 @@
                     @endswitch
                 </div>
 
-                <div class="page-title">
-                    @if(request()->is('dashboard*'))
-                        Dashboard
-                    @elseif(request()->is('assetmanagement*'))
-                        Asset Management
-                    @elseif(request()->is('employees*'))
-                        Employees
-                    @elseif(request()->is('systemrecords*'))
-                        System Records
-                    @elseif(request()->is('settings*'))
-                        Settings
-                    @elseif(request()->is('sme-workspace*'))
-                        SME Workspace
-                    @elseif(request()->is('disposal-workspace*'))
-                        Disposal Workspace
-                    @elseif(request()->is('transfer-workspace*'))
-                        Transfer Workspace
-                    @elseif(request()->is('it-analytics*'))
-                        Analytics
-                    @endif
+                <div class="flex items-center gap-2">
+                    <div class="page-title">
+                        @if(request()->is('dashboard*'))
+                            Dashboard
+                        @elseif(request()->is('assetmanagement*'))
+                            Asset Management
+                        @elseif(request()->is('employees*'))
+                            Employees
+                        @elseif(request()->is('systemrecords*'))
+                            System Records
+                        @elseif(request()->is('settings*'))
+                            Settings
+                        @elseif(request()->is('sme-workspace*'))
+                            SME Workspace
+                        @elseif(request()->is('disposal-workspace*'))
+                            Disposal Workspace
+                        @elseif(request()->is('transfer-workspace*'))
+                            Transfer Workspace
+                        @elseif(request()->is('it-analytics*'))
+                            Analytics
+                        @endif
+                    </div>
+                    @include('partials.page-help-content')
                 </div>
             </div>
 
-            <div class="user-info">
-                Hi, <span>{{ Auth::user()->name }}</span>
+            <div class="flex items-center gap-3">
+                @livewire('notification-bell')
+                <div class="user-info">
+                    Hi, <span>{{ Auth::user()->name }}</span>
+                </div>
             </div>
         </header>
 
