@@ -39,6 +39,15 @@
                Trash
           </button>
           @endif
+
+          @if($sysUser?->hasPermission('system.backup'))
+          <button data-tab="datamgmt"
+               class="tab-btn px-5 py-2 font-medium rounded-t-lg
+               bg-gray-100 text-gray-600 hover:bg-gray-200
+               border border-transparent">
+               Data Management
+          </button>
+          @endif
      </div>
 
      <style>
@@ -92,6 +101,13 @@
                @if($sysUser?->hasPermission('assets.delete') || $sysUser?->hasPermission('assets.restore'))
                <div class="tab-content flex-1 flex flex-col min-h-0 hidden" id="trash">
                     <livewire:trash />
+               </div>
+               @endif
+
+               <!-- DATA MANAGEMENT -->
+               @if($sysUser?->hasPermission('system.backup'))
+               <div class="tab-content flex-1 flex flex-col min-h-0 hidden" id="datamgmt">
+                    <livewire:data-management />
                </div>
                @endif
           </div>
