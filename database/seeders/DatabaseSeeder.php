@@ -48,283 +48,169 @@ class DatabaseSeeder extends Seeder
 
         $this->call(LocalRoleAccountSeeder::class);
 
-        $categories = [
-            'IT' => [
-                'itequipment' => [
-                    'Desktop', 'Laptop', 'Router', 'Switch',
-                    'Firewall', 'Server', 'Monitor', 'Keyboard'
-                ],
-
-                'computerequip' => [
-                    'Equipment'
-                ],
-            ],
-            'NON-IT' => [
-                'itequipment' => [
-                    'Printer', 'Photocopy Machine', 'Digital Camera', 'Scanner',
-                    'Projector', 'CCTV Camera'
-                ],
-                'officefurniture' => [
-                    'Table', 'Office Chair', 'Office Table', 'Conference Table',
-                    'Monoblock Chair', 'Filing Cabinet', 'Bookshelf', 'Whiteboard'
-                ],
-                'appliances' => [
-                    'Aircon', 'Refrigerator', 'Washing Machine', 'Microwave Oven',
-                    'Water Dispenser', 'Wall Fan', 'Ceiling Fan', 'Rice Cooker'
-                ],
-                'audioequipment' => [
-                    'Amplifier', 'Speaker', 'Microphone', 'Mixer Console',
-                    'Headset', 'PA System'
-                ],
-                'tools' => [
-                    'Drill', 'Grinder', 'Saw', 'Sander', 'Pipe Wrench',
-                    'Hammer', 'Screwdriver', 'Pliers', 'Measuring Tape'
-                ],
-                'kitchenequipment' => [
-                    'Stove', 'Oven', 'Mixer', 'Toaster', 'Blender',
-                    'Fryer', 'Rice Cooker', 'Steamer'
-                ],
-                
-                'landimprovement' => [
-                    'Land Improvements'
-                ],
-
-                'building' => [
-                    'New Building'
-                ],
-
-                'feedmillplant' => [
-                    'Plant', 'Equipment', 'Tools'
-                ],
-
-                'biogasequip' => [
-                    'Equipment', 'Tools'
-                ],
-
-                'swinehousing' => [
-                    'New Building'
-                ],
-
-                'poultryhousing' => [
-                    'New Building'
-                ],
-
-                'deliveryequip' => [
-                    'Vehicles'
-                ],
-
-                'transportequip' => [
-                    'Vehicles'
-                ],
-
-                'furniturefixtures' => [
-                    'Fixture & Fixtures',
-                ],
-
-                'communicationequip' => [
-                    'Equipment'
-                ],
-
-                'softwareapp' => [
-                    'Software and Apps'
-                ],
-
-                'farmtools' => [
-                    'Tools'
-                ],
-            ],
-        ];
-
-        $brands = ['Dell', 'HP', 'Canon', 'Nikon', 'Samsung', 'LG', 'Asus', 'Acer', 'Lenovo', 'Sony'];
-        $models = ['Inspiron', 'Pavilion', 'EOS', 'Galaxy', 'ThinkPad', 'VivoBook', 'IdeaPad', 'ProBook'];
-        $conditions = ['Good', 'Defective', 'Repair', 'Replace'];
-        $statuses = ['Available', 'Issued', 'Transferred', 'For Disposal', 'Disposed', 'Lost'];
-        $farms = ['BFC', 'BDL', 'PFC', 'RH', 'BBGC', 'HATCHERY'];
-
-        $counter = 1;
-        $year = date('Y');
-        $totalInserted = 0;
-
-        $this->command->info('Assets seeded successfully! Total assets: ' . ($counter - 1));
-
-
         $data = [
+            // ── IT ──────────────────────────────────────────────────────────────
             'IT Equipment' => [
-                'code' => 'itequipment', 
+                'code' => 'itequipment',
                 'icon' => 'desktop',
                 'subcategories' => [
-                    ['name' => 'Desktop', 'category_type' => 'IT'],
-                    ['name' => 'Laptop', 'category_type' => 'IT'],
-                    ['name' => 'Router', 'category_type' => 'IT'],
-                    ['name' => 'Printer', 'category_type' => 'NON-IT'],
-                    ['name' => 'Photocopy Machine', 'category_type' => 'NON-IT'],
-                    ['name' => 'Digital Camera', 'category_type' => 'NON-IT'],
+                    ['name' => 'Desktop',           'category_type' => 'IT'],
+                    ['name' => 'Laptop',            'category_type' => 'IT'],
+                    ['name' => 'Server',            'category_type' => 'IT'],
+                    ['name' => 'Tablet',            'category_type' => 'IT'],
+                    ['name' => 'All-in-One PC',     'category_type' => 'IT'],
+                    ['name' => 'Router',            'category_type' => 'IT'],
+                    ['name' => 'Switch',            'category_type' => 'IT'],
+                    ['name' => 'Firewall',          'category_type' => 'IT'],
+                    ['name' => 'Access Point',      'category_type' => 'IT'],
+                    ['name' => 'CCTV Camera',       'category_type' => 'IT'],
+                    ['name' => 'Monitor',           'category_type' => 'IT'],
+                    ['name' => 'Photocopier',       'category_type' => 'IT'],
+                    ['name' => 'Scanner',           'category_type' => 'IT'],
+                    ['name' => 'Printer',           'category_type' => 'IT'],
+                    ['name' => 'UPS',               'category_type' => 'IT'],
+                    ['name' => 'Biometric Devices', 'category_type' => 'IT'],
+                ],
+            ],
+            'Software & Apps' => [
+                'code' => 'software',
+                'icon' => 'folder',
+                'subcategories' => [
+                    ['name' => 'Software License', 'category_type' => 'IT'],
+                    ['name' => 'Subscription',     'category_type' => 'IT'],
+                    ['name' => 'Application',      'category_type' => 'IT'],
+                ],
+            ],
+
+            // ── NON-IT ──────────────────────────────────────────────────────────
+            'Communication Devices' => [
+                'code' => 'commdevices',
+                'icon' => 'phone',
+                'subcategories' => [
+                    ['name' => 'Telephone',    'category_type' => 'NON-IT'],
+                    ['name' => 'Mobile Phones','category_type' => 'NON-IT'],
+                    ['name' => 'PABX',         'category_type' => 'NON-IT'],
+                    ['name' => 'Two-way Radio','category_type' => 'NON-IT'],
+                    ['name' => 'Intercom',     'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Audio Visual' => [
+                'code' => 'audiovisual',
+                'icon' => 'speaker',
+                'subcategories' => [
+                    ['name' => 'Television',    'category_type' => 'NON-IT'],
+                    ['name' => 'Projector',     'category_type' => 'NON-IT'],
+                    ['name' => 'Speaker System','category_type' => 'NON-IT'],
+                    ['name' => 'Amplifier',     'category_type' => 'NON-IT'],
+                    ['name' => 'Microphone',    'category_type' => 'NON-IT'],
+                    ['name' => 'Mixer Console', 'category_type' => 'NON-IT'],
+                    ['name' => 'PA System',     'category_type' => 'NON-IT'],
                 ],
             ],
             'Office Furniture' => [
-                'code' => 'officefurniture', 
+                'code' => 'officefurniture',
                 'icon' => 'furniture',
                 'subcategories' => [
-                    ['name' => 'Table', 'category_type' => 'NON-IT'],
-                    ['name' => 'Office Chair', 'category_type' => 'NON-IT'],
-                    ['name' => 'Office Table', 'category_type' => 'NON-IT'],
+                    ['name' => 'Desk',             'category_type' => 'NON-IT'],
+                    ['name' => 'Chair',            'category_type' => 'NON-IT'],
                     ['name' => 'Conference Table', 'category_type' => 'NON-IT'],
-                    ['name' => 'Monoblock Chair', 'category_type' => 'NON-IT'],
+                    ['name' => 'Filing Cabinet',   'category_type' => 'NON-IT'],
+                    ['name' => 'Bookshelf',        'category_type' => 'NON-IT'],
+                    ['name' => 'Whiteboard',       'category_type' => 'NON-IT'],
+                    ['name' => 'Partition',        'category_type' => 'NON-IT'],
                 ],
             ],
             'Appliances' => [
                 'code' => 'appliances',
                 'icon' => 'appliances',
                 'subcategories' => [
-                    ['name' => 'Aircon', 'category_type' => 'NON-IT'],
-                    ['name' => 'Refrigerator', 'category_type' => 'NON-IT'],
+                    ['name' => 'Air Conditioner', 'category_type' => 'NON-IT'],
+                    ['name' => 'Refrigerator',    'category_type' => 'NON-IT'],
                     ['name' => 'Water Dispenser', 'category_type' => 'NON-IT'],
                     ['name' => 'Washing Machine', 'category_type' => 'NON-IT'],
-                    ['name' => 'Wall Fan', 'category_type' => 'NON-IT'],
-                ],
-            ],
-            'Audio Equipment' => [
-                'code' => 'audioequipment',
-                'icon' => 'speaker',
-                'subcategories' => [
-                    ['name' => 'Amplifier', 'category_type' => 'NON-IT'],
-                    ['name' => 'Mixer', 'category_type' => 'NON-IT'],
-                    ['name' => 'Speaker', 'category_type' => 'NON-IT'],
-                ],
-            ],
-            'Tools & Misc' => [
-                'code' => 'tools',
-                'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Helmet', 'category_type' => 'NON-IT'],
-                    ['name' => 'Radio', 'category_type' => 'NON-IT'],
-                    ['name' => 'Thermistor Temperature', 'category_type' => 'NON-IT'],
-                    ['name' => 'Pipe Wrench', 'category_type' => 'NON-IT'],
-                    ['name' => 'Pliers', 'category_type' => 'NON-IT'],
-                    ['name' => 'Machine', 'category_type' => 'NON-IT'],
+                    ['name' => 'Electric Fan',    'category_type' => 'NON-IT'],
+                    ['name' => 'Microwave',       'category_type' => 'NON-IT'],
                 ],
             ],
             'Kitchen Equipment' => [
-                'code' => 'kitchenequipment',
+                'code' => 'kitchen',
                 'icon' => 'kitchen',
                 'subcategories' => [
+                    ['name' => 'Stove',       'category_type' => 'NON-IT'],
+                    ['name' => 'Rice Cooker', 'category_type' => 'NON-IT'],
+                    ['name' => 'Oven',        'category_type' => 'NON-IT'],
+                    ['name' => 'Blender',     'category_type' => 'NON-IT'],
+                    ['name' => 'Steamer',     'category_type' => 'NON-IT'],
                     ['name' => 'Cooking Pot', 'category_type' => 'NON-IT'],
-                    ['name' => 'Repair Chiller', 'category_type' => 'NON-IT'],
                 ],
             ],
-
-            'Land Improvements' => [
-                'code' => 'landimprovement',
+            'Vehicles' => [
+                'code' => 'vehicles',
+                'icon' => 'vehicle',
+                'subcategories' => [
+                    ['name' => 'Motorcycle',      'category_type' => 'NON-IT'],
+                    ['name' => 'Service Vehicle', 'category_type' => 'NON-IT'],
+                    ['name' => 'Delivery Truck',  'category_type' => 'NON-IT'],
+                    ['name' => 'Utility Vehicle', 'category_type' => 'NON-IT'],
+                    ['name' => 'Forklift',        'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Machinery & Equipment' => [
+                'code' => 'machinery',
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Generator',        'category_type' => 'NON-IT'],
+                    ['name' => 'Air Compressor',   'category_type' => 'NON-IT'],
+                    ['name' => 'Water Pump',       'category_type' => 'NON-IT'],
+                    ['name' => 'Welding Machine',  'category_type' => 'NON-IT'],
+                    ['name' => 'Feedmill Equipment','category_type' => 'NON-IT'],
+                    ['name' => 'Biogas Equipment', 'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Farm Equipment' => [
+                'code' => 'farmequip',
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Tractor',              'category_type' => 'NON-IT'],
+                    ['name' => 'Sprayer',              'category_type' => 'NON-IT'],
+                    ['name' => 'Irrigation Equipment', 'category_type' => 'NON-IT'],
+                    ['name' => 'Weighing Scale',       'category_type' => 'NON-IT'],
+                    ['name' => 'Incubator',            'category_type' => 'NON-IT'],
+                ],
+            ],
+            'Tools & Safety' => [
+                'code' => 'tools',
+                'icon' => 'tools',
+                'subcategories' => [
+                    ['name' => 'Hand Tools',           'category_type' => 'NON-IT'],
+                    ['name' => 'Power Tools',          'category_type' => 'NON-IT'],
+                    ['name' => 'Safety Equipment',     'category_type' => 'NON-IT'],
+                    ['name' => 'Measuring Instruments','category_type' => 'NON-IT'],
+                ],
+            ],
+            'Land & Improvements' => [
+                'code' => 'land',
                 'icon' => 'land',
                 'subcategories' => [
-                    ['name' => 'Land Improvements', 'category_type' => 'NON-IT'],
+                    ['name' => 'Land',             'category_type' => 'NON-IT'],
+                    ['name' => 'Road/Pavement',    'category_type' => 'NON-IT'],
+                    ['name' => 'Drainage',         'category_type' => 'NON-IT'],
+                    ['name' => 'Fencing',          'category_type' => 'NON-IT'],
+                    ['name' => 'Land Improvements','category_type' => 'NON-IT'],
                 ],
             ],
-
-            'Building' => [
-                'code' => 'building',
+            'Buildings & Structures' => [
+                'code' => 'buildings',
                 'icon' => 'building',
                 'subcategories' => [
-                    ['name' => 'New Building', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Department Equipment' => [
-                'code' => 'departmentequip',
-                'icon' => 'folder',
-                'subcategories' => [
-                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Feedmill Plant' => [
-                'code' => 'feedmillplant',
-                'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Plant', 'category_type' => 'NON-IT'],
-                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
-                    ['name' => 'Tools', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Biogas Equipment' => [
-                'code' => 'biogasequip',
-                'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
-                    ['name' => 'Tools', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Swine Housing' => [
-                'code' => 'swinehousing',
-                'icon' => 'building',
-                'subcategories' => [
-                    ['name' => 'New Building', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Poultry Housing' => [
-                'code' => 'poultryhousing',
-                'icon' => 'building',
-                'subcategories' => [
-                    ['name' => 'New Building', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Delivery Equipment' => [
-                'code' => 'deliveryequip',
-                'icon' => 'vehicle',
-                'subcategories' => [
-                    ['name' => 'Vehicles', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Transport Equipment' => [
-                'code' => 'transportequip',
-                'icon' => 'vehicle',
-                'subcategories' => [
-                    ['name' => 'Vehicles', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Computer Equipment' => [
-                'code' => 'computerequip',
-                'icon' => 'desktop',
-                'subcategories' => [
-                    ['name' => 'Equipment', 'category_type' => 'IT'],
-                ],
-            ],
-
-            'Furniture & Fixtures' => [
-                'code' => 'furniturefixtures',
-                'icon' => 'hammer',
-                'subcategories' => [
-                    ['name' => 'Fixture & Fixtures', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Communication Equipment' => [
-                'code' => 'communicationequip',
-                'icon' => 'desktop',
-                'subcategories' => [
-                    ['name' => 'Equipment', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Software & Apps' => [
-                'code' => 'softwareapp',
-                'icon' => 'folder',
-                'subcategories' => [
-                    ['name' => 'Software and Apps', 'category_type' => 'NON-IT'],
-                ],
-            ],
-
-            'Farm Tools' => [
-                'code' => 'farmtools',
-                'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Tools', 'category_type' => 'NON-IT'],
+                    ['name' => 'Office Building', 'category_type' => 'NON-IT'],
+                    ['name' => 'Warehouse',       'category_type' => 'NON-IT'],
+                    ['name' => 'Staff Housing',   'category_type' => 'NON-IT'],
+                    ['name' => 'Swine House',     'category_type' => 'NON-IT'],
+                    ['name' => 'Poultry House',   'category_type' => 'NON-IT'],
+                    ['name' => 'Feed Mill',       'category_type' => 'NON-IT'],
+                    ['name' => 'Biogas Plant',    'category_type' => 'NON-IT'],
+                    ['name' => 'Hatchery Building','category_type' => 'NON-IT'],
                 ],
             ],
         ];

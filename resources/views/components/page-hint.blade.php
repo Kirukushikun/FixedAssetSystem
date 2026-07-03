@@ -9,15 +9,14 @@
 @endphp
 
 <div x-data="{ open: false, px: 0, py: 0 }"
-     class="self-center shrink-0"
      @click.outside="open = false"
      @scroll.window="open = false"
      @resize.window="open = false">
 
     <button type="button"
         @click="let r = $el.getBoundingClientRect(); px = r.left; py = r.bottom + 6; open = !open"
-        :class="open ? 'border-sky-400 bg-sky-50 text-sky-700' : 'border-sky-200 bg-white text-sky-500 hover:border-sky-300 hover:bg-sky-50'"
-        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-colors">
+        :class="open ? 'text-sky-600' : 'text-gray-400 hover:text-sky-500'"
+        class="inline-flex items-center gap-1 text-[11px] transition-colors">
         <i class="fa-solid fa-circle-info text-[10px]"></i>
         <span>{{ $label }}</span>
     </button>

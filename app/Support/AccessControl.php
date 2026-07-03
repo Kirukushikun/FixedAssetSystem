@@ -98,14 +98,17 @@ class AccessControl
             ],
             'accounting' => [
                 'name' => 'Accounting',
-                'description' => 'Manages maintenance tables, updates fixed assets, prints inventory, generates QR codes, handles issuance/transfer/disposal.',
+                'description' => 'Encodes new fixed assets, updates asset records, handles service completion entries, manages transfer/disposal processing, and generates QR codes.',
                 'permissions' => [
                     'dashboard.view',
                     'assets.view',
+                    'assets.create',
+                    'assets.import',
                     'assets.repair',
                     'assets.update',
                     'assets.export',
                     'assets.qr',
+                    'forms.accountability',
                     'transfer.view',
                     'transfer.complete',
                     'disposal.view',
@@ -185,16 +188,12 @@ class AccessControl
             ],
             'purchasing' => [
                 'name' => 'Purchasing',
-                'description' => 'Encodes new fixed assets, manages PMS/scheduling, updates maintenance tables, updates fixed assets, prints inventory, generates QR codes.',
+                'description' => 'View-only access to fixed assets. Schedules PMS with external providers and vendors, extracts FA summary reports, and generates accountability forms.',
                 'permissions' => [
                     'dashboard.view',
                     'assets.view',
-                    'assets.create',
-                    'assets.repair',
-                    'assets.update',
                     'assets.export',
-                    'assets.qr',
-                    'settings.view',
+                    'forms.accountability',
                 ],
             ],
             'it' => [

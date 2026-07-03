@@ -167,7 +167,7 @@
                     @endswitch
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col">
                     <div class="page-title">
                         @if(request()->is('dashboard*'))
                             Dashboard
