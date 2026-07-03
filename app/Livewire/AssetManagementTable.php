@@ -91,12 +91,10 @@ class AssetManagementTable extends Component
         
         // Load categories based on selected type
         if ($value === 'IT') {
-            // Only show IT Equipment and Computer Equipment for IT
-            $this->export_categories = Category::whereIn('code', ['itequipment', 'computerequip'])
+            $this->export_categories = Category::whereHas('subcategories', fn($q) => $q->where('category_type', 'IT'))
                 ->get();
         } elseif ($value === 'NON-IT') {
-            // Show all categories EXCEPT IT Equipment and Computer Equipment
-            $this->export_categories = Category::whereNotIn('code', ['itequipment', 'computerequip'])
+            $this->export_categories = Category::whereDoesntHave('subcategories', fn($q) => $q->where('category_type', 'IT'))
                 ->get();
         } else {
             // Show all if no type selected

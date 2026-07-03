@@ -8,6 +8,7 @@ use App\Models\SubCategory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -85,7 +86,7 @@ class DatabaseSeeder extends Seeder
             // ── NON-IT ──────────────────────────────────────────────────────────
             'Communication Devices' => [
                 'code' => 'commdevices',
-                'icon' => 'phone',
+                'icon' => 'folder',
                 'subcategories' => [
                     ['name' => 'Telephone',    'category_type' => 'NON-IT'],
                     ['name' => 'Mobile Phones','category_type' => 'NON-IT'],
@@ -236,6 +237,9 @@ class DatabaseSeeder extends Seeder
                 );
             }
         }
+
+        Cache::forget('categories_with_subcategories');
+        Cache::forget('categories_by_code');
 
         $this->command->info('Categories and Sub Categories seeded successfully!');
 
