@@ -1,5 +1,5 @@
 <div 
-    class="flex flex-col gap-5 rounded-md relative h-[70vh] max-h-[70vh]" x-show="modalTemplate === 'farm-assets'"
+    class="flex flex-col gap-5 rounded-md relative h-[70vh] max-h-[70vh]" x-show="$store.dashModal && $store.dashModal.template === 'farm-assets'"
 >
 
     <h2 class="text-xl font-semibold">Farm Assets ({{$farmCode}})</h2>

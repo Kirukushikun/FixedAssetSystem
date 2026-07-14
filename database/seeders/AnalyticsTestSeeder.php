@@ -107,23 +107,25 @@ class AnalyticsTestSeeder extends Seeder
                    'Aspire', 'EliteBook', 'Latitude', 'A80', 'MF420', 'Pro 14', 'XR200'];
 
         $categoryPool = [
+            // IT assets — all under itequipment
             ['IT',     'itequipment',     'Desktop'],
             ['IT',     'itequipment',     'Laptop'],
             ['IT',     'itequipment',     'Router'],
             ['IT',     'itequipment',     'Switch'],
-            ['IT',     'computerequip',   'Equipment'],
-            ['NON-IT', 'itequipment',     'Printer'],
-            ['NON-IT', 'itequipment',     'Photocopy Machine'],
-            ['NON-IT', 'itequipment',     'Scanner'],
-            ['NON-IT', 'officefurniture', 'Office Chair'],
-            ['NON-IT', 'officefurniture', 'Office Table'],
-            ['NON-IT', 'appliances',      'Aircon'],
+            ['IT',     'itequipment',     'Monitor'],
+            ['IT',     'itequipment',     'Printer'],
+            ['IT',     'itequipment',     'Photocopier'],
+            ['IT',     'itequipment',     'Scanner'],
+            // NON-IT assets
+            ['NON-IT', 'officefurniture', 'Chair'],
+            ['NON-IT', 'officefurniture', 'Desk'],
+            ['NON-IT', 'appliances',      'Air Conditioner'],
             ['NON-IT', 'appliances',      'Refrigerator'],
             ['NON-IT', 'appliances',      'Water Dispenser'],
-            ['NON-IT', 'tools',           'Radio'],
-            ['NON-IT', 'deliveryequip',   'Vehicles'],
-            ['NON-IT', 'transportequip',  'Vehicles'],
-            ['NON-IT', 'communicationequip', 'Equipment'],
+            ['NON-IT', 'commdevices',     'Two-way Radio'],
+            ['NON-IT', 'vehicles',        'Service Vehicle'],
+            ['NON-IT', 'vehicles',        'Delivery Truck'],
+            ['NON-IT', 'commdevices',     'Mobile Phones'],
         ];
 
         // Weighted pools — reflect a realistic fleet

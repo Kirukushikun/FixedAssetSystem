@@ -226,6 +226,7 @@ class AccessControl
     {
         return collect(self::permissions())
             ->flatMap(fn ($permissions) => array_keys($permissions))
+            ->reject(fn ($key) => str_ends_with($key, '.farm_scope'))
             ->values()
             ->all();
     }
