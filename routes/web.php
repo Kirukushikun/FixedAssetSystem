@@ -117,9 +117,17 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::get('/viewasset/{targetID}', function (Request $request, $targetID) {
-    $targetID = decrypt($targetID);
-    $asset = Asset::with('latestDisposalRequest')->find($targetID);
+Route::get('/viewasset/{encryptedId}', function (Request $request, $encryptedId) {
+    $assetId = decrypt($encryptedId);
+
+    // Authenticated auditor → skip the modal, go straight to audit form
+    if (Auth::check() && Auth::user()->hasPermission('assets.audit')) {
+        return redirect('/assetmanagement/audit?targetID=' . $encryptedId);
+    }
+
+    $asset = Asset::with('latestDisposalRequest')->find($assetId);
     $categoryDetails = \App\Models\Category::where('code', $asset->category)->first();
-    return view('view-asset', compact('asset', 'categoryDetails'));
-})->middleware(['auth', 'permission:assets.view']);
+    $showModal = !Auth::check(); // unauthenticated visitors get the choice modal
+
+    return view('view-asset', compact('asset', 'categoryDetails', 'encryptedId', 'showModal'));
+});

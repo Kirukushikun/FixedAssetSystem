@@ -15,6 +15,52 @@
      <link rel="stylesheet" href="{{asset('css/global.css')}}" />
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    {{-- Choice modal — shown only to unauthenticated visitors --}}
+    @if($showModal)
+    <div
+        x-data="{ show: true }"
+        x-show="show"
+        x-transition.opacity
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
+        style="display: flex"
+    >
+        <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl p-6 sm:p-8">
+            <div class="mb-6 text-center">
+                <div class="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5z" />
+                        <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" />
+                    </svg>
+                </div>
+                <h2 class="text-lg font-bold text-gray-800">What are you here for?</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    You scanned asset <span class="font-semibold text-gray-700">{{ $asset->ref_id }}</span>
+                </p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button
+                    @click="show = false"
+                    class="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl p-4 text-left transition-colors"
+                >
+                    <div class="font-semibold text-gray-800 text-sm">View Asset Details</div>
+                    <div class="text-xs text-gray-500 mt-0.5">See basic information about this asset</div>
+                </button>
+
+                <a
+                    href="/login?redirect_to={{ urlencode('/assetmanagement/audit?targetID=' . $encryptedId) }}"
+                    class="w-full bg-teal-500 hover:bg-teal-600 rounded-xl p-4 text-left transition-colors block"
+                >
+                    <div class="font-semibold text-white text-sm">I'm an Auditor</div>
+                    <div class="text-xs text-teal-100 mt-0.5">Sign in to submit an audit entry for this asset</div>
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="min-h-screen flex items-center justify-center py-6 px-4 sm:py-10 sm:px-6">
         <div class="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 sm:p-8">
             

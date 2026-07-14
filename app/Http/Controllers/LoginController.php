@@ -33,7 +33,7 @@ class LoginController extends Controller
                 $this->clearAttempts($email);
                 $this->logAccess($email, true, $request);
                 Auth::loginUsingId($user->id);
-                return $this->redirectAfterLogin();
+                return $this->redirectAfterLogin($request->input('redirect_to'));
             }
 
             $this->incrementAttempts($email);
@@ -93,10 +93,10 @@ class LoginController extends Controller
                 if ($user) {
                     // Clear failed attempts on successful login
                     $this->clearAttempts($email);
-                    
+
                     $this->logAccess($email, true, $request);
                     Auth::loginUsingId($user->id);
-                    return $this->redirectAfterLogin();
+                    return $this->redirectAfterLogin($request->input('redirect_to'));
                 }
 
                 // User exists in Authenticator but NOT in this system
@@ -223,8 +223,13 @@ class LoginController extends Controller
         return redirect('/login');
     }
 
-    private function redirectAfterLogin()
+    private function redirectAfterLogin(?string $redirectTo = null)
     {
+        // Honor QR-scan redirect — only allow internal relative paths
+        if ($redirectTo && str_starts_with($redirectTo, '/') && !str_starts_with($redirectTo, '//')) {
+            return redirect($redirectTo);
+        }
+
         $user = Auth::user();
 
         if ($user?->hasPermission('dashboard.view')) {

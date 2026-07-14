@@ -456,12 +456,22 @@
             <h1>Sign in</h1>
             <p class="subtitle">Enter your credentials to continue.</p>
 
+            @if(request('redirect_to'))
+            <div style="background:#e6fffe;border:1px solid #4fd1c5;border-radius:10px;padding:0.65rem 1rem;font-size:0.85rem;color:#174040;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;">
+                <svg style="width:16px;height:16px;flex-shrink:0;color:#2c9e98" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Sign in to submit an audit entry for the scanned asset.
+            </div>
+            @endif
+
             @if ($errors->any())
             <div class="error-msg">{{ $errors->first('login') }}</div>
             @endif
 
             <form action="{{ route('login.post') }}" method="POST">
                 @csrf
+                <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
 
                 <div class="field">
                     <label for="email">Email address</label>
