@@ -11,6 +11,7 @@ use App\Models\Department;
 use App\Exports\AssetExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -80,12 +81,10 @@ class DashboardData extends Component
         
         // Load categories based on selected type
         if ($value === 'IT') {
-            // Only show IT Equipment and Computer Equipment for IT
-            $this->export_categories = Category::whereIn('code', ['itequipment', 'computerequip'])
+            $this->export_categories = Category::whereHas('subcategories', fn ($q) => $q->where('category_type', 'IT'))
                 ->get();
         } elseif ($value === 'NON-IT') {
-            // Show all categories EXCEPT IT Equipment and Computer Equipment
-            $this->export_categories = Category::whereNotIn('code', ['itequipment', 'computerequip'])
+            $this->export_categories = Category::whereDoesntHave('subcategories', fn ($q) => $q->where('category_type', 'IT'))
                 ->get();
         } else {
             // Show all if no type selected
@@ -140,55 +139,76 @@ class DashboardData extends Component
 
     private function loadDashboardData()
     {
-        // ASSET STATUS OVERVIEW DATA
-        $this->conditions = [
-            'good' => Asset::where('is_deleted', false)->where('condition', 'Good')->count(),
-            'defective' => Asset::where('is_deleted', false)->where('condition', 'Defective')->count(),
-            'repair' => Asset::where('is_deleted', false)->where('condition', 'Repair')->count(),
-            'replace' => Asset::where('is_deleted', false)->where('condition', 'Replace')->count(),
-        ];
-        
-        $this->statuses = [
-            'available' => Asset::where('is_deleted', false)->where('status', 'Available')->count(),
-            'issued' => Asset::where('is_deleted', false)->where('status', 'Issued')->count(),
-            'transferred' => Asset::where('is_deleted', false)->where('status', 'Transferred')->count(),
-            'for_transfer' => Asset::where('is_deleted', false)->where('status', 'For Transfer')->count(),
-            'for_disposal' => Asset::where('is_deleted', false)->where('status', 'For Disposal')->count(),
-            'disposed' => Asset::where('is_deleted', false)->where('status', 'Disposed')->count(),
-            'lost' => Asset::where('is_deleted', false)->where('status', 'Lost')->count(),
-        ];
+        $stats = Cache::remember('dashboard_stats', 120, function () {
+            // 3 GROUP BY queries replace 18 individual COUNT queries
+            $conditionCounts = Asset::where('is_deleted', false)
+                ->selectRaw('`condition`, count(*) as total')
+                ->groupBy('condition')
+                ->pluck('total', 'condition');
 
-        $this->totalAssets = Asset::where('is_deleted', false)->count();
-        $this->maxCondition = max($this->conditions) ?: 1;
+            $statusCounts = Asset::where('is_deleted', false)
+                ->selectRaw('status, count(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
 
-        // Calculate percentage for each status
-        $this->statusPercentages = [];
-        foreach ($this->statuses as $key => $count) {
-            $this->statusPercentages[$key] = $this->totalAssets > 0 ? ($count / $this->totalAssets) * 100 : 0;
-        }
+            $farmCounts = Asset::where('is_deleted', false)
+                ->selectRaw('farm, count(*) as total')
+                ->groupBy('farm')
+                ->pluck('total', 'farm');
 
-        // FARM DISTRIBUTION DATA
-        $farms = [
-            'BFC' => 'BROOKSIDE FARMS',
-            'BDL' => 'BROOKDALE FARMS',
-            'PFC' => 'POULTRYPURE FARMS',
-            'RH' => 'RH FARMS',
-            'BBGC' => 'BROOKSIDE BREEDING & GENETICS CORP.',    
-            'HATCHERY' => 'HATCHERY', 
-        ];
+            $totalAssets = $statusCounts->sum();
 
-        $this->farmDistribution = [];
-        foreach ($farms as $code => $name) {
-            $count = Asset::where('is_deleted', false)->where('farm', $code)->count();
-            $percentage = $this->totalAssets > 0 ? round(($count / $this->totalAssets) * 100, 1) : 0;
-            
-            $this->farmDistribution[] = [
-                'code' => $code,
-                'name' => $name,
-                'count' => $count,
-                'percentage' => $percentage
+            $farms = [
+                'BFC'     => 'BROOKSIDE FARMS',
+                'BDL'     => 'BROOKDALE FARMS',
+                'PFC'     => 'POULTRYPURE FARMS',
+                'RH'      => 'RH FARMS',
+                'BBGC'    => 'BROOKSIDE BREEDING & GENETICS CORP.',
+                'HATCHERY'=> 'HATCHERY',
             ];
-        }
+
+            $farmDistribution = [];
+            foreach ($farms as $code => $name) {
+                $count = $farmCounts->get($code, 0);
+                $farmDistribution[] = [
+                    'code'       => $code,
+                    'name'       => $name,
+                    'count'      => $count,
+                    'percentage' => $totalAssets > 0 ? round(($count / $totalAssets) * 100, 1) : 0,
+                ];
+            }
+
+            $conditions = [
+                'good'      => $conditionCounts->get('Good', 0),
+                'defective' => $conditionCounts->get('Defective', 0),
+                'repair'    => $conditionCounts->get('Repair', 0),
+                'replace'   => $conditionCounts->get('Replace', 0),
+            ];
+
+            $statuses = [
+                'available'    => $statusCounts->get('Available', 0),
+                'issued'       => $statusCounts->get('Issued', 0),
+                'transferred'  => $statusCounts->get('Transferred', 0),
+                'for_transfer' => $statusCounts->get('For Transfer', 0),
+                'for_disposal' => $statusCounts->get('For Disposal', 0),
+                'disposed'     => $statusCounts->get('Disposed', 0),
+                'lost'         => $statusCounts->get('Lost', 0),
+            ];
+
+            $statusPercentages = [];
+            foreach ($statuses as $key => $count) {
+                $statusPercentages[$key] = $totalAssets > 0 ? ($count / $totalAssets) * 100 : 0;
+            }
+
+            return compact('conditions', 'statuses', 'statusPercentages', 'totalAssets', 'farmDistribution');
+        });
+
+        $this->conditions        = $stats['conditions'];
+        $this->statuses          = $stats['statuses'];
+        $this->statusPercentages = $stats['statusPercentages'];
+        $this->totalAssets       = $stats['totalAssets'];
+        $this->farmDistribution  = $stats['farmDistribution'];
+        $this->maxCondition      = max($this->conditions) ?: 1;
     }
 
     public function toggleCategory($categoryId)
@@ -242,75 +262,55 @@ class DashboardData extends Component
     {
         $alerts = [];
 
-        // Alert 1: Assets marked as Lost
-        $lostAssetsCount = Asset::where('status', 'Lost')->count();
-        if ($lostAssetsCount > 0) {
+        // Each alert reuses one query result — no duplicate DB calls
+        $lostAsset = Asset::where('status', 'Lost')
+            ->selectRaw('count(*) as total, max(updated_at) as latest')
+            ->first();
+        if ($lostAsset->total > 0) {
             $alerts[] = [
-                'message' => "{$lostAssetsCount} assets are marked Lost",
-                'timestamp' => $this->getLatestTimestamp(Asset::where('status', 'Lost')),
-                'icon' => 'fa-solid fa-bell',
-                'color' => 'text-teal-400'
+                'message'   => "{$lostAsset->total} assets are marked Lost",
+                'timestamp' => $lostAsset->latest ?? now(),
+                'icon'      => 'fa-solid fa-bell',
+                'color'     => 'text-teal-400',
             ];
         }
 
-        // Alert 2: Assets Under Repair for more than 30 days
-        $repairAssetsCount = Asset::where('condition', 'Repair')
+        $repairAsset = Asset::where('condition', 'Repair')
             ->where('updated_at', '<=', Carbon::now()->subDays(30))
-            ->count();
-        if ($repairAssetsCount > 0) {
+            ->selectRaw('count(*) as total, max(updated_at) as latest')
+            ->first();
+        if ($repairAsset->total > 0) {
             $alerts[] = [
-                'message' => "{$repairAssetsCount} assets are Under Repair for more than 30 days",
-                'timestamp' => $this->getLatestTimestamp(
-                    Asset::where('condition', 'Repair')
-                        ->where('updated_at', '<=', Carbon::now()->subDays(30))
-                ),
-                'icon' => 'fa-solid fa-bell',
-                'color' => 'text-teal-400'
+                'message'   => "{$repairAsset->total} assets are Under Repair for more than 30 days",
+                'timestamp' => $repairAsset->latest ?? now(),
+                'icon'      => 'fa-solid fa-bell',
+                'color'     => 'text-teal-400',
             ];
         }
 
-        // Alert 3: Employees with unreturned items
-        $unreturnedCount = Asset::whereNotNull('assigned_id')
-            ->whereHas('assignedEmployee', function($query) {
-                $query->where('is_deleted', true);
-            })
-            ->count();
-        if ($unreturnedCount > 0) {
+        $unreturnedAsset = Asset::whereNotNull('assigned_id')
+            ->whereHas('assignedEmployee', fn ($q) => $q->where('is_deleted', true))
+            ->selectRaw('count(*) as total, max(updated_at) as latest')
+            ->first();
+        if ($unreturnedAsset->total > 0) {
             $alerts[] = [
-                'message' => "{$unreturnedCount} employees have unreturned items",
-                'timestamp' => $this->getLatestTimestamp(
-                    Asset::whereNotNull('assigned_id')
-                        ->whereHas('assignedEmployee', function($query) {
-                            $query->where('is_deleted', true);
-                        })
-                ),
-                'icon' => 'fa-solid fa-bell',
-                'color' => 'text-teal-400'
+                'message'   => "{$unreturnedAsset->total} employees have unreturned items",
+                'timestamp' => $unreturnedAsset->latest ?? now(),
+                'icon'      => 'fa-solid fa-bell',
+                'color'     => 'text-teal-400',
             ];
         }
 
         return collect($alerts)->sortByDesc('timestamp')->values();
     }
 
-    private function getLatestTimestamp($query)
-    {
-        $asset = $query->latest('updated_at')->first();
-        return $asset ? $asset->updated_at : now();
-    }
-
     public function render()
-    {   
-        // Only fetch data that changes frequently or needs to be real-time
-        $total_assets = Asset::where('is_deleted', false)->get();
-        $assigned_assets = Asset::where('is_deleted', false)->whereNotNull('assigned_id')->get();
-        $total_employees = Employee::where('is_deleted', false)->get();
-        $pending_clearances = Flag::where('flag_type', 'Pending Clearances');
-
+    {
         return view('livewire.dashboard-data', [
-            'total_assets' => $total_assets,
-            'assigned_assets' => $assigned_assets,
-            'total_employees' => $total_employees,
-            'pending_clearances' => $pending_clearances,
+            'total_assets'       => Asset::where('is_deleted', false)->count(),
+            'assigned_assets'    => Asset::where('is_deleted', false)->whereNotNull('assigned_id')->count(),
+            'total_employees'    => Employee::where('is_deleted', false)->count(),
+            'pending_clearances' => Flag::where('flag_type', 'Pending Clearances')->count(),
         ]);
     }
 
