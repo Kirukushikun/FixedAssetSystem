@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>You're offline — Fixed Asset System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d3535;
+            color: #fff;
+            text-align: center;
+            padding: 2rem;
+        }
+        .box { max-width: 360px; }
+        .icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1.25rem;
+            color: #4fd1c5;
+        }
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 0.6rem;
+        }
+        p {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        button {
+            background: #4fd1c5;
+            color: #0d3535;
+            border: none;
+            border-radius: 10px;
+            padding: 0.7rem 1.4rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #38c3b7; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0L5.636 5.636m12.728 12.728L5.636 18.364m0 0a9 9 0 010-12.728" />
+        </svg>
+        <h1>You're offline</h1>
+        <p>This page isn't available without a connection. Reconnect and try again.</p>
+        <button onclick="location.reload()">Retry</button>
+    </div>
+</body>
+</html>

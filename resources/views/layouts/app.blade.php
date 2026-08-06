@@ -8,6 +8,9 @@
     @livewireStyles
     @vite(['resources/css/app.css'])
     <link rel="shortcut icon" href="{{ asset('img/Fixed.ico') }}" type="image/x-icon">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0d3535">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-180.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -257,6 +260,7 @@
     </div>
 
     <script src="{{ asset('js/global.js') }}"></script>
+    <script src="{{ asset('js/register-sw.js') }}"></script>
     @livewireScripts
 
 </body>

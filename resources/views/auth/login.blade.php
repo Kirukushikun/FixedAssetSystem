@@ -6,6 +6,10 @@
     <link rel="shortcut icon" href="{{asset('img/Fixed.ico')}}" type="image/x-icon">
     <title>Login — Fixed Asset System</title>
 
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0d3535">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-180.png') }}">
+
     @vite(['resources/css/app.css'])
     <script src="//unpkg.com/alpinejs" defer></script>
 
@@ -25,6 +29,11 @@
          */
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Browser default [hidden]{display:none} loses to any rule with equal/higher
+           specificity that sets display on the same selector (e.g. #id{display:flex}).
+           Force it so toggling the `hidden` attribute via JS always wins. */
+        [hidden] { display: none !important; }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -323,6 +332,76 @@
             font-weight: 500;
         }
 
+        /* ── PWA install button ── */
+        #pwa-install-btn {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #fff;
+            color: #0d3535;
+            border: 1px solid #d0f5f2;
+            border-radius: 10px;
+            padding: 0.55rem 1rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(13, 53, 53, 0.1);
+            transition: border-color 0.15s, transform 0.1s;
+        }
+
+        #pwa-install-btn:hover { border-color: #4fd1c5; }
+        #pwa-install-btn:active { transform: scale(0.98); }
+
+        #pwa-install-btn svg {
+            width: 16px;
+            height: 16px;
+            color: #2c9e98;
+        }
+
+        /* ── iOS "Add to Home Screen" banner ── */
+        .pwa-ios-banner {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            max-width: 260px;
+            background: #fff;
+            border: 1px solid #d0f5f2;
+            border-radius: 10px;
+            padding: 0.65rem 0.9rem;
+            box-shadow: 0 4px 14px rgba(13, 53, 53, 0.1);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            color: #174040;
+            line-height: 1.45;
+        }
+
+        .pwa-ios-banner svg {
+            width: 20px;
+            height: 20px;
+            color: #2c9e98;
+            flex-shrink: 0;
+        }
+
+        .pwa-ios-banner strong { color: #2c9e98; }
+
+        @media (max-width: 480px) {
+            #pwa-install-btn, .pwa-ios-banner {
+                top: 1rem;
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
+
         /* ── Local accounts panel ── */
         .local-panel {
             margin-top: 2.5rem;
@@ -415,6 +494,22 @@
 </head>
 
 <body>
+    <!-- PWA install button (Chrome/Edge/Android) — hidden until beforeinstallprompt fires -->
+    <button type="button" id="pwa-install-btn" hidden>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" />
+        </svg>
+        Install app
+    </button>
+
+    <!-- iOS Safari can't fire beforeinstallprompt — show manual instructions instead -->
+    <div class="pwa-ios-banner" id="pwa-ios-banner" hidden>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v12m0 0l-3.5-3.5M12 16l3.5-3.5M6 20h12" />
+        </svg>
+        <span>Tap <strong>Share</strong>, then <strong>Add to Home Screen</strong> to install this app.</span>
+    </div>
+
     <!-- Left branding panel -->
     <div class="panel-left">
         <div class="inner-ring"></div>
@@ -556,5 +651,8 @@
             @endif
         </div>
     </div>
+
+    <script src="{{ asset('js/register-sw.js') }}"></script>
+    <script src="{{ asset('js/pwa-install.js') }}"></script>
 </body>
 </html>
