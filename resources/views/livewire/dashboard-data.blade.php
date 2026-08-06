@@ -28,7 +28,7 @@
         <div class="px-6 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Total Assets</p>
-                <h1 class="text-lg font-bold">{{ $total_assets->count() }}</h1>
+                <h1 class="text-lg font-bold">{{ $total_assets }}</h1>
             </div>
             <div class="card-icon p-2 rounded-xl bg-[#4FD1C5] text-xl">
                 <i class="fa-solid fa-boxes-stacked text-white"></i>
@@ -37,7 +37,7 @@
         <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Assigned Assets</p>
-                <h1 class="text-lg font-bold">{{ $assigned_assets->count() }}</h1>
+                <h1 class="text-lg font-bold">{{ $assigned_assets }}</h1>
             </div>
             <div class="card-icon p-2 rounded-xl bg-[#4FD1C5] text-xl">
                 <i class="fa-solid fa-box text-white"></i>
@@ -46,7 +46,7 @@
         <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Total Employees</p>
-                <h1 class="text-lg font-bold">{{ $total_employees->count() }}</h1>
+                <h1 class="text-lg font-bold">{{ $total_employees }}</h1>
             </div>
             <div class="card-icon p-2 rounded-xl bg-[#4FD1C5] text-xl">
                 <i class="fa-solid fa-users text-white"></i>
@@ -55,7 +55,7 @@
         <div class="px-5 py-5 rounded-xl bg-white shadow-sm flex justify-between items-center hover:shadow-lg">
             <div class="card-label">
                 <p class="text-sm font-semibold text-gray-400">Pending Clearances</p>
-                <h1 class="text-lg font-bold">{{ $pending_clearances->count() }}</h1>
+                <h1 class="text-lg font-bold">{{ $pending_clearances }}</h1>
             </div>
             <div class="card-icon p-2 rounded-xl bg-[#4FD1C5] text-xl">
                 <i class="fa-solid fa-file-circle-exclamation text-white"></i>
