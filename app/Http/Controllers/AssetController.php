@@ -89,31 +89,40 @@ class AssetController extends Controller
 
 
     /**
-     * Get all assets
-     * Returns a JSON array of all assets
-     * Cached for 60 minutes
+     * Get all assets with optional pagination
+     * ?per_page=20&page=1 (default 20, max 100)
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            // Cache for 1 hour (3600 seconds)
-            $assets = Cache::remember('api.assets.index', 3600, function () {
+            $perPage = min((int) $request->query('per_page', 20), 100);
+            $page    = max((int) $request->query('page', 1), 1);
+
+            $cacheKey = "api.assets.index.{$perPage}.{$page}";
+
+            $paginated = Cache::remember($cacheKey, 3600, function () use ($perPage) {
                 return Asset::where('is_deleted', false)
                     ->where('is_archived', false)
-                    ->get();
+                    ->paginate($perPage);
             });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Assets retrieved successfully',
-                'data' => AssetResource::collection($assets),
-                'count' => $assets->count()
+                'data'    => AssetResource::collection($paginated->items()),
+                'meta'    => [
+                    'current_page' => $paginated->currentPage(),
+                    'per_page'     => $paginated->perPage(),
+                    'total'        => $paginated->total(),
+                    'last_page'    => $paginated->lastPage(),
+                    'has_more'     => $paginated->hasMorePages(),
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error retrieving assets',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
