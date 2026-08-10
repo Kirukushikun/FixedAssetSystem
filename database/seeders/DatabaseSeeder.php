@@ -47,7 +47,10 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $this->call(LocalRoleAccountSeeder::class);
+        // Test accounts (password: 1234) — local/testing only, never production
+        if (!app()->isProduction()) {
+            $this->call(LocalRoleAccountSeeder::class);
+        }
 
         $data = [
             // ── IT ──────────────────────────────────────────────────────────────

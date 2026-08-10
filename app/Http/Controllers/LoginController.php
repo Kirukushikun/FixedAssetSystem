@@ -26,7 +26,7 @@ class LoginController extends Controller
             ])->withInput();
         }
 
-        if (config('auth_mode.mode') === 'local') {
+        if (config('auth_mode.mode') === 'local' && !app()->isProduction()) {
             $user = User::where('email', $email)->first();
 
             if ($user && Hash::check($request->password, $user->password)) {
