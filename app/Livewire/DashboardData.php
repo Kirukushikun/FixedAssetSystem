@@ -269,7 +269,7 @@ class DashboardData extends Component
         if ($lostAsset->total > 0) {
             $alerts[] = [
                 'message'   => "{$lostAsset->total} assets are marked Lost",
-                'timestamp' => $lostAsset->latest ?? now(),
+                'timestamp' => Carbon::parse($lostAsset->latest ?? now()),
                 'icon'      => 'fa-solid fa-bell',
                 'color'     => 'text-teal-400',
             ];
@@ -282,7 +282,7 @@ class DashboardData extends Component
         if ($repairAsset->total > 0) {
             $alerts[] = [
                 'message'   => "{$repairAsset->total} assets are Under Repair for more than 30 days",
-                'timestamp' => $repairAsset->latest ?? now(),
+                'timestamp' => Carbon::parse($repairAsset->latest ?? now()),
                 'icon'      => 'fa-solid fa-bell',
                 'color'     => 'text-teal-400',
             ];
@@ -295,7 +295,7 @@ class DashboardData extends Component
         if ($unreturnedAsset->total > 0) {
             $alerts[] = [
                 'message'   => "{$unreturnedAsset->total} employees have unreturned items",
-                'timestamp' => $unreturnedAsset->latest ?? now(),
+                'timestamp' => Carbon::parse($unreturnedAsset->latest ?? now()),
                 'icon'      => 'fa-solid fa-bell',
                 'color'     => 'text-teal-400',
             ];
