@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -209,6 +210,42 @@ class AssetController extends Controller
                 'success' => false,
                 'message' => 'Error retrieving asset',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all categories with their subcategories
+     * Cached for 1 hour
+     */
+    public function categories(): JsonResponse
+    {
+        try {
+            $categories = Cache::remember('api.categories', 3600, function () {
+                return Category::with('subcategories')
+                    ->orderBy('name')
+                    ->get()
+                    ->map(fn ($cat) => [
+                        'name'          => $cat->name,
+                        'code'          => $cat->code,
+                        'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                            'name'          => $sub->name,
+                            'category_type' => $sub->category_type,
+                        ])->values(),
+                    ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Categories retrieved successfully',
+                'data'    => $categories,
+                'count'   => $categories->count(),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving categories',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }

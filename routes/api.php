@@ -12,4 +12,7 @@ Route::prefix('v1')->middleware(['api.key', 'throttle:60,1'])->group(function ()
     
     // Get single asset by ID
     Route::get('/assets/{id}', [AssetController::class, 'show']);
+
+    // Get all categories with subcategories
+    Route::get('/categories', [AssetController::class, 'categories']);
 });
