@@ -229,6 +229,7 @@ class AssetController extends Controller
                         'name'          => $cat->name,
                         'code'          => $cat->code,
                         'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                            'id'            => $sub->id,
                             'name'          => $sub->name,
                             'category_type' => $sub->category_type,
                         ])->values(),
@@ -245,6 +246,48 @@ class AssetController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error retrieving categories',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a single category by code with its subcategories
+     * Example: /api/v1/categories/itequipment
+     */
+    public function categoryByCode(string $code): JsonResponse
+    {
+        try {
+            $category = Cache::remember("api.categories.{$code}", 3600, function () use ($code) {
+                return Category::with('subcategories')
+                    ->where('code', $code)
+                    ->first();
+            });
+
+            if (!$category) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Category not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Category retrieved successfully',
+                'data'    => [
+                    'name'          => $category->name,
+                    'code'          => $category->code,
+                    'subcategories' => $category->subcategories->map(fn ($sub) => [
+                        'id'            => $sub->id,
+                        'name'          => $sub->name,
+                        'category_type' => $sub->category_type,
+                    ])->values(),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving category',
                 'error'   => $e->getMessage()
             ], 500);
         }

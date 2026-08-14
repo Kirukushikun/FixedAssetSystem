@@ -15,4 +15,7 @@ Route::prefix('v1')->middleware(['api.key', 'throttle:60,1'])->group(function ()
 
     // Get all categories with subcategories
     Route::get('/categories', [AssetController::class, 'categories']);
+
+    // Get single category by code
+    Route::get('/categories/{code}', [AssetController::class, 'categoryByCode']);
 });
