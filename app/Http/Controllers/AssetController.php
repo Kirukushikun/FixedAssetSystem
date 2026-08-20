@@ -101,10 +101,10 @@ class AssetController extends Controller
 
             $cacheKey = "api.assets.index.{$perPage}.{$page}";
 
-            $paginated = Cache::remember($cacheKey, 3600, function () use ($perPage) {
+            $paginated = Cache::remember($cacheKey, 3600, function () use ($perPage, $page) {
                 return Asset::where('is_deleted', false)
                     ->where('is_archived', false)
-                    ->paginate($perPage);
+                    ->paginate($perPage, ['*'], 'page', $page);
             });
 
             return response()->json([
