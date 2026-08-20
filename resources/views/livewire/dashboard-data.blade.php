@@ -93,6 +93,7 @@
 
             <div class="asset-statuses grid grid-cols-3 gap-7 mb-5">
                 @foreach([
+                    ['key' => 'pending_acquisition', 'label' => 'Pending Acquisition', 'color' => '#90CDF4'],
                     ['key' => 'available',    'label' => 'Available',    'color' => '#38A169'],
                     ['key' => 'issued',        'label' => 'Issued',       'color' => '#ECC94B'],
                     ['key' => 'transferred',   'label' => 'Transferred',  'color' => '#4299E1'],
