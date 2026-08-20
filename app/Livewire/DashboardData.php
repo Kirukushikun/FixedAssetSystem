@@ -186,6 +186,7 @@ class DashboardData extends Component
             ];
 
             $statuses = [
+                'pending_acquisition' => $statusCounts->get('Pending Acquisition', 0),
                 'available'    => $statusCounts->get('Available', 0),
                 'issued'       => $statusCounts->get('Issued', 0),
                 'transferred'  => $statusCounts->get('Transferred', 0),

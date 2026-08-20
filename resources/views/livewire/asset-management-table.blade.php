@@ -178,6 +178,7 @@
                                     <select wire:model.live="filterStatus"
                                         class="w-full text-sm rounded-lg border border-gray-200 px-2 py-1.5 outline-none focus:border-teal-400">
                                         <option value="">All statuses</option>
+                                        <option value="Pending Acquisition">Pending Acquisition</option>
                                         <option value="Available">Available</option>
                                         <option value="Issued">Issued</option>
                                         <option value="Transferred">Transferred</option>
@@ -293,6 +294,7 @@
                                     <td>
                                         <span @class([
                                             'px-3 py-1 rounded-lg text-xs font-semibold text-white',
+                                            'bg-[#90CDF4]' => $asset->status === 'Pending Acquisition',
                                             'bg-[#48BB78]' => $asset->status === 'Available',
                                             'bg-[#ECC94B]' => $asset->status === 'Issued',
                                             'bg-[#4299E1]' => $asset->status === 'Transferred',
@@ -300,7 +302,7 @@
                                             'bg-[#ED8936]' => $asset->status === 'For Disposal',
                                             'bg-[#2D3748]' => $asset->status === 'Disposed',
                                             'bg-[#F56565]' => $asset->status === 'Lost',
-                                            'bg-gray-400' => ! in_array($asset->status, ['Available', 'Issued', 'Transferred', 'For Transfer', 'For Disposal', 'Disposed', 'Lost'], true),
+                                            'bg-gray-400' => ! in_array($asset->status, ['Pending Acquisition', 'Available', 'Issued', 'Transferred', 'For Transfer', 'For Disposal', 'Disposed', 'Lost'], true),
                                         ])>
                                             {{ $asset->status }}
                                         </span>

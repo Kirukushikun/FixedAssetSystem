@@ -56,12 +56,19 @@ class AvailableAssetsSeeder extends Seeder
             ? ((int) substr($lastRef, -5)) + 1
             : 1;
 
+        // ~75% Available, ~25% Pending Acquisition
+        $statusPool = array_merge(
+            array_fill(0, 75, 'Available'),
+            array_fill(0, 25, 'Pending Acquisition')
+        );
+
         $inserted = 0;
 
         foreach ($farms as $farm => $count) {
             for ($i = 0; $i < $count; $i++) {
                 $cat       = $categoryPool[array_rand($categoryPool)];
                 $condition = $conditionPool[array_rand($conditionPool)];
+                $status    = $statusPool[array_rand($statusPool)];
 
                 DB::table('assets')->insert([
                     'is_deleted'        => false,
@@ -72,7 +79,7 @@ class AvailableAssetsSeeder extends Seeder
                     'sub_category'      => $cat[2],
                     'brand'             => $brands[array_rand($brands)],
                     'model'             => $models[array_rand($models)],
-                    'status'            => 'Available',
+                    'status'            => $status,
                     'condition'         => $condition,
                     'acquisition_date'  => $now->copy()->subDays(rand(30, 1500))->format('Y-m-d'),
                     'item_cost'         => rand(5000, 120000),

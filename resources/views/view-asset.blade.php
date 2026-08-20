@@ -109,7 +109,8 @@
                     <div>
                         <p class="text-xs sm:text-sm text-gray-500 mb-1">Status</p>
                         <span class="inline-block px-3 py-1 text-xs sm:text-sm font-semibold text-white rounded
-                            @if($asset->status == 'Available') bg-green-500
+                            @if($asset->status == 'Pending Acquisition') bg-blue-300
+                            @elseif($asset->status == 'Available') bg-green-500
                             @elseif($asset->status == 'Issued') bg-yellow-500
                             @elseif($asset->status == 'Transferred') bg-blue-500
                             @elseif($asset->status == 'For Disposal') bg-orange-500

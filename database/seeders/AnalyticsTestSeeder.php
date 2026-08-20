@@ -130,8 +130,9 @@ class AnalyticsTestSeeder extends Seeder
 
         // Weighted pools — reflect a realistic fleet
         $statusPool = array_merge(
-            array_fill(0, 55, 'Issued'),
-            array_fill(0, 25, 'Available'),
+            array_fill(0, 50, 'Issued'),
+            array_fill(0, 20, 'Available'),
+            array_fill(0, 10, 'Pending Acquisition'),
             array_fill(0, 8,  'Disposed'),
             array_fill(0, 5,  'Transferred'),
             array_fill(0, 4,  'For Disposal'),

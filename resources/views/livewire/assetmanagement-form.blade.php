@@ -87,6 +87,7 @@
                 <label for="status">Status: @error('status')<span>This field is required</span>@enderror</label>
                 <select id="status" class="{{ $errors->has('status') ? '!border-red-400' : '' }}" wire:model="status" {{$mode == 'view' ? 'disabled' : ''}}>
                     <option value=""></option>
+                    <option value="Pending Acquisition">Pending Acquisition</option>
                     <option value="Available">Available</option>
                     <option value="Issued">Issued</option>
                     <option value="Transferred">Transferred</option>
