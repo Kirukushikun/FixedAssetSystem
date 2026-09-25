@@ -46,6 +46,11 @@ return [
         'token' => env('SNIPE_TOKEN'),
     ],
 
+    'purchasing' => [
+        'base_uri' => env('PURCHASING_API_BASE_URI', 'https://purchasing.bfcgroup.ph/api/v1'),
+        'token' => env('PURCHASING_API_TOKEN'),
+    ],
+
     'openrouter' => [
         'api_key' => env('OPENROUTER_API_KEY'),
         'model'   => env('OPENROUTER_MODEL', 'meta-llama/llama-3.3-70b-instruct'),

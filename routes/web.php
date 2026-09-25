@@ -41,11 +41,13 @@ Route::middleware('auth')->group(function () {
         $category_type = null;
         $category = null;
         $sub_category = null;
+        $purchase_reference_id = null;
 
         if ($mode == 'create') {
             $category_type = $request->category_type;
             $category = $request->category;
             $sub_category = $request->sub_category;
+            $purchase_reference_id = $request->purchase_reference_id;
         } elseif ($mode == 'edit') {
             $targetID = decrypt($request->targetID);
         } elseif ($mode == 'view') {
@@ -56,7 +58,7 @@ Route::middleware('auth')->group(function () {
             abort(404);
         }
 
-        return view('assetmanagement-view', compact('mode', 'targetID', 'category_type', 'category', 'sub_category'));
+        return view('assetmanagement-view', compact('mode', 'targetID', 'category_type', 'category', 'sub_category', 'purchase_reference_id'));
     })->middleware('permission:assets.view,assets.audit,assets.create,assets.update');
 
     Route::get('/employees', function () {

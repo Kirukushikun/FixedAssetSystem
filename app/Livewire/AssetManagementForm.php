@@ -25,6 +25,7 @@ use App\Models\DisposalRequest;
 // Import the new jobs
 use App\Jobs\GenerateAssetQrCode;
 use App\Jobs\SyncAssetToSnipeIT;
+use App\Jobs\NotifyPurchasingAssetRegistered;
 
 
 class AssetManagementForm extends Component
@@ -34,6 +35,11 @@ class AssetManagementForm extends Component
     public $mode;
     public $showConfirmModal = false;
     public $targetAsset;
+
+    // PURCHASING SYSTEM INTEGRATION
+    public $purchase_reference_id = null;
+    public $acquisition_source = 'manual';
+    public $purchasing_meta = null;
 
     // GENERAL INFORMATION
     public
@@ -138,7 +144,7 @@ class AssetManagementForm extends Component
     public $rams;
     public $storages;
 
-    public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null)
+    public function mount($mode, $targetID = null, $category_type = null, $category = null, $sub_category = null, $purchase_reference_id = null)
     {
         $this->mode = $mode;
 
@@ -146,7 +152,11 @@ class AssetManagementForm extends Component
             $this->ref_id = $this->generateNextRefId();
             $this->category_type = $category_type;
             $this->category = $category;
-            $this->sub_category = $sub_category;            
+            $this->sub_category = $sub_category;
+
+            if ($purchase_reference_id) {
+                $this->loadPurchasingItem($purchase_reference_id);
+            }
         } else {
             $this->loadAssetData($targetID);
         }
@@ -197,6 +207,41 @@ class AssetManagementForm extends Component
     }
 
     /**
+     * Prefill the create form from a pending item selected from the Purchasing System.
+     */
+    private function loadPurchasingItem(string $referenceId): void
+    {
+        if (Asset::where('purchase_reference_id', $referenceId)->exists()) {
+            $this->reloadNotif('failed', 'Already Registered', 'This item has already been registered as a Fixed Asset.');
+            $this->redirect('/assetmanagement');
+            return;
+        }
+
+        $item = Cache::get("purchasing_pending_item:{$referenceId}");
+
+        if (!$item) {
+            $this->reloadNotif('failed', 'Selection Expired', 'The selected item is no longer available. Please select it again.');
+            $this->redirect('/assetmanagement');
+            return;
+        }
+
+        $this->purchase_reference_id = $referenceId;
+        $this->acquisition_source = 'purchasing';
+        $this->purchasing_meta = $item;
+
+        $this->item_cost = isset($item['actual_cost']) || isset($item['estimated_cost'])
+            ? (string) (float) ($item['actual_cost'] ?? $item['estimated_cost'])
+            : null;
+
+        $this->acquisition_date = $item['receipt']['received_at']
+            ?? $item['date_needed']
+            ?? now()->format('Y-m-d');
+
+        $this->farm = $item['farm']['code'] ?? null;
+        $this->department = $item['department']['name'] ?? null;
+    }
+
+    /**
      * Load existing asset data for edit/view mode
      * OPTIMIZED: Uses eager loading to prevent N+1 queries
      */
@@ -219,6 +264,10 @@ class AssetManagementForm extends Component
             'categoryDetails:code,name'
         ])->findOrFail($targetID);
         
+        $this->purchase_reference_id = $this->targetAsset->purchase_reference_id;
+        $this->acquisition_source = $this->targetAsset->acquisition_source;
+        $this->purchasing_meta = $this->targetAsset->purchasing_meta;
+
         $this->fill([
             'ref_id'            => $this->targetAsset->ref_id,
             'category_type'     => $this->targetAsset->category_type,
@@ -322,6 +371,10 @@ class AssetManagementForm extends Component
             }
             
             $asset = Asset::create([
+                'purchase_reference_id' => $this->purchase_reference_id,
+                'acquisition_source' => $this->acquisition_source,
+                'purchasing_meta' => $this->purchasing_meta,
+
                 'ref_id' => $this->ref_id,
                 'category_type' => $this->category_type,
                 'category' => $this->categoryCodeImage[$this->category]->code,
@@ -376,6 +429,12 @@ class AssetManagementForm extends Component
             // OPTIMIZED: Dispatch Snipe-IT sync to background queue
             if ($this->category_type === 'IT') {
                 SyncAssetToSnipeIT::dispatch($asset, 'create');
+            }
+
+            // Notify the Purchasing System that this pending item has been registered
+            if ($this->purchase_reference_id) {
+                NotifyPurchasingAssetRegistered::dispatch($asset);
+                Cache::forget("purchasing_pending_item:{$this->purchase_reference_id}");
             }
 
             // Audit Trail

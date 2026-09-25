@@ -21,6 +21,11 @@ class Asset extends Model
         'is_deleted',
         'is_archived',
 
+        'purchase_reference_id',
+        'acquisition_source',
+        'purchasing_meta',
+        'purchasing_synced_at',
+
         'ref_id',
         'category_type',
         'category',
@@ -60,7 +65,9 @@ class Asset extends Model
         'qr_printed' => 'boolean',
         'qr_affixed' => 'boolean',
         'acquisition_date' => 'datetime',
-        'technical_data' => 'array'
+        'technical_data' => 'array',
+        'purchasing_meta' => 'array',
+        'purchasing_synced_at' => 'datetime',
     ];
 
     /**

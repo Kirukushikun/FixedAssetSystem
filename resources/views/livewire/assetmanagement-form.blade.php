@@ -19,7 +19,23 @@
          
          <i class="fa-solid fa-arrow-left absolute top-8 -left-[50px] cursor-pointer hover:-translate-x-1 text-gray-400 hover:text-gray-800 text-xl" onclick="window.history.back()"></i>
          <h1 class="text-lg font-bold">General Information</h1>
-         <p class="text-gray-400 text-sm mb-10">Basic details that describe and identify this asset. These values help classify and track the item within the system.</p>
+         <p class="text-gray-400 text-sm mb-6">Basic details that describe and identify this asset. These values help classify and track the item within the system.</p>
+
+        @if($purchase_reference_id)
+            <div class="border border-teal-200 bg-teal-50 rounded-xl p-4 mb-6">
+                <p class="text-xs font-bold text-teal-600 uppercase tracking-wide mb-2">
+                    <i class="fa-solid fa-truck-ramp-box"></i> Imported from Purchasing System
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600">
+                    <p><span class="font-semibold text-gray-700">Reference:</span> {{ $purchase_reference_id }}</p>
+                    <p><span class="font-semibold text-gray-700">Description:</span> {{ $purchasing_meta['description'] ?? '—' }}</p>
+                    <p><span class="font-semibold text-gray-700">PR:</span> {{ $purchasing_meta['requisition_number'] ?? '—' }}</p>
+                    <p><span class="font-semibold text-gray-700">PO:</span> {{ $purchasing_meta['purchase_order']['number'] ?? '—' }}</p>
+                    <p><span class="font-semibold text-gray-700">Supplier:</span> {{ $purchasing_meta['supplier']['name'] ?? '—' }}</p>
+                    <p><span class="font-semibold text-gray-700">Receipt:</span> {{ $purchasing_meta['receipt']['number'] ?? '—' }}</p>
+                </div>
+            </div>
+        @endif
 
         <!-- <img  src="{{asset('img/QR-Code.png')}}" width="120" alt=""> -->
 
@@ -87,7 +103,6 @@
                 <label for="status">Status: @error('status')<span>This field is required</span>@enderror</label>
                 <select id="status" class="{{ $errors->has('status') ? '!border-red-400' : '' }}" wire:model="status" {{$mode == 'view' ? 'disabled' : ''}}>
                     <option value=""></option>
-                    <option value="Pending Acquisition">Pending Acquisition</option>
                     <option value="Available">Available</option>
                     <option value="Issued">Issued</option>
                     <option value="Transferred">Transferred</option>

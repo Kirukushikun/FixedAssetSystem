@@ -39,7 +39,7 @@
                 <button
                     class="flex items-center gap-2 px-4 py-2 bg-[#4fd1c5] hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#4fd1c5]"
                     :disabled="!{{ $currentUser?->hasPermission('assets.create') ? 'true' : 'false' }}"
-                    @click="{{ $currentUser?->hasPermission('assets.create') ? 'openModal(\'create\')' : 'null' }}"
+                    @click="{{ $currentUser?->hasPermission('assets.create') ? 'openModal(\'choice\')' : 'null' }}"
                     title="{!! $currentUser?->hasPermission('assets.create') ? 'Add New Asset' : 'You do not have permission to add assets' !!}">
                     <i class="fa-solid fa-plus"></i>
                     Add Asset
@@ -178,7 +178,6 @@
                                     <select wire:model.live="filterStatus"
                                         class="w-full text-sm rounded-lg border border-gray-200 px-2 py-1.5 outline-none focus:border-teal-400">
                                         <option value="">All statuses</option>
-                                        <option value="Pending Acquisition">Pending Acquisition</option>
                                         <option value="Available">Available</option>
                                         <option value="Issued">Issued</option>
                                         <option value="Transferred">Transferred</option>
@@ -294,7 +293,6 @@
                                     <td>
                                         <span @class([
                                             'px-3 py-1 rounded-lg text-xs font-semibold text-white',
-                                            'bg-[#90CDF4]' => $asset->status === 'Pending Acquisition',
                                             'bg-[#48BB78]' => $asset->status === 'Available',
                                             'bg-[#ECC94B]' => $asset->status === 'Issued',
                                             'bg-[#4299E1]' => $asset->status === 'Transferred',
@@ -302,7 +300,7 @@
                                             'bg-[#ED8936]' => $asset->status === 'For Disposal',
                                             'bg-[#2D3748]' => $asset->status === 'Disposed',
                                             'bg-[#F56565]' => $asset->status === 'Lost',
-                                            'bg-gray-400' => ! in_array($asset->status, ['Pending Acquisition', 'Available', 'Issued', 'Transferred', 'For Transfer', 'For Disposal', 'Disposed', 'Lost'], true),
+                                            'bg-gray-400' => ! in_array($asset->status, ['Available', 'Issued', 'Transferred', 'For Transfer', 'For Disposal', 'Disposed', 'Lost'], true),
                                         ])>
                                             {{ $asset->status }}
                                         </span>
@@ -386,22 +384,24 @@
         <div x-data="{
             showModal: false,
             modalTemplate: '',
-            targetAsset: ''
+            targetAsset: '',
+            purchaseReferenceId: null
         }"
             x-on:open-modal.window="
         modalTemplate = $event.detail.template;
         targetAsset   = $event.detail.asset ?? '';
         showModal     = true;
     "
-            x-on:close-modal.window="showModal = false; modalTemplate = ''; targetAsset = '';"
-            x-on:keydown.escape.window="showModal = false; modalTemplate = ''; targetAsset = '';"
+            x-on:purchasing-item-selected.window="purchaseReferenceId = $event.detail.referenceId; modalTemplate = 'create';"
+            x-on:close-modal.window="showModal = false; modalTemplate = ''; targetAsset = ''; purchaseReferenceId = null;"
+            x-on:keydown.escape.window="showModal = false; modalTemplate = ''; targetAsset = ''; purchaseReferenceId = null;"
             style="display:contents">
             {{-- Backdrop --}}
             <div x-show="showModal" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 z-[70] modal-hidden"
-                @click="showModal = false; modalTemplate = ''"></div>
+                @click="showModal = false; modalTemplate = ''; purchaseReferenceId = null;"></div>
 
             {{-- Modal panel --}}
             <div x-show="showModal" x-transition:enter="transition ease-out duration-200"
@@ -415,12 +415,46 @@
                     {{-- Close --}}
                     <button
                         class="absolute right-5 top-5 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors z-10"
-                        @click="showModal = false; modalTemplate = ''; targetAsset = ''">
+                        @click="showModal = false; modalTemplate = ''; targetAsset = ''; purchaseReferenceId = null;">
                         <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
 
+                    {{-- Choose creation method --}}
+                    <div class="p-8" x-show="modalTemplate === 'choice'">
+                        <h3 class="text-center font-bold text-xl mb-6">Add Asset</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button type="button" @click="modalTemplate = 'create'"
+                                class="flex flex-col items-center gap-3 border border-gray-200 rounded-xl p-6 hover:border-teal-400 hover:bg-teal-50 transition-colors text-center">
+                                <i class="fa-solid fa-pen-to-square text-2xl text-teal-500"></i>
+                                <span class="font-bold text-sm text-gray-700">Manual Entry</span>
+                                <span class="text-xs text-gray-400">Register an asset already on hand</span>
+                            </button>
+                            <button type="button" @click="modalTemplate = 'purchasing'; $dispatch('purchasing-modal-opened');"
+                                class="flex flex-col items-center gap-3 border border-gray-200 rounded-xl p-6 hover:border-teal-400 hover:bg-teal-50 transition-colors text-center">
+                                <i class="fa-solid fa-truck-ramp-box text-2xl text-teal-500"></i>
+                                <span class="font-bold text-sm text-gray-700">From Purchasing System</span>
+                                <span class="text-xs text-gray-400">Pull in an item already processed in Purchasing</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- From Purchasing System — select a pending item --}}
+                    <div class="p-8" x-show="modalTemplate === 'purchasing'">
+                        <button type="button" @click="modalTemplate = 'choice'"
+                            class="text-xs font-semibold text-gray-400 hover:text-gray-700 mb-4">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+                        @if($currentUser?->hasPermission('assets.create'))
+                            <livewire:purchasing-pending-list />
+                        @endif
+                    </div>
+
                     {{-- Select Category --}}
                     <div class="p-8" x-show="modalTemplate === 'create'">
+                        <button type="button" x-show="purchaseReferenceId" @click="modalTemplate = 'choice'; purchaseReferenceId = null;"
+                            class="text-xs font-semibold text-gray-400 hover:text-gray-700 mb-4">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
                         <h3 class="text-center font-bold text-xl mb-6">Select Category</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4" x-data="{ openCat: null }">
                             @foreach ($categories as $category)
@@ -442,7 +476,7 @@
                                         x-transition:enter-end="opacity-100 translate-y-0"
                                         class="ml-7 mt-2 space-y-1">
                                         @foreach ($category->subcategories as $sub)
-                                            <a href="{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . $category->code . '&sub_category=' . $sub->name) }}"
+                                            <a :href="`{{ url('/assetmanagement/create?category_type=' . $sub->category_type . '&category=' . $category->code . '&sub_category=' . $sub->name) }}` + (purchaseReferenceId ? '&purchase_reference_id=' + purchaseReferenceId : '')"
                                                 class="flex justify-between items-center text-sm text-gray-500 font-semibold hover:text-teal-500 hover:translate-x-1 transition-all py-0.5">
                                                 <span>{{ $sub->name }}</span>
                                                 <i class="fa-solid fa-arrow-right text-xs"></i>

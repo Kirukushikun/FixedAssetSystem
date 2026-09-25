@@ -4,6 +4,6 @@
     @if($mode == 'audit')
         <livewire:audit-form :targetID="$targetID" />
     @else 
-        <livewire:asset-management-form :mode="$mode" :targetID="$targetID" :category_type="$category_type" :category="$category" :sub_category="$sub_category"/>
+        <livewire:asset-management-form :mode="$mode" :targetID="$targetID" :category_type="$category_type" :category="$category" :sub_category="$sub_category" :purchase_reference_id="$purchase_reference_id"/>
     @endif
 @endsection
