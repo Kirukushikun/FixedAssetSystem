@@ -14,7 +14,7 @@ class PurchasingService
         $response = Http::withToken(config('services.purchasing.token'))
             ->acceptJson()
             ->timeout(15)
-            ->post(config('services.purchasing.base_uri') . '/fixed-assets/pending');
+            ->get(config('services.purchasing.base_uri') . '/fixed-assets/pending');
 
         $response->throw();
 
@@ -30,7 +30,7 @@ class PurchasingService
             $response = Http::withToken(config('services.purchasing.token'))
                 ->acceptJson()
                 ->timeout(10)
-                ->post(config('services.purchasing.base_uri') . '/health');
+                ->get(config('services.purchasing.base_uri') . '/health');
 
             return $response->successful();
         } catch (\Throwable $e) {
