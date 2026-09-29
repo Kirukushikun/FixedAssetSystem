@@ -64,7 +64,13 @@ class User extends Authenticatable
 
     public function hasPermission(string $permissionKey): bool
     {
-        return $this->is_admin || $this->roles()
+        if ($this->is_admin) {
+            // Admins have every permission except farm-scoping ones —
+            // they should never be restricted to a single farm's assets/reports.
+            return ! str_ends_with($permissionKey, '.farm_scope');
+        }
+
+        return $this->roles()
             ->whereHas('permissions', fn ($query) => $query->where('key', $permissionKey))
             ->exists();
     }

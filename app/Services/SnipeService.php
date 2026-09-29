@@ -11,6 +11,7 @@ class SnipeService
     {
         return Http::withToken(config('services.snipe.token'))
             ->acceptJson()
+            ->timeout(10)
             ->post(config('services.snipe.url') . '/hardware', $data)
             ->json();
     }
@@ -20,6 +21,7 @@ class SnipeService
     {
         return Http::withToken(config('services.snipe.token'))
             ->acceptJson()
+            ->timeout(10)
             ->put(config('services.snipe.url') . "/hardware/{$id}", $data)
             ->json();
     }
@@ -29,6 +31,7 @@ class SnipeService
     {
         return Http::withToken(config('services.snipe.token'))
             ->acceptJson()
+            ->timeout(10)
             ->delete(config('services.snipe.url') . "/hardware/{$id}")
             ->json();
     }
