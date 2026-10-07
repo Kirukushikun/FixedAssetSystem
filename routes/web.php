@@ -114,6 +114,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/assets/import', [AssetController::class, 'import'])->middleware('permission:assets.import')->name('assets.import');
     Route::get('/assets/migration-template', [AssetController::class, 'downloadMigrationTemplate'])->middleware('permission:assets.import')->name('assets.migration-template');
     Route::post('/assets/migration-import', [AssetController::class, 'migrationImport'])->middleware('permission:assets.import')->name('assets.migration-import');
+    Route::get('/assets/migration-import/{token}', [AssetController::class, 'migrationReview'])->whereUuid('token')->middleware('permission:assets.import')->name('assets.migration-review');
+    Route::post('/assets/migration-import/{token}', [AssetController::class, 'migrationImportConfirm'])->whereUuid('token')->middleware('permission:assets.import')->name('assets.migration-confirm');
+    Route::post('/assets/migration-import/{token}/cancel', [AssetController::class, 'migrationImportCancel'])->whereUuid('token')->middleware('permission:assets.import')->name('assets.migration-cancel');
 
     Route::get('/assets/export-audit-log', [AssetController::class, 'exportAuditLog'])->middleware('permission:audit.export')->name('assets.export.audit-log');
 });

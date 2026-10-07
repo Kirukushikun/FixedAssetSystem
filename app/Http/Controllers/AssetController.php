@@ -13,6 +13,11 @@ use App\Exports\AssetExport;
 use App\Exports\AssetMigrationTemplateExport;
 use App\Imports\AssetImport;
 use App\Imports\AssetMigrationImport;
+use App\Imports\AssetMigrationNamePreview;
+use App\Models\Employee;
+use App\Support\EmployeeNameMatcher;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -56,24 +61,132 @@ class AssetController extends Controller
         );
     }
 
+    /**
+     * Step 1: store the uploaded file and send the user to the employee-matching review.
+     */
     public function migrationImport(Request $request)
     {
-        ini_set('max_execution_time', 300);
-
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
-        $import = new AssetMigrationImport();
-        Excel::import($import, $request->file('file'));
+        $file  = $request->file('file');
+        $token = (string) Str::uuid();
+        $path  = $file->storeAs('migration-imports', $token . '.' . ($file->getClientOriginalExtension() ?: 'xlsx'), 'local');
+
+        session()->put("migration_imports.{$token}", [
+            'path' => $path,
+            'name' => $file->getClientOriginalName(),
+        ]);
+
+        return redirect()->route('assets.migration-review', $token);
+    }
+
+    /**
+     * Step 2: list each "Assigned To" name with a suggested employee to confirm or change.
+     */
+    public function migrationReview(string $token)
+    {
+        $meta = $this->pendingMigration($token);
+
+        $preview = new AssetMigrationNamePreview();
+        Excel::import($preview, $meta['path'], 'local');
+
+        $employees = Employee::where('is_deleted', false)
+            ->orderBy('employee_name')
+            ->get(['id', 'employee_id', 'employee_name', 'farm', 'department']);
+
+        $matcher = new EmployeeNameMatcher($employees);
+
+        $names = collect($preview->names)
+            ->map(fn ($counts, $name) => ['name' => (string) $name] + $counts + $matcher->suggest((string) $name))
+            ->sortByDesc('total')
+            ->values();
+
+        return view('asset-migration-review', [
+            'token'     => $token,
+            'fileName'  => $meta['name'],
+            'rowCount'  => $preview->rows,
+            'names'     => $names,
+            'employees' => $employees,
+        ]);
+    }
+
+    /**
+     * Step 3: import using only the employee matches the user confirmed.
+     */
+    public function migrationImportConfirm(Request $request, string $token)
+    {
+        ini_set('max_execution_time', 300);
+
+        $meta = $this->pendingMigration($token);
+
+        $request->validate([
+            'names'          => 'array',
+            'names.*'        => 'string',
+            'matches'        => 'array',
+            'matches.*'      => 'nullable|string',
+            'link_available' => 'nullable|boolean',
+        ]);
+
+        $matches = [];
+        $invalid = [];
+
+        foreach ($request->input('names', []) as $i => $name) {
+            $choice = trim((string) $request->input("matches.{$i}", ''));
+            if ($choice === '') {
+                continue;
+            }
+
+            preg_match('/\(([^()]+)\)\s*$/', $choice, $m);
+            $employee = isset($m[1])
+                ? Employee::where('employee_id', trim($m[1]))->where('is_deleted', false)->first()
+                : null;
+
+            if (!$employee) {
+                $invalid["matches.{$i}"] = "\"{$choice}\" is not an employee in the list. Pick one from the suggestions or clear it.";
+                continue;
+            }
+
+            $matches[$name] = $employee;
+        }
+
+        if ($invalid) {
+            return back()->withErrors($invalid)->withInput();
+        }
+
+        $import = new AssetMigrationImport($matches, $request->boolean('link_available'));
+        Excel::import($import, $meta['path'], 'local');
+
+        Storage::disk('local')->delete($meta['path']);
+        session()->forget("migration_imports.{$token}");
 
         session()->flash('notif', [
             'type'    => 'success',
             'header'  => 'Migration Import Complete',
-            'message' => "{$import->createdCount} assets added, {$import->skippedCount} skipped (duplicates or missing required fields).",
+            'message' => "{$import->createdCount} assets added ({$import->linkedCount} linked to employees), {$import->skippedCount} skipped (duplicates or missing farm).",
         ]);
 
-        return back();
+        return redirect('/assetmanagement');
+    }
+
+    public function migrationImportCancel(string $token)
+    {
+        $meta = $this->pendingMigration($token);
+
+        Storage::disk('local')->delete($meta['path']);
+        session()->forget("migration_imports.{$token}");
+
+        return redirect('/assetmanagement');
+    }
+
+    private function pendingMigration(string $token): array
+    {
+        $meta = session("migration_imports.{$token}");
+
+        abort_unless($meta && Storage::disk('local')->exists($meta['path']), 404);
+
+        return $meta;
     }
 
     public function exportAuditLog(Request $request)

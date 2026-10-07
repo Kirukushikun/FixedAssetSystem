@@ -18,7 +18,9 @@ use Maatwebsite\Excel\Row;
  * Migration import — reads the human-friendly migration template.
  * Category is taken from the Sub Category (department files use template category names
  * that differ from the system's); falls back to matching the Category column by name.
- * Assigned To is matched by employee name; left null if not found.
+ * Assigned To is linked to an employee only through matches a person confirmed on the
+ * review screen; only Issued assets are linked unless $linkAvailable is set. Unlinked
+ * names are kept as text in assigned_name.
  * Status and Condition default to Available / Good when blank.
  * Always creates new assets — never updates existing ones.
  * Blank Brand / Model are stored as "N/A".
@@ -32,17 +34,21 @@ class AssetMigrationImport implements
 {
     public int $createdCount = 0;
     public int $skippedCount = 0;
+    public int $linkedCount = 0;
 
     private Collection $categoryMap;    // 'IT Equipment' => 'itequipment'
     private Collection $subCategoryMap; // 'Laptop' => 'itequipment'
-    private Collection $employeeMap;    // 'Juan Dela Cruz' => 42
 
-    public function __construct()
-    {
+    /**
+     * @param array<string, Employee> $matches  name as written in the file => confirmed employee
+     */
+    public function __construct(
+        private array $matches = [],
+        private bool $linkAvailable = false,
+    ) {
         $this->categoryMap    = Category::pluck('code', 'name');
         $this->subCategoryMap = SubCategory::with('category:id,code')->get()
             ->mapWithKeys(fn ($sub) => [$sub->name => $sub->category?->code]);
-        $this->employeeMap    = Employee::pluck('id', 'employee_name');
     }
 
     public function onRow(Row $row): void
@@ -76,9 +82,17 @@ class AssetMigrationImport implements
         $categoryCode = $this->subCategoryMap->get($subCategory)
             ?? $this->categoryMap->get($rawCategory, $rawCategory);
 
-        // Employee name → ID (optional, left null if name not found)
+        $status     = trim((string) ($r['status'] ?? '')) ?: 'Available';
         $assignedTo = trim((string) ($r['assigned_to'] ?? ''));
-        $assignedId = $assignedTo !== '' ? $this->employeeMap->get($assignedTo) : null;
+        $employee   = $this->matches[$assignedTo] ?? null;
+
+        if ($employee && !$this->linkAvailable && strcasecmp($status, 'Issued') !== 0) {
+            $employee = null;
+        }
+
+        if ($employee) {
+            $this->linkedCount++;
+        }
 
         Asset::create([
             'category_type'    => strtoupper(trim((string) ($r['category_type'] ?? 'NON-IT'))) ?: 'NON-IT',
@@ -87,12 +101,12 @@ class AssetMigrationImport implements
             'brand'            => $brand ?: 'N/A',
             'model'            => $model ?: 'N/A',
             'serial_no'        => $serialNo ?: null,
-            'status'           => trim((string) ($r['status'] ?? 'Available'))  ?: 'Available',
+            'status'           => $status,
             'condition'        => trim((string) ($r['condition'] ?? 'Good'))    ?: 'Good',
             'acquisition_date' => $this->parseDate($r['acquisition_date'] ?? null),
             'item_cost'        => $this->parseCost($r['item_cost'] ?? null),
-            'assigned_name'    => $assignedTo ?: null,
-            'assigned_id'      => $assignedId,
+            'assigned_name'    => $employee?->employee_name ?? ($assignedTo ?: null),
+            'assigned_id'      => $employee?->id,
             'farm'             => strtoupper(trim((string) ($r['farm'] ?? ''))),
             'department'       => trim((string) ($r['department'] ?? '')) ?: null,
             'location'         => trim((string) ($r['location'] ?? ''))   ?: null,
