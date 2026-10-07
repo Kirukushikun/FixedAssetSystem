@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use App\Models\Employee;
 use App\Models\Department;
+use App\Services\EmployeeSyncService;
 
 
 class EmployeesTable extends Component
@@ -187,8 +188,40 @@ class EmployeesTable extends Component
         }
     }
 
+    public function syncFromPanda(EmployeeSyncService $syncService)
+    {
+        if (!Auth::user()?->hasPermission('employees.import')) {
+            $this->noreloadNotif('failed', 'Sync Failed', 'You do not have permission to sync employees.');
+            return;
+        }
+
+        if (!config('services.panda.base_uri') || !config('services.panda.token')) {
+            $this->noreloadNotif('failed', 'Sync Not Configured', 'PandaSystem connection is not configured. Set PANDA_API_BASE_URI and EMPLOYEE_SYNC_API_KEY.');
+            return;
+        }
+
+        try {
+            $r = $syncService->sync();
+
+            $this->clearEmployeeCache();
+            $this->resetPage();
+
+            $summary = "{$r['created']} added, {$r['updated']} updated, {$r['deactivated']} deactivated, {$r['skipped']} skipped.";
+            if ($r['unmapped_farms']) {
+                $summary .= ' Unmapped farms: ' . implode(', ', $r['unmapped_farms']) . '.';
+            }
+
+            $this->audit('Synced Employees from PandaSystem: ' . $summary);
+            $this->noreloadNotif('success', 'Employees Synced', $summary);
+
+        } catch (\Throwable $e) {
+            Log::error('Employee sync from PandaSystem failed: ' . $e->getMessage());
+            $this->noreloadNotif('failed', 'Sync Failed', 'Unable to reach PandaSystem. Please try again later.');
+        }
+    }
+
     public function clear()
-    {   
+    {
         $this->reset(['target', 'employee_id', 'employee_name', 'position', 'farm', 'department']);
     }
 

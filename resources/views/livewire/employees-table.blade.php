@@ -37,6 +37,21 @@
                 Add Employee
             </button>
 
+            {{-- SYNC FROM PANDASYSTEM --}}
+            @if(Auth::user()?->hasPermission('employees.import'))
+                <button
+                    class="flex items-center gap-2 px-4 py-2 bg-indigo-400 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                    wire:click="syncFromPanda"
+                    wire:loading.attr="disabled"
+                    wire:target="syncFromPanda"
+                    title="Pull the latest employee list from PandaSystem"
+                >
+                    <i class="fa-solid fa-rotate" wire:loading.class="fa-spin" wire:target="syncFromPanda"></i>
+                    <span wire:loading.remove wire:target="syncFromPanda">Sync Employees</span>
+                    <span wire:loading wire:target="syncFromPanda">Syncing...</span>
+                </button>
+            @endif
+
             {{-- Icon buttons group --}}
             <div class="flex items-center gap-1">
 

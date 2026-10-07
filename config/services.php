@@ -46,6 +46,11 @@ return [
         'token' => env('SNIPE_TOKEN'),
     ],
 
+    'panda' => [
+        'base_uri' => env('PANDA_API_BASE_URI'),
+        'token' => env('EMPLOYEE_SYNC_API_KEY'),
+    ],
+
     'purchasing' => [
         'base_uri' => env('PURCHASING_API_BASE_URI', 'https://purchasing.bfcgroup.ph/api/v1'),
         'token' => env('PURCHASING_API_TOKEN'),
