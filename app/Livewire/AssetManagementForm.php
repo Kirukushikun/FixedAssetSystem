@@ -130,7 +130,7 @@ class AssetManagementForm extends Component
         'status' => 'required',
         'condition' => 'required',
 
-        'acquisition_date' => 'required',
+        'acquisition_date' => 'nullable|date',
         'item_cost' => 'nullable',
         'depreciated_value' => 'nullable',
         'usable_life' => 'nullable|integer|min:1',

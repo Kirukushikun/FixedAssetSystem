@@ -135,7 +135,7 @@
                     <div>
                         <p class="text-xs sm:text-sm text-gray-500 mb-1">Acquisition Date</p>
                         <p class="font-semibold text-sm sm:text-base text-gray-800">
-                            {{ \Carbon\Carbon::parse($asset->acquisition_date)->format('M d, Y') }}
+                            {{ $asset->acquisition_date ? \Carbon\Carbon::parse($asset->acquisition_date)->format('M d, Y') : '—' }}
                         </p>
                     </div>
                 </div>

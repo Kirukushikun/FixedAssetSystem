@@ -23,7 +23,7 @@ class AvailableAssetsSeeder extends Seeder
             ['IT',     'itequipment',     'Printer'],
             ['IT',     'itequipment',     'Router'],
             ['NON-IT', 'officefurniture', 'Chair'],
-            ['NON-IT', 'officefurniture', 'Desk'],
+            ['NON-IT', 'officefurniture', 'Table'],
             ['NON-IT', 'appliances',      'Air Conditioner'],
             ['NON-IT', 'appliances',      'Water Dispenser'],
             ['NON-IT', 'vehicles',        'Service Vehicle'],

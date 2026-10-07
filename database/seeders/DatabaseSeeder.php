@@ -52,170 +52,119 @@ class DatabaseSeeder extends Seeder
             $this->call(LocalRoleAccountSeeder::class);
         }
 
+        // Sub-category names must be unique across categories: AssetMigrationImport
+        // routes each imported row to its category by sub-category name.
+        $it    = fn (array $names) => array_map(fn ($n) => ['name' => $n, 'category_type' => 'IT'], $names);
+        $nonIt = fn (array $names) => array_map(fn ($n) => ['name' => $n, 'category_type' => 'NON-IT'], $names);
+
         $data = [
-            // ── IT ──────────────────────────────────────────────────────────────
             'IT Equipment' => [
                 'code' => 'itequipment',
                 'icon' => 'desktop',
-                'subcategories' => [
-                    ['name' => 'Desktop',           'category_type' => 'IT'],
-                    ['name' => 'Laptop',            'category_type' => 'IT'],
-                    ['name' => 'Server',            'category_type' => 'IT'],
-                    ['name' => 'Tablet',            'category_type' => 'IT'],
-                    ['name' => 'All-in-One PC',     'category_type' => 'IT'],
-                    ['name' => 'Router',            'category_type' => 'IT'],
-                    ['name' => 'Switch',            'category_type' => 'IT'],
-                    ['name' => 'Firewall',          'category_type' => 'IT'],
-                    ['name' => 'Access Point',      'category_type' => 'IT'],
-                    ['name' => 'CCTV Camera',       'category_type' => 'IT'],
-                    ['name' => 'Monitor',           'category_type' => 'IT'],
-                    ['name' => 'Photocopier',       'category_type' => 'IT'],
-                    ['name' => 'Scanner',           'category_type' => 'IT'],
-                    ['name' => 'Printer',           'category_type' => 'IT'],
-                    ['name' => 'UPS',               'category_type' => 'IT'],
-                    ['name' => 'Biometric Devices', 'category_type' => 'IT'],
-                ],
+                'subcategories' => $it([
+                    'Desktop', 'Laptop', 'Server', 'Tablet', 'All-in-One PC', 'Router', 'Switch',
+                    'Firewall', 'Access Point', 'CCTV Camera', 'Monitor', 'Photocopier', 'Scanner',
+                    'Printer', 'UPS', 'Biometric Devices', 'Modem', 'Keyboard', 'AVR', 'Camera',
+                ]),
             ],
             'Software & Apps' => [
                 'code' => 'software',
                 'icon' => 'folder',
-                'subcategories' => [
-                    ['name' => 'Software License', 'category_type' => 'IT'],
-                    ['name' => 'Subscription',     'category_type' => 'IT'],
-                    ['name' => 'Application',      'category_type' => 'IT'],
-                ],
+                'subcategories' => $it([
+                    'Software License', 'Subscription', 'Application',
+                ]),
             ],
-
-            // ── NON-IT ──────────────────────────────────────────────────────────
             'Communication Devices' => [
                 'code' => 'commdevices',
                 'icon' => 'folder',
-                'subcategories' => [
-                    ['name' => 'Telephone',    'category_type' => 'NON-IT'],
-                    ['name' => 'Mobile Phones','category_type' => 'NON-IT'],
-                    ['name' => 'PABX',         'category_type' => 'NON-IT'],
-                    ['name' => 'Two-way Radio','category_type' => 'NON-IT'],
-                    ['name' => 'Intercom',     'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Telephone', 'Mobile Phones', 'PABX', 'Two-way Radio', 'Intercom',
+                ]),
             ],
             'Audio Visual' => [
                 'code' => 'audiovisual',
                 'icon' => 'speaker',
-                'subcategories' => [
-                    ['name' => 'Television',    'category_type' => 'NON-IT'],
-                    ['name' => 'Projector',     'category_type' => 'NON-IT'],
-                    ['name' => 'Speaker System','category_type' => 'NON-IT'],
-                    ['name' => 'Amplifier',     'category_type' => 'NON-IT'],
-                    ['name' => 'Microphone',    'category_type' => 'NON-IT'],
-                    ['name' => 'Mixer Console', 'category_type' => 'NON-IT'],
-                    ['name' => 'PA System',     'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Television', 'Projector', 'Speaker System', 'Amplifier', 'Microphone',
+                    'Mixer Console', 'PA System',
+                ]),
             ],
             'Office Furniture' => [
                 'code' => 'officefurniture',
                 'icon' => 'furniture',
-                'subcategories' => [
-                    ['name' => 'Desk',             'category_type' => 'NON-IT'],
-                    ['name' => 'Chair',            'category_type' => 'NON-IT'],
-                    ['name' => 'Conference Table', 'category_type' => 'NON-IT'],
-                    ['name' => 'Filing Cabinet',   'category_type' => 'NON-IT'],
-                    ['name' => 'Bookshelf',        'category_type' => 'NON-IT'],
-                    ['name' => 'Whiteboard',       'category_type' => 'NON-IT'],
-                    ['name' => 'Partition',        'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Table', 'Chair', 'Conference Table', 'Filing Cabinet', 'Bookshelf', 'Whiteboard',
+                    'Partition', 'Bedroom Equipment', 'Storage', 'Other Furniture',
+                ]),
+            ],
+            'Office Equipment' => [
+                'code' => 'officeequipment',
+                'icon' => 'projector',
+                'subcategories' => $nonIt([
+                    'Office Machine', 'Other Office Equipment',
+                ]),
             ],
             'Appliances' => [
                 'code' => 'appliances',
                 'icon' => 'appliances',
-                'subcategories' => [
-                    ['name' => 'Air Conditioner', 'category_type' => 'NON-IT'],
-                    ['name' => 'Refrigerator',    'category_type' => 'NON-IT'],
-                    ['name' => 'Water Dispenser', 'category_type' => 'NON-IT'],
-                    ['name' => 'Washing Machine', 'category_type' => 'NON-IT'],
-                    ['name' => 'Electric Fan',    'category_type' => 'NON-IT'],
-                    ['name' => 'Microwave',       'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Air Conditioner', 'Refrigerator', 'Water Dispenser', 'Washing Machine',
+                    'Electric Fan', 'Microwave',
+                ]),
             ],
             'Kitchen Equipment' => [
                 'code' => 'kitchen',
                 'icon' => 'kitchen',
-                'subcategories' => [
-                    ['name' => 'Stove',       'category_type' => 'NON-IT'],
-                    ['name' => 'Rice Cooker', 'category_type' => 'NON-IT'],
-                    ['name' => 'Oven',        'category_type' => 'NON-IT'],
-                    ['name' => 'Blender',     'category_type' => 'NON-IT'],
-                    ['name' => 'Steamer',     'category_type' => 'NON-IT'],
-                    ['name' => 'Cooking Pot', 'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Stove', 'Rice Cooker', 'Oven', 'Blender', 'Steamer', 'Cooking Pot',
+                ]),
             ],
             'Vehicles' => [
                 'code' => 'vehicles',
                 'icon' => 'vehicle',
-                'subcategories' => [
-                    ['name' => 'Motorcycle',      'category_type' => 'NON-IT'],
-                    ['name' => 'Service Vehicle', 'category_type' => 'NON-IT'],
-                    ['name' => 'Delivery Truck',  'category_type' => 'NON-IT'],
-                    ['name' => 'Utility Vehicle', 'category_type' => 'NON-IT'],
-                    ['name' => 'Forklift',        'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Motorcycle', 'Service Vehicle', 'Delivery Truck', 'Utility Vehicle', 'Forklift',
+                ]),
             ],
             'Machinery & Equipment' => [
                 'code' => 'machinery',
                 'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Generator',        'category_type' => 'NON-IT'],
-                    ['name' => 'Air Compressor',   'category_type' => 'NON-IT'],
-                    ['name' => 'Water Pump',       'category_type' => 'NON-IT'],
-                    ['name' => 'Welding Machine',  'category_type' => 'NON-IT'],
-                    ['name' => 'Feedmill Equipment','category_type' => 'NON-IT'],
-                    ['name' => 'Biogas Equipment', 'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Generator', 'Air Compressor', 'Water Pump', 'Welding Machine',
+                    'Feedmill Equipment', 'Biogas Equipment',
+                ]),
             ],
             'Farm Equipment' => [
                 'code' => 'farmequip',
                 'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Tractor',              'category_type' => 'NON-IT'],
-                    ['name' => 'Sprayer',              'category_type' => 'NON-IT'],
-                    ['name' => 'Irrigation Equipment', 'category_type' => 'NON-IT'],
-                    ['name' => 'Weighing Scale',       'category_type' => 'NON-IT'],
-                    ['name' => 'Incubator',            'category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Tractor', 'Sprayer', 'Irrigation Equipment', 'Weighing Scale', 'Incubator',
+                    'Submersible Pump', 'Wet-stand Pipe', 'Industrial Fan', 'Hatcher Equipment', 'Silo',
+                    'Control Panel', 'Laboratory Equipment', 'Heating & Cooling Equipment', 'Tank',
+                    'Other Farm Equipment',
+                ]),
             ],
             'Tools & Safety' => [
                 'code' => 'tools',
                 'icon' => 'tools',
-                'subcategories' => [
-                    ['name' => 'Hand Tools',           'category_type' => 'NON-IT'],
-                    ['name' => 'Power Tools',          'category_type' => 'NON-IT'],
-                    ['name' => 'Safety Equipment',     'category_type' => 'NON-IT'],
-                    ['name' => 'Measuring Instruments','category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Hand Tools', 'Power Tools', 'Safety Equipment', 'Measuring Instruments', 'Scaffolding',
+                ]),
             ],
             'Land & Improvements' => [
                 'code' => 'land',
                 'icon' => 'land',
-                'subcategories' => [
-                    ['name' => 'Land',             'category_type' => 'NON-IT'],
-                    ['name' => 'Road/Pavement',    'category_type' => 'NON-IT'],
-                    ['name' => 'Drainage',         'category_type' => 'NON-IT'],
-                    ['name' => 'Fencing',          'category_type' => 'NON-IT'],
-                    ['name' => 'Land Improvements','category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Land', 'Road/Pavement', 'Drainage', 'Fencing', 'Land Improvements',
+                ]),
             ],
             'Buildings & Structures' => [
                 'code' => 'buildings',
                 'icon' => 'building',
-                'subcategories' => [
-                    ['name' => 'Office Building', 'category_type' => 'NON-IT'],
-                    ['name' => 'Warehouse',       'category_type' => 'NON-IT'],
-                    ['name' => 'Staff Housing',   'category_type' => 'NON-IT'],
-                    ['name' => 'Swine House',     'category_type' => 'NON-IT'],
-                    ['name' => 'Poultry House',   'category_type' => 'NON-IT'],
-                    ['name' => 'Feed Mill',       'category_type' => 'NON-IT'],
-                    ['name' => 'Biogas Plant',    'category_type' => 'NON-IT'],
-                    ['name' => 'Hatchery Building','category_type' => 'NON-IT'],
-                ],
+                'subcategories' => $nonIt([
+                    'Office Building', 'Warehouse', 'Staff Housing', 'Swine House', 'Poultry House',
+                    'Feed Mill', 'Biogas Plant', 'Hatchery Building', 'Other Building',
+                ]),
             ],
         ];
 

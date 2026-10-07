@@ -27,7 +27,7 @@ class AssetMigrationTemplateExport implements
         return collect([
             [
                 'IT',               // Category Type
-                'Computer',         // Category (write the name, e.g. Computer, Monitor, Printer)
+                'IT Equipment',     // Category (exact category name as shown in the system)
                 'Laptop',           // Sub Category
                 'Dell',             // Brand
                 'Latitude 5520',    // Model

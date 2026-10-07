@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Employee;
+use App\Models\SubCategory;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\OnEachRow;
@@ -15,11 +16,13 @@ use Maatwebsite\Excel\Row;
 
 /**
  * Migration import — reads the human-friendly migration template.
- * Category is matched by name (e.g. "Computer") to the stored code.
+ * Category is taken from the Sub Category (department files use template category names
+ * that differ from the system's); falls back to matching the Category column by name.
  * Assigned To is matched by employee name; left null if not found.
  * Status and Condition default to Available / Good when blank.
  * Always creates new assets — never updates existing ones.
- * Duplicate check: by Serial Number if provided, otherwise by Brand + Model + Sub Category.
+ * Blank Brand / Model are stored as "N/A".
+ * Duplicate check: by Serial Number only; rows without one are always created.
  */
 class AssetMigrationImport implements
     OnEachRow,
@@ -30,23 +33,28 @@ class AssetMigrationImport implements
     public int $createdCount = 0;
     public int $skippedCount = 0;
 
-    private Collection $categoryMap; // 'Computer' => 'COMP'
-    private Collection $employeeMap; // 'Juan Dela Cruz' => 42
+    private Collection $categoryMap;    // 'IT Equipment' => 'itequipment'
+    private Collection $subCategoryMap; // 'Laptop' => 'itequipment'
+    private Collection $employeeMap;    // 'Juan Dela Cruz' => 42
 
     public function __construct()
     {
-        $this->categoryMap = Category::pluck('code', 'name');
-        $this->employeeMap = Employee::pluck('id', 'employee_name');
+        $this->categoryMap    = Category::pluck('code', 'name');
+        $this->subCategoryMap = SubCategory::with('category:id,code')->get()
+            ->mapWithKeys(fn ($sub) => [$sub->name => $sub->category?->code]);
+        $this->employeeMap    = Employee::pluck('id', 'employee_name');
     }
 
     public function onRow(Row $row): void
     {
         $r = $row->toArray();
 
-        // Skip blank or sample rows
-        $brand = trim((string) ($r['brand'] ?? ''));
-        $model = trim((string) ($r['model'] ?? ''));
-        if ($brand === '' || $model === '') {
+        $subCategory = trim((string) ($r['sub_category'] ?? ''));
+        $brand       = trim((string) ($r['brand'] ?? ''));
+        $model       = trim((string) ($r['model'] ?? ''));
+
+        // Skip fully blank rows
+        if ($subCategory === '' && $brand === '' && $model === '') {
             return;
         }
 
@@ -56,25 +64,17 @@ class AssetMigrationImport implements
             return;
         }
 
-        $serialNo    = trim((string) ($r['serial_number'] ?? ''));
-        $subCategory = trim((string) ($r['sub_category'] ?? ''));
+        $serialNo = trim((string) ($r['serial_number'] ?? ''));
 
-        // Duplicate check
-        if ($serialNo !== '') {
-            if (Asset::where('serial_no', $serialNo)->exists()) {
-                $this->skippedCount++;
-                return;
-            }
-        } else {
-            if (Asset::where('brand', $brand)->where('model', $model)->where('sub_category', $subCategory)->exists()) {
-                $this->skippedCount++;
-                return;
-            }
+        // Only a serial number identifies a duplicate — identical items (e.g. many plastic chairs) are separate assets
+        if ($serialNo !== '' && Asset::where('serial_no', $serialNo)->exists()) {
+            $this->skippedCount++;
+            return;
         }
 
-        // Category name → code lookup; fall through if already a code
         $rawCategory  = trim((string) ($r['category'] ?? ''));
-        $categoryCode = $this->categoryMap->get($rawCategory, $rawCategory);
+        $categoryCode = $this->subCategoryMap->get($subCategory)
+            ?? $this->categoryMap->get($rawCategory, $rawCategory);
 
         // Employee name → ID (optional, left null if name not found)
         $assignedTo = trim((string) ($r['assigned_to'] ?? ''));
@@ -84,8 +84,8 @@ class AssetMigrationImport implements
             'category_type'    => strtoupper(trim((string) ($r['category_type'] ?? 'NON-IT'))) ?: 'NON-IT',
             'category'         => $categoryCode,
             'sub_category'     => $subCategory,
-            'brand'            => $brand,
-            'model'            => $model,
+            'brand'            => $brand ?: 'N/A',
+            'model'            => $model ?: 'N/A',
             'serial_no'        => $serialNo ?: null,
             'status'           => trim((string) ($r['status'] ?? 'Available'))  ?: 'Available',
             'condition'        => trim((string) ($r['condition'] ?? 'Good'))    ?: 'Good',

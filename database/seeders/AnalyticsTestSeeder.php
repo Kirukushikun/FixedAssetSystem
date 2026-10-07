@@ -118,7 +118,7 @@ class AnalyticsTestSeeder extends Seeder
             ['IT',     'itequipment',     'Scanner'],
             // NON-IT assets
             ['NON-IT', 'officefurniture', 'Chair'],
-            ['NON-IT', 'officefurniture', 'Desk'],
+            ['NON-IT', 'officefurniture', 'Table'],
             ['NON-IT', 'appliances',      'Air Conditioner'],
             ['NON-IT', 'appliances',      'Refrigerator'],
             ['NON-IT', 'appliances',      'Water Dispenser'],
