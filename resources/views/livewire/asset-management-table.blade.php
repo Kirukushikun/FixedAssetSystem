@@ -429,8 +429,8 @@
                                 <span class="font-bold text-sm text-gray-700">Manual Entry</span>
                                 <span class="text-xs text-gray-400">Register an asset already on hand</span>
                             </button>
-                            <button type="button" @click="modalTemplate = 'purchasing'; $dispatch('purchasing-modal-opened');"
-                                class="flex flex-col items-center gap-3 border border-gray-200 rounded-xl p-6 hover:border-teal-400 hover:bg-teal-50 transition-colors text-center">
+                            <button type="button" disabled title="Temporarily unavailable"
+                                class="flex flex-col items-center gap-3 border border-gray-200 rounded-xl p-6 text-center opacity-50 cursor-not-allowed">
                                 <i class="fa-solid fa-truck-ramp-box text-2xl text-teal-500"></i>
                                 <span class="font-bold text-sm text-gray-700">From Purchasing System</span>
                                 <span class="text-xs text-gray-400">Pull in an item already processed in Purchasing</span>
