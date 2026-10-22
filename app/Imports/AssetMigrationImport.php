@@ -4,21 +4,23 @@ namespace App\Imports;
 
 use App\Jobs\GenerateAssetQrCode;
 use App\Models\Asset;
-use App\Models\Category;
 use App\Models\Employee;
 use App\Models\SubCategory;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Imports\Filters\ColumnRangeFilter;
+use Maatwebsite\Excel\Concerns\WithColumnLimit;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithReadFilter;
+use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 use Maatwebsite\Excel\Row;
 
 /**
  * Migration import — reads the human-friendly migration template.
- * Category is taken from the Sub Category (department files use template category names
- * that differ from the system's); falls back to matching the Category column by name.
+ * Category and Category Type are taken from the Sub Category (matched case-insensitively);
+ * the file's Category column is ignored. Sub-categories the system doesn't have must be
+ * mapped (or skipped) on the review screen.
  * Assigned To is linked to an employee only through matches a person confirmed on the
  * review screen; only Issued assets are linked unless $linkAvailable is set. Unlinked
  * names are kept as text in assigned_name.
@@ -31,25 +33,47 @@ class AssetMigrationImport implements
     OnEachRow,
     WithHeadingRow,
     WithCalculatedFormulas,
-    WithChunkReading
+    WithColumnLimit,
+    WithReadFilter
 {
+    // Template columns are A–O. Some department files have formatting dragged out to
+    // ~16,000 columns; reading past O builds millions of empty cells and exhausts memory.
+    // No WithChunkReading: its own read filter replaces this one, and files are small.
+    public const LAST_COLUMN = 'O';
+
     public int $createdCount = 0;
     public int $skippedCount = 0;
     public int $linkedCount = 0;
 
-    private Collection $categoryMap;    // 'IT Equipment' => 'itequipment'
-    private Collection $subCategoryMap; // 'Laptop' => 'itequipment'
+    /** @var array<string, SubCategory> lowercased sub-category name => sub-category (with category) */
+    private array $subCategories;
+
+    /** @var array<string, ?SubCategory> sub-category as written in the file => mapped sub-category, null = skip */
+    private array $subCategoryMappings = [];
 
     /**
-     * @param array<string, Employee> $matches  name as written in the file => confirmed employee
+     * @param array<string, Employee> $matches              name as written in the file => confirmed employee
+     * @param array<string, ?int>     $subCategoryMappings  sub-category as written in the file => subcategories.id, null = skip those rows
      */
     public function __construct(
         private array $matches = [],
         private bool $linkAvailable = false,
+        array $subCategoryMappings = [],
     ) {
-        $this->categoryMap    = Category::pluck('code', 'name');
-        $this->subCategoryMap = SubCategory::with('category:id,code')->get()
-            ->mapWithKeys(fn ($sub) => [$sub->name => $sub->category?->code]);
+        $all = SubCategory::with('category:id,code')->get();
+
+        $this->subCategories = $all
+            ->mapWithKeys(fn ($sub) => [self::key($sub->name) => $sub])
+            ->all();
+
+        foreach ($subCategoryMappings as $fileName => $id) {
+            $this->subCategoryMappings[(string) $fileName] = $id === null ? null : $all->firstWhere('id', $id);
+        }
+    }
+
+    public static function key(string $name): string
+    {
+        return mb_strtolower(trim($name));
     }
 
     public function onRow(Row $row): void
@@ -79,9 +103,20 @@ class AssetMigrationImport implements
             return;
         }
 
-        $rawCategory  = trim((string) ($r['category'] ?? ''));
-        $categoryCode = $this->subCategoryMap->get($subCategory)
-            ?? $this->categoryMap->get($rawCategory, $rawCategory);
+        if (array_key_exists($subCategory, $this->subCategoryMappings)) {
+            $sub = $this->subCategoryMappings[$subCategory];
+            if ($sub === null) {
+                $this->skippedCount++;
+                return;
+            }
+        } else {
+            $sub = $this->subCategories[self::key($subCategory)] ?? null;
+        }
+
+        // The review screen requires a mapping for every unknown sub-category; this guards direct use.
+        if (!$sub || !$sub->category) {
+            throw new \RuntimeException("Sub category \"{$subCategory}\" does not exist in the system.");
+        }
 
         $status     = trim((string) ($r['status'] ?? '')) ?: 'Available';
         $assignedTo = trim((string) ($r['assigned_to'] ?? ''));
@@ -96,9 +131,9 @@ class AssetMigrationImport implements
         }
 
         $asset = Asset::create([
-            'category_type'    => strtoupper(trim((string) ($r['category_type'] ?? 'NON-IT'))) ?: 'NON-IT',
-            'category'         => $categoryCode,
-            'sub_category'     => $subCategory,
+            'category_type'    => $sub->category_type,
+            'category'         => $sub->category->code,
+            'sub_category'     => $sub->name,
             'brand'            => $brand ?: 'N/A',
             'model'            => $model ?: 'N/A',
             'serial_no'        => $serialNo ?: null,
@@ -147,8 +182,13 @@ class AssetMigrationImport implements
         return $clean === '' ? null : $clean;
     }
 
-    public function chunkSize(): int
+    public function endColumn(): string
     {
-        return 500;
+        return self::LAST_COLUMN;
+    }
+
+    public function readFilter(): IReadFilter
+    {
+        return new ColumnRangeFilter(self::LAST_COLUMN);
     }
 }

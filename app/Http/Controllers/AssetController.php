@@ -17,6 +17,8 @@ use App\Imports\AssetMigrationNamePreview;
 use App\Jobs\RunAssetMigrationImport;
 use App\Models\Employee;
 use App\Support\EmployeeNameMatcher;
+use App\Support\SubCategoryMatcher;
+use App\Models\SubCategory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -104,12 +106,30 @@ class AssetController extends Controller
             ->sortByDesc('total')
             ->values();
 
+        $subCategories = SubCategory::with('category:id,name,code')->get()
+            ->filter(fn ($s) => $s->category)
+            ->sortBy(['category.name', 'name']);
+
+        $subMatcher = new SubCategoryMatcher($subCategories);
+
+        $unknownSubCategories = collect($preview->unknownSubCategories)
+            ->map(fn ($info, $name) => [
+                'name'       => (string) $name,
+                'count'      => $info['count'],
+                'category'   => $info['category'],
+                'suggestion' => $subMatcher->suggest((string) $name, $info['category']),
+            ])
+            ->sortByDesc('count')
+            ->values();
+
         return view('asset-migration-review', [
             'token'     => $token,
             'fileName'  => $meta['name'],
             'rowCount'  => $preview->rows,
             'names'     => $names,
             'employees' => $employees,
+            'unknownSubCategories' => $unknownSubCategories,
+            'subCategoryGroups'    => $subCategories->groupBy('category.name'),
         ]);
     }
 
@@ -127,10 +147,29 @@ class AssetController extends Controller
             'matches'        => 'array',
             'matches.*'      => 'nullable|string',
             'link_available' => 'nullable|boolean',
+            'unknown_subs'   => 'array',
+            'unknown_subs.*' => 'nullable|string',
+            'sub_maps'       => 'array',
+            'sub_maps.*'     => 'nullable|string',
         ]);
 
         $matches = [];
         $invalid = [];
+
+        $subCategoryMappings = [];
+        $validSubIds = SubCategory::pluck('id')->map(fn ($id) => (string) $id)->flip();
+
+        foreach ($request->input('unknown_subs', []) as $i => $fileSub) {
+            $choice = (string) $request->input("sub_maps.{$i}", '');
+
+            if ($choice === 'skip') {
+                $subCategoryMappings[(string) $fileSub] = null;
+            } elseif (isset($validSubIds[$choice])) {
+                $subCategoryMappings[(string) $fileSub] = (int) $choice;
+            } else {
+                $invalid["sub_maps.{$i}"] = 'Choose a sub category, or skip these assets.';
+            }
+        }
 
         foreach ($request->input('names', []) as $i => $name) {
             $choice = trim((string) $request->input("matches.{$i}", ''));
@@ -161,6 +200,7 @@ class AssetController extends Controller
             $matches,
             $request->boolean('link_available'),
             (int) auth()->id(),
+            $subCategoryMappings,
         );
 
         session()->forget("migration_imports.{$token}");

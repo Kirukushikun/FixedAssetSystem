@@ -27,7 +27,7 @@
 
     @if($errors->any())
         <div class="border border-red-200 bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3">
-            Some selections don't match an employee. Fix the highlighted rows below.
+            Some selections need attention. Fix the highlighted rows below.
         </div>
     @endif
 
@@ -40,6 +40,77 @@
 
     <form method="POST" action="{{ route('assets.migration-confirm', $token) }}" class="flex flex-col gap-4">
         @csrf
+
+        @if($unknownSubCategories->isNotEmpty())
+            <div class="border border-amber-200 bg-amber-50 rounded-xl p-4 flex flex-col gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-amber-800">Map Sub Categories</h2>
+                    <p class="text-xs text-amber-700">
+                        These sub categories aren't in the system. Choose which existing sub category each one belongs to,
+                        or skip those assets. Suggestions are a starting point — check each one.
+                    </p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-xs text-amber-700/70 uppercase tracking-wide border-b border-amber-200">
+                                <th class="py-2 pr-4">Sub category in file</th>
+                                <th class="py-2 pr-4">Category in file</th>
+                                <th class="py-2 pr-4 text-right">Assets</th>
+                                <th class="py-2">Map to</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                // Built once and reused per row: repeating the full list in every select bloats the page.
+                                $subOptions = '';
+                                foreach ($subCategoryGroups as $categoryName => $subs) {
+                                    $subOptions .= '<optgroup label="' . e($categoryName) . '">';
+                                    foreach ($subs as $sub) {
+                                        $subOptions .= '<option value="' . $sub->id . '">' . e($sub->name) . '</option>';
+                                    }
+                                    $subOptions .= '</optgroup>';
+                                }
+                            @endphp
+                            @foreach($unknownSubCategories as $i => $row)
+                                @php
+                                    $selected = (string) old("sub_maps.$i", $row['suggestion']?->id);
+                                    $options = $selected !== '' && $selected !== 'skip'
+                                        ? str_replace('value="' . $selected . '"', 'value="' . $selected . '" selected', $subOptions)
+                                        : $subOptions;
+                                @endphp
+                                <tr class="border-b border-amber-100 last:border-0 align-middle">
+                                    <td class="py-2 pr-4 font-semibold text-gray-700">
+                                        {{ $row['name'] !== '' ? $row['name'] : '(blank)' }}
+                                        <input type="hidden" name="unknown_subs[{{ $i }}]" value="{{ $row['name'] }}">
+                                    </td>
+                                    <td class="py-2 pr-4 text-gray-500">{{ $row['category'] ?: '—' }}</td>
+                                    <td class="py-2 pr-4 text-right text-gray-600">{{ $row['count'] }}</td>
+                                    <td class="py-2 min-w-[280px]">
+                                        <div class="flex items-center gap-2">
+                                            <select name="sub_maps[{{ $i }}]"
+                                                class="w-full text-sm rounded-lg border px-2 py-1.5 bg-white outline-none focus:border-teal-400 {{ $errors->has("sub_maps.$i") ? 'border-red-400' : 'border-gray-200' }}">
+                                                <option value="">Choose a sub category…</option>
+                                                <option value="skip" @selected($selected === 'skip')>— Skip these assets —</option>
+                                                {!! $options !!}
+                                            </select>
+                                            @if($row['suggestion'])
+                                                <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-700">Suggested</span>
+                                            @endif
+                                        </div>
+                                        @error("sub_maps.$i")
+                                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h2 class="text-sm font-bold text-gray-700 -mb-2">Match Employees</h2>
+        @endif
 
         <datalist id="employee-options">
             @foreach($employees as $e)
@@ -116,7 +187,7 @@
                 Cancel
             </button>
             <button type="submit"
-                class="px-4 py-2 bg-[#4fd1c5] hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition-colors"
+                class="px-4 py-2 bg-[#4fd1c5] hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onclick="this.disabled = true; this.innerText = 'Importing...'; this.form.submit();">
                 Import {{ $rowCount }} Assets
             </button>

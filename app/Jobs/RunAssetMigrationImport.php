@@ -31,7 +31,8 @@ class RunAssetMigrationImport implements ShouldQueue
     public $timeout = 600;
 
     /**
-     * @param array<string, int> $matches  name as written in the file => confirmed employees.id
+     * @param array<string, int>  $matches              name as written in the file => confirmed employees.id
+     * @param array<string, ?int> $subCategoryMappings  sub-category as written in the file => subcategories.id, null = skip
      */
     public function __construct(
         private string $path,
@@ -39,6 +40,7 @@ class RunAssetMigrationImport implements ShouldQueue
         private array $matches,
         private bool $linkAvailable,
         private int $userId,
+        private array $subCategoryMappings = [],
     ) {}
 
     public function handle(): void
@@ -49,7 +51,7 @@ class RunAssetMigrationImport implements ShouldQueue
             ->filter()
             ->all();
 
-        $import = new AssetMigrationImport($matches, $this->linkAvailable);
+        $import = new AssetMigrationImport($matches, $this->linkAvailable, $this->subCategoryMappings);
 
         DB::transaction(fn () => Excel::import($import, $this->path, 'local'));
 
