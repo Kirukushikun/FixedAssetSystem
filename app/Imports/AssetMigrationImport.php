@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Jobs\GenerateAssetQrCode;
 use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Employee;
@@ -94,7 +95,7 @@ class AssetMigrationImport implements
             $this->linkedCount++;
         }
 
-        Asset::create([
+        $asset = Asset::create([
             'category_type'    => strtoupper(trim((string) ($r['category_type'] ?? 'NON-IT'))) ?: 'NON-IT',
             'category'         => $categoryCode,
             'sub_category'     => $subCategory,
@@ -112,6 +113,9 @@ class AssetMigrationImport implements
             'location'         => trim((string) ($r['location'] ?? ''))   ?: null,
             'remarks'          => trim((string) ($r['remarks'] ?? ''))    ?: null,
         ]);
+
+        // afterCommit: the import runs in a transaction; a rolled-back asset gets no QR job
+        GenerateAssetQrCode::dispatch($asset)->afterCommit();
 
         $this->createdCount++;
     }

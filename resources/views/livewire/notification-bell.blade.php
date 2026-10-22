@@ -44,6 +44,7 @@
                         'disposal'  => 'fa-recycle text-orange-500',
                         'transfer'  => 'fa-arrow-right-arrow-left text-indigo-500',
                         'lost'      => 'fa-magnifying-glass text-red-500',
+                        'import'    => 'fa-file-import text-teal-500',
                         default     => 'fa-bell text-gray-400',
                     };
                 @endphp

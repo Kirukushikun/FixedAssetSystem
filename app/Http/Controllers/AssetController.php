@@ -14,6 +14,7 @@ use App\Exports\AssetMigrationTemplateExport;
 use App\Imports\AssetImport;
 use App\Imports\AssetMigrationImport;
 use App\Imports\AssetMigrationNamePreview;
+use App\Jobs\RunAssetMigrationImport;
 use App\Models\Employee;
 use App\Support\EmployeeNameMatcher;
 use Illuminate\Support\Facades\Storage;
@@ -117,7 +118,6 @@ class AssetController extends Controller
      */
     public function migrationImportConfirm(Request $request, string $token)
     {
-        ini_set('max_execution_time', 300);
 
         $meta = $this->pendingMigration($token);
 
@@ -148,23 +148,27 @@ class AssetController extends Controller
                 continue;
             }
 
-            $matches[$name] = $employee;
+            $matches[$name] = $employee->id;
         }
 
         if ($invalid) {
             return back()->withErrors($invalid)->withInput();
         }
 
-        $import = new AssetMigrationImport($matches, $request->boolean('link_available'));
-        Excel::import($import, $meta['path'], 'local');
+        RunAssetMigrationImport::dispatch(
+            $meta['path'],
+            $meta['name'],
+            $matches,
+            $request->boolean('link_available'),
+            (int) auth()->id(),
+        );
 
-        Storage::disk('local')->delete($meta['path']);
         session()->forget("migration_imports.{$token}");
 
         session()->flash('notif', [
             'type'    => 'success',
-            'header'  => 'Migration Import Complete',
-            'message' => "{$import->createdCount} assets added ({$import->linkedCount} linked to employees), {$import->skippedCount} skipped (duplicates or missing farm).",
+            'header'  => 'Import Started',
+            'message' => "{$meta['name']} is importing in the background. You'll get a notification when it's done.",
         ]);
 
         return redirect('/assetmanagement');

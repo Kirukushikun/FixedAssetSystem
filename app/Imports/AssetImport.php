@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Jobs\GenerateAssetQrCode;
 use App\Models\Asset;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\OnEachRow;
@@ -71,12 +72,12 @@ class AssetImport implements
                 $this->updatedCount++;
             } else {
                 // Create preserving the original ref_id (booted() skips generation when ref_id is set)
-                Asset::create(array_merge($data, ['ref_id' => $refId]));
+                GenerateAssetQrCode::dispatch(Asset::create(array_merge($data, ['ref_id' => $refId])));
                 $this->createdCount++;
             }
         } else {
             // No ref_id → let booted() auto-generate
-            Asset::create($data);
+            GenerateAssetQrCode::dispatch(Asset::create($data));
             $this->createdCount++;
         }
     }
