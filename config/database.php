@@ -61,6 +61,14 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                // Folder containing mysqldump. Leave unset if mysqldump is on PATH.
+                'dump_binary_path' => env('DB_DUMP_BINARY_PATH', ''),
+                'use_single_transaction' => true,
+                'timeout' => 60 * 5,
+                // e.g. "--no-tablespaces" locally, "--skip-ssl --no-tablespaces" in production
+                'add_extra_option' => env('DB_DUMP_EXTRA_OPTIONS', '--no-tablespaces'),
+            ],
         ],
 
         'mariadb' => [
